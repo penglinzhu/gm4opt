@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "problem_id": "NL4LP_72",
+    "source": null,
+    "description": "Determine the optimal number of 4-wheeler and 3-wheeler vehicles to minimize the total number of vehicles while meeting luggage movement and pollution constraints.",
+    "sense": "min",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "VEHICLES",
+      "elements": [
+        "4-wheeler",
+        "3-wheeler"
+      ],
+      "description": "Types of vehicles available for purchase"
+    }
+  ],
+  "params": [
+    {
+      "name": "luggage_capacity",
+      "indices": [
+        "VEHICLES"
+      ],
+      "values": {
+        "4-wheeler": 60,
+        "3-wheeler": 40
+      },
+      "description": "Luggage capacity per vehicle type per day"
+    },
+    {
+      "name": "pollution",
+      "indices": [
+        "VEHICLES"
+      ],
+      "values": {
+        "4-wheeler": 30,
+        "3-wheeler": 15
+      },
+      "description": "Pollution units produced per vehicle type per day"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "VEHICLES"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of vehicles to purchase of each type"
+    }
+  ],
+  "objective": {
+    "name": "min_total_vehicles",
+    "sense": "min",
+    "expr": "x['4-wheeler'] + x['3-wheeler']",
+    "description": "Minimize the total number of vehicles purchased"
+  },
+  "constraints": [
+    {
+      "name": "luggage_requirement",
+      "expr_lhs": "60 * x['4-wheeler'] + 40 * x['3-wheeler']",
+      "sense": ">=",
+      "expr_rhs": "1000",
+      "description": "Ensure at least 1000 luggage can be moved per day"
+    },
+    {
+      "name": "pollution_limit",
+      "expr_lhs": "30 * x['4-wheeler'] + 15 * x['3-wheeler']",
+      "sense": "<=",
+      "expr_rhs": "430",
+      "description": "Ensure pollution does not exceed 430 units per day"
+    }
+  ],
+  "graph": null
+}

@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "problem_id": "NL4LP_44",
+    "source": null,
+    "description": "Maximize the amount of hay processed using windrower and hay harvester on 200 acres of land.",
+    "sense": "max",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "MACHINES",
+      "elements": [
+        "windrower",
+        "hay_harvester"
+      ],
+      "description": "Types of machines available for processing hay."
+    }
+  ],
+  "params": [
+    {
+      "name": "hay_per_acre",
+      "indices": [
+        "MACHINES"
+      ],
+      "values": {
+        "windrower": 10,
+        "hay_harvester": 8
+      },
+      "description": "Amount of hay processed per acre by each machine."
+    },
+    {
+      "name": "methane_per_acre",
+      "indices": [
+        "MACHINES"
+      ],
+      "values": {
+        "windrower": 5,
+        "hay_harvester": 3
+      },
+      "description": "Amount of methane gas produced per acre by each machine."
+    },
+    {
+      "name": "fuel_per_acre",
+      "indices": [
+        "MACHINES"
+      ],
+      "values": {
+        "windrower": 2,
+        "hay_harvester": 1
+      },
+      "description": "Amount of fuel required per acre by each machine."
+    },
+    {
+      "name": "total_acres",
+      "indices": [],
+      "values": 200,
+      "description": "Total acres of land available."
+    },
+    {
+      "name": "total_fuel",
+      "indices": [],
+      "values": 300,
+      "description": "Total fuel available."
+    },
+    {
+      "name": "max_methane",
+      "indices": [],
+      "values": 800,
+      "description": "Maximum methane gas that can be produced."
+    }
+  ],
+  "vars": [
+    {
+      "name": "acres",
+      "indices": [
+        "MACHINES"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of acres processed by each machine."
+    }
+  ],
+  "objective": {
+    "name": "max_hay_processed",
+    "sense": "max",
+    "expr": "sum(acres[m] * hay_per_acre[m] for m in ['windrower', 'hay_harvester'])",
+    "description": "Maximize the total amount of hay processed."
+  },
+  "constraints": [
+    {
+      "name": "total_acres_constraint",
+      "expr_lhs": "acres['windrower'] + acres['hay_harvester']",
+      "sense": "<=",
+      "expr_rhs": "total_acres",
+      "description": "Total acres processed by both machines cannot exceed available land."
+    },
+    {
+      "name": "fuel_constraint",
+      "expr_lhs": "acres['windrower'] * fuel_per_acre['windrower'] + acres['hay_harvester'] * fuel_per_acre['hay_harvester']",
+      "sense": "<=",
+      "expr_rhs": "total_fuel",
+      "description": "Total fuel used by both machines cannot exceed available fuel."
+    },
+    {
+      "name": "methane_constraint",
+      "expr_lhs": "acres['windrower'] * methane_per_acre['windrower'] + acres['hay_harvester'] * methane_per_acre['hay_harvester']",
+      "sense": "<=",
+      "expr_rhs": "max_methane",
+      "description": "Total methane gas produced by both machines cannot exceed the maximum allowed."
+    }
+  ],
+  "graph": null
+}

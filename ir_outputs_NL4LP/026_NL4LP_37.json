@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "problem_id": "NL4LP_37",
+    "source": null,
+    "description": "Minimize the cost of producing teddy bears in two factories while meeting demand.",
+    "sense": "min",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "FACTORIES",
+      "elements": [
+        "1",
+        "2"
+      ],
+      "description": "The two factories producing teddy bears."
+    },
+    {
+      "name": "COLORS",
+      "elements": [
+        "black",
+        "white",
+        "brown"
+      ],
+      "description": "The colors of teddy bears produced."
+    }
+  ],
+  "params": [
+    {
+      "name": "production",
+      "indices": [
+        "FACTORIES",
+        "COLORS"
+      ],
+      "values": {
+        "1": {
+          "black": 5,
+          "white": 6,
+          "brown": 3
+        },
+        "2": {
+          "black": 10,
+          "white": 10,
+          "brown": 0
+        }
+      },
+      "description": "Number of teddy bears produced per hour by each factory for each color."
+    },
+    {
+      "name": "cost",
+      "indices": [
+        "FACTORIES"
+      ],
+      "values": {
+        "1": 300,
+        "2": 600
+      },
+      "description": "Cost of running each factory for one hour."
+    },
+    {
+      "name": "demand",
+      "indices": [
+        "COLORS"
+      ],
+      "values": {
+        "black": 20,
+        "white": 5,
+        "brown": 15
+      },
+      "description": "Minimum daily demand for each color of teddy bear."
+    }
+  ],
+  "vars": [
+    {
+      "name": "hours",
+      "indices": [
+        "FACTORIES"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Hours each factory is run daily."
+    }
+  ],
+  "objective": {
+    "name": "min_total_cost",
+    "sense": "min",
+    "expr": "sum(cost[f] * hours[f] for f in ['1', '2'])",
+    "description": "Minimize the total cost of running the factories."
+  },
+  "constraints": [
+    {
+      "name": "demand_black",
+      "expr_lhs": "sum(production[f]['black'] * hours[f] for f in ['1', '2'])",
+      "sense": ">=",
+      "expr_rhs": "demand['black']",
+      "description": "Meet the demand for black teddy bears."
+    },
+    {
+      "name": "demand_white",
+      "expr_lhs": "sum(production[f]['white'] * hours[f] for f in ['1', '2'])",
+      "sense": ">=",
+      "expr_rhs": "demand['white']",
+      "description": "Meet the demand for white teddy bears."
+    },
+    {
+      "name": "demand_brown",
+      "expr_lhs": "production['1']['brown'] * hours['1']",
+      "sense": ">=",
+      "expr_rhs": "demand['brown']",
+      "description": "Meet the demand for brown teddy bears."
+    }
+  ],
+  "graph": null
+}
