@@ -1,6 +1,6 @@
 # GM4OPT — NL→IR→Solver Pipeline for Optimization Modeling
 
-GM4OPT is a research-oriented framework that bridges **natural-language optimization problems** and **executable mathematical programming models**. It provides a unified pipeline that (i) translates problem text into a structured intermediate representation (IR) and (ii) deterministically compiles the IR into a solver-ready model (Gurobi), with optional graph-based analysis modules.
+GM4OPT（graph modeling for optimization） is a research-oriented framework that bridges **natural-language optimization problems** and **executable mathematical programming models**. It provides a unified pipeline that (i) translates problem text into a structured intermediate representation (IR) and (ii) deterministically compiles the IR into a solver-ready model (Gurobi), with optional graph-based analysis modules.
 
 ---
 
