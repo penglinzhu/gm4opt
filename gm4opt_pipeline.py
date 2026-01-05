@@ -17,7 +17,7 @@ from gm4opt_nl2ir import (
     json_to_model_ir,
 )
 from gm4opt_graph import build_graph_from_ir
-from gm4opt_difficulty import DifficultyEstimate, attach_difficulty
+from gm4opt_difficulty import DifficultyEstimate, build_check_message, estimate_difficulty
 
 
 @dataclass
@@ -103,7 +103,11 @@ def run_gm4opt_pipeline(
     raw_llm_text: str = completion.choices[0].message.content or ""
 
     #5) 抽取 JSON
-    data = extract_json_from_text(raw_llm_text)
+    try:
+        data = extract_json_from_text(raw_llm_text)
+    except ValueError as e:
+        print("LLM output:\n", raw_llm_text, "\n.output end")
+        raise ValueError(f"Failed to extract JSON from LLM output: {e}")
 
     if "meta" not in data or not isinstance(data["meta"], dict):
         data["meta"] = {}
@@ -113,16 +117,12 @@ def run_gm4opt_pipeline(
     #6) ModelIR
     ir = json_to_model_ir(data)
 
-    #7) 可选：构建 GraphIR + 难度估计
+    #7) 可选：构建 GraphIR
     graph_built = False
-    difficulty: Optional[DifficultyEstimate] = None
 
     if config.enable_graph:
         ir.graph = build_graph_from_ir(ir)
         graph_built = True
-
-    if config.enable_difficulty:
-        difficulty = attach_difficulty(ir)
 
     #8) Gurobi 求解
     gurobi_status: Optional[int] = None
@@ -135,6 +135,28 @@ def run_gm4opt_pipeline(
         gurobi_status = model.Status
         if model.Status == GRB.OPTIMAL:
             gurobi_obj_value = float(model.ObjVal)
+
+    #9) 可选：难度估计与模型自检
+    difficulty: Optional[DifficultyEstimate] = None
+    if config.enable_difficulty:
+        difficulty = estimate_difficulty(ir)         # 基于图自检得到难度特征
+        check_messages = build_check_message(question_text, difficulty.features, model)
+        check_completion = client.chat.completions.create(
+            model=config.model_name,
+            messages=check_messages,
+            temperature=config.temperature,
+        )
+        raw_check_text: str = check_completion.choices[0].message.content or ""
+        try:
+            check_data = extract_json_from_text(raw_check_text)
+        except ValueError as e:
+            print("Difficulty check output:\n", raw_check_text, "\n.output end")
+            raise ValueError(f"Failed to extract JSON from difficulty check output: {e}")
+        confidence_score = check_data.get("confidence_score", 0)
+        corrected_model = check_data.get("corrected_model")
+        print("confidence_score:", confidence_score)
+        if corrected_model:
+            print("corrected_model:", corrected_model)
 
     return PipelineResult(
         raw_llm_text=raw_llm_text,
