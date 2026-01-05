@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_110",
+    "source": "Mamo_complex_lp",
+    "description": "Determine the production schedule for Sailco Corporation to minimize the sum of production and inventory costs over four quarters.",
+    "sense": "min",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "QUARTERS",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "description": "The four quarters of the year."
+    }
+  ],
+  "params": [
+    {
+      "name": "demand",
+      "indices": [
+        "QUARTERS"
+      ],
+      "values": {
+        "1": 40,
+        "2": 60,
+        "3": 75,
+        "4": 25
+      },
+      "description": "Demand for sailboats in each quarter."
+    },
+    {
+      "name": "initial_inventory",
+      "indices": [],
+      "values": 10,
+      "description": "Initial inventory of sailboats at the beginning of the first quarter."
+    },
+    {
+      "name": "regular_cost",
+      "indices": [],
+      "values": 400,
+      "description": "Cost per sailboat produced with regular-time labor."
+    },
+    {
+      "name": "overtime_cost",
+      "indices": [],
+      "values": 450,
+      "description": "Cost per sailboat produced with overtime labor."
+    },
+    {
+      "name": "holding_cost",
+      "indices": [],
+      "values": 20,
+      "description": "Holding cost per sailboat at the end of each quarter."
+    },
+    {
+      "name": "regular_capacity",
+      "indices": [],
+      "values": 40,
+      "description": "Maximum number of sailboats that can be produced with regular-time labor per quarter."
+    }
+  ],
+  "vars": [
+    {
+      "name": "regular_production",
+      "indices": [
+        "QUARTERS"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": 40,
+      "description": "Number of sailboats produced with regular-time labor in each quarter."
+    },
+    {
+      "name": "overtime_production",
+      "indices": [
+        "QUARTERS"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Number of sailboats produced with overtime labor in each quarter."
+    },
+    {
+      "name": "inventory",
+      "indices": [
+        "QUARTERS"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Inventory of sailboats at the end of each quarter."
+    }
+  ],
+  "objective": {
+    "name": "min_total_cost",
+    "sense": "min",
+    "expr": "sum(regular_production[q] * regular_cost + overtime_production[q] * overtime_cost + inventory[q] * holding_cost for q in ['1', '2', '3', '4'])",
+    "description": "Minimize the total cost of production and inventory over four quarters."
+  },
+  "constraints": [
+    {
+      "name": "inventory_balance_q1",
+      "expr_lhs": "initial_inventory + regular_production['1'] + overtime_production['1'] - demand['1']",
+      "sense": "==",
+      "expr_rhs": "inventory['1']",
+      "description": "Inventory balance for the first quarter."
+    },
+    {
+      "name": "inventory_balance_q2",
+      "expr_lhs": "inventory['1'] + regular_production['2'] + overtime_production['2'] - demand['2']",
+      "sense": "==",
+      "expr_rhs": "inventory['2']",
+      "description": "Inventory balance for the second quarter."
+    },
+    {
+      "name": "inventory_balance_q3",
+      "expr_lhs": "inventory['2'] + regular_production['3'] + overtime_production['3'] - demand['3']",
+      "sense": "==",
+      "expr_rhs": "inventory['3']",
+      "description": "Inventory balance for the third quarter."
+    },
+    {
+      "name": "inventory_balance_q4",
+      "expr_lhs": "inventory['3'] + regular_production['4'] + overtime_production['4'] - demand['4']",
+      "sense": "==",
+      "expr_rhs": "inventory['4']",
+      "description": "Inventory balance for the fourth quarter."
+    }
+  ],
+  "graph": null
+}

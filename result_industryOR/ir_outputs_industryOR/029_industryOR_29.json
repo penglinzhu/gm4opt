@@ -1,0 +1,264 @@
+{
+  "meta": {
+    "problem_id": "industryOR_29",
+    "source": "IndustryOR",
+    "description": "Develop a production plan, worker schedule, and plan for hiring and dismissing employees to maximize total net profit over 6 months while ensuring at least 10,000 units of product by the end of June.",
+    "sense": "max",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "MONTHS",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "description": "Months from January to June"
+    }
+  ],
+  "params": [
+    {
+      "name": "demand_forecast",
+      "indices": [
+        "MONTHS"
+      ],
+      "values": {
+        "1": 20000,
+        "2": 40000,
+        "3": 42000,
+        "4": 35000,
+        "5": 19000,
+        "6": 18500
+      },
+      "description": "Forecasted demand for each month"
+    }
+  ],
+  "vars": [
+    {
+      "name": "produce",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units produced each month"
+    },
+    {
+      "name": "hire",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of workers hired each month"
+    },
+    {
+      "name": "dismiss",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of workers dismissed each month"
+    },
+    {
+      "name": "overtime_hours",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": 20.0,
+      "description": "Overtime hours per worker each month"
+    },
+    {
+      "name": "inventory",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Inventory level at the end of each month"
+    },
+    {
+      "name": "stockout",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Stockout level at the end of each month"
+    },
+    {
+      "name": "outsourcing",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units outsourced each month"
+    },
+    {
+      "name": "workers",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of workers at the end of each month"
+    }
+  ],
+  "objective": {
+    "name": "max_total_net_profit",
+    "sense": "max",
+    "expr": "sum((300 * produce[m] - 90 * produce[m] - 30 * 8 * workers[m] * 20 - 40 * overtime_hours[m] * workers[m] - 15 * inventory[m] - 35 * stockout[m] - 200 * outsourcing[m] - 5000 * hire[m] - 8000 * dismiss[m]) for m in MONTHS)",
+    "description": "Maximize total net profit over 6 months"
+  },
+  "constraints": [
+    {
+      "name": "initial_inventory",
+      "expr_lhs": "inventory['1']",
+      "sense": "==",
+      "expr_rhs": "15000 + produce['1'] - demand_forecast['1'] - stockout['1'] + outsourcing['1']",
+      "description": "Initial inventory balance for month 1"
+    },
+    {
+      "name": "inventory_balance_2",
+      "expr_lhs": "inventory['2']",
+      "sense": "==",
+      "expr_rhs": "inventory['1'] + produce['2'] - demand_forecast['2'] - stockout['2'] + outsourcing['2']",
+      "description": "Inventory balance for month 2"
+    },
+    {
+      "name": "inventory_balance_3",
+      "expr_lhs": "inventory['3']",
+      "sense": "==",
+      "expr_rhs": "inventory['2'] + produce['3'] - demand_forecast['3'] - stockout['3'] + outsourcing['3']",
+      "description": "Inventory balance for month 3"
+    },
+    {
+      "name": "inventory_balance_4",
+      "expr_lhs": "inventory['4']",
+      "sense": "==",
+      "expr_rhs": "inventory['3'] + produce['4'] - demand_forecast['4'] - stockout['4'] + outsourcing['4']",
+      "description": "Inventory balance for month 4"
+    },
+    {
+      "name": "inventory_balance_5",
+      "expr_lhs": "inventory['5']",
+      "sense": "==",
+      "expr_rhs": "inventory['4'] + produce['5'] - demand_forecast['5'] - stockout['5'] + outsourcing['5']",
+      "description": "Inventory balance for month 5"
+    },
+    {
+      "name": "inventory_balance_6",
+      "expr_lhs": "inventory['6']",
+      "sense": "==",
+      "expr_rhs": "inventory['5'] + produce['6'] - demand_forecast['6'] - stockout['6'] + outsourcing['6']",
+      "description": "Inventory balance for month 6"
+    },
+    {
+      "name": "end_inventory_requirement",
+      "expr_lhs": "inventory['6']",
+      "sense": ">=",
+      "expr_rhs": "10000",
+      "description": "Ensure at least 10,000 units of product by the end of June"
+    },
+    {
+      "name": "worker_balance_1",
+      "expr_lhs": "workers['1']",
+      "sense": "==",
+      "expr_rhs": "1000 + hire['1'] - dismiss['1']",
+      "description": "Worker balance for month 1"
+    },
+    {
+      "name": "worker_balance_2",
+      "expr_lhs": "workers['2']",
+      "sense": "==",
+      "expr_rhs": "workers['1'] + hire['2'] - dismiss['2']",
+      "description": "Worker balance for month 2"
+    },
+    {
+      "name": "worker_balance_3",
+      "expr_lhs": "workers['3']",
+      "sense": "==",
+      "expr_rhs": "workers['2'] + hire['3'] - dismiss['3']",
+      "description": "Worker balance for month 3"
+    },
+    {
+      "name": "worker_balance_4",
+      "expr_lhs": "workers['4']",
+      "sense": "==",
+      "expr_rhs": "workers['3'] + hire['4'] - dismiss['4']",
+      "description": "Worker balance for month 4"
+    },
+    {
+      "name": "worker_balance_5",
+      "expr_lhs": "workers['5']",
+      "sense": "==",
+      "expr_rhs": "workers['4'] + hire['5'] - dismiss['5']",
+      "description": "Worker balance for month 5"
+    },
+    {
+      "name": "worker_balance_6",
+      "expr_lhs": "workers['6']",
+      "sense": "==",
+      "expr_rhs": "workers['5'] + hire['6'] - dismiss['6']",
+      "description": "Worker balance for month 6"
+    },
+    {
+      "name": "production_capacity_1",
+      "expr_lhs": "produce['1']",
+      "sense": "<=",
+      "expr_rhs": "5 * (8 * workers['1'] + overtime_hours['1'] * workers['1'])",
+      "description": "Production capacity constraint for month 1"
+    },
+    {
+      "name": "production_capacity_2",
+      "expr_lhs": "produce['2']",
+      "sense": "<=",
+      "expr_rhs": "5 * (8 * workers['2'] + overtime_hours['2'] * workers['2'])",
+      "description": "Production capacity constraint for month 2"
+    },
+    {
+      "name": "production_capacity_3",
+      "expr_lhs": "produce['3']",
+      "sense": "<=",
+      "expr_rhs": "5 * (8 * workers['3'] + overtime_hours['3'] * workers['3'])",
+      "description": "Production capacity constraint for month 3"
+    },
+    {
+      "name": "production_capacity_4",
+      "expr_lhs": "produce['4']",
+      "sense": "<=",
+      "expr_rhs": "5 * (8 * workers['4'] + overtime_hours['4'] * workers['4'])",
+      "description": "Production capacity constraint for month 4"
+    },
+    {
+      "name": "production_capacity_5",
+      "expr_lhs": "produce['5']",
+      "sense": "<=",
+      "expr_rhs": "5 * (8 * workers['5'] + overtime_hours['5'] * workers['5'])",
+      "description": "Production capacity constraint for month 5"
+    },
+    {
+      "name": "production_capacity_6",
+      "expr_lhs": "produce['6']",
+      "sense": "<=",
+      "expr_rhs": "5 * (8 * workers['6'] + overtime_hours['6'] * workers['6'])",
+      "description": "Production capacity constraint for month 6"
+    }
+  ],
+  "graph": null
+}

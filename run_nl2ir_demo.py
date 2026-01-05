@@ -1,97 +1,232 @@
 # run_nl2ir_demo.py
-# 用 GM4OPT 统一 pipeline 跑通一条题目（单样例），并打印：raw 输出、graph/difficulty、Gurobi 解
+# 单样例 demo：跑通 GM4OPT 新版 pipeline，并输出对 verifier 纠错最关键的中间结果：
+# - ir_dict（抽取 JSON）
+# - ModelIR 摘要（sets/params/vars/constraints/obj）
+# - GraphIR meta/stats/checks
+# - verifier_report（占位）
+# - Gurobi 求解结果（status/obj/metrics）
+# - estimation（占位）
 
 from __future__ import annotations
 
-from dataclasses import is_dataclass
+import json
+import os
+import traceback
+from dataclasses import asdict, is_dataclass
+from datetime import datetime
 from typing import Any, Dict
 
 from openai import OpenAI
 
 from gm4opt_pipeline import PipelineConfig, run_gm4opt_pipeline
 
-import os
+SAVE_ARTIFACTS = True
+ARTIFACT_DIR = "demo_artifacts"
 
-def _build_pipeline_config(**kwargs) -> PipelineConfig:
-    """
-    根据 PipelineConfig 的真实字段，自动筛选 kwargs 并构造 config。
-    """
-    if not is_dataclass(PipelineConfig):
-        return PipelineConfig(**kwargs) 
 
-    field_names = set(PipelineConfig.__dataclass_fields__.keys()) 
-    filtered: Dict[str, Any] = {k: v for k, v in kwargs.items() if k in field_names}
-    return PipelineConfig(**filtered)  
+def ensure_dir(path: str) -> None:
+    if path and not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+
+
+def write_text(path: str, text: str) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
+def write_json(path: str, obj: Any) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, indent=2)
+
+
+def _pretty(obj: Any) -> str:
+    try:
+        return json.dumps(obj, ensure_ascii=False, indent=2)
+    except Exception:
+        return str(obj)
+
+
+def _print_section(title: str) -> None:
+    print("\n" + "=" * 80)
+    print(title)
+    print("=" * 80)
+
+
+def _try_asdict(x: Any) -> Any:
+    if is_dataclass(x):
+        try:
+            return asdict(x)
+        except Exception:
+            return str(x)
+    return x
 
 
 def main():
-    # 可以换成任意题目
     QUESTION_TEXT = """
-Welcome to the fictional city of Aquaville, where the city's administration is working on a groundbreaking project to maximize the efficiency of its new water distribution network. This network is designed to ensure that every corner of the city has access to water, especially in times of need. The system is made up of 9 pivotal stations - including the main water source and the central distribution hub - connected by a series of pipelines with varying capacities.\n\nHere's a closer look at the capacities (in thousands of gallons per hour) that each pipeline can handle, showcasing the maximum flow from one station to another across the city:\n\n- From Station 0 (Source): Water can be directed to Station 1 (2 gallons), Station 2 (8 gallons), Station 3 (17 gallons), Station 4 (16 gallons), Station 5 (20 gallons), Station 6 (15 gallons), Station 7 (12 gallons), and Station 8 (9 gallons).\n- From Station 1: Water can flow to Station 0 (4 gallons), Station 2 (11 gallons), Station 3 (7 gallons), Station 4 (3 gallons), Station 5 (19 gallons), Station 6 (10 gallons), Station 7 (19 gallons), and Station 8 (8 gallons).\n- From Station 2: Water can move to Station 0 (14 gallons), Station 1 (7 gallons), Station 3 (7 gallons), Station 4 (13 gallons), Station 5 (19 gallons), Station 6 (18 gallons), Station 7 (20 gallons), and Station 8 (5 gallons).\n- From Station 3: Water can be sent to Station 0 (17 gallons), Station 1 (17 gallons), Station 2 (7 gallons), Station 4 (11 gallons), Station 5 (7 gallons), Station 6 (17 gallons), Station 7 (0 gallons), and Station 8 (10 gallons).\n- From Station 4: Water can be distributed to Station 0 (20 gallons), Station 1 (10 gallons), Station 2 (2 gallons), Station 3 (18 gallons), Station 5 (15 gallons), Station 6 (8 gallons), Station 7 (6 gallons), and Station 8 (18 gallons).\n- From Station 5: Water can be channeled to Station 0 (4 gallons), Station 1 (9 gallons), Station 2 (12 gallons), Station 3 (1 gallon), Station 4 (17 gallons), Station 6 (0 gallons), Station 7 (13 gallons), and Station 8 (18 gallons).\n- From Station 6: Water can flow to Station 0 (12 gallons), Station 1 (15 gallons), Station 2 (12 gallons), Station 3 (19 gallons), Station 4 (18 gallons), Station 5 (19 gallons), Station 7 (6 gallons), and Station 8 (17 gallons).\n- From Station 7: Water can be directed to Station 0 (14 gallons), Station 1 (1 gallon), Station 2 (17 gallons), Station 3 (20 gallons), Station 4 (11 gallons), Station 5 (20 gallons), Station 6 (6 gallons), and Station 8 (4 gallons).\n- From Station 8 (Destination): Water can be sent back to Station 0 (19 gallons), Station 1 (3 gallons), Station 2 (19 gallons), Station 3 (12 gallons), Station 4 (8 gallons), Station 5 (18 gallons), Station 6 (17 gallons), and Station 7 (13 gallons).\n\nIn this intricate network, a capacity of \"0\" implies that there is no direct connection for water flow between those two specific stations.\n\nThe critical mission is to determine the maximum quantity of water that can be efficiently distributed from Station 0, the primary source, to Station 8, the central distribution hub, per hour. The flow through each pipeline must not exceed its maximum specified capacity.\n\nWhat is the optimal amount of water (in thousands of gallons per hour) that can be transported from the source to the distribution hub, ensuring the network operates at its maximum potential?
+A factory needs to rent a warehouse to store materials for the next 4 months. The required warehouse area for each month is listed in Table 1-14.\nTable 1-14\n\\begin{tabular}{c|c|c|c|c}\n\\hline Month & 1 & 2 & 3 & 4 \\\\\n\\hline Required Warehouse Area $/ \\mathrm{m}^2$ & 1500 & 1000 & 2000 & 1200 \\\\\n\\hline\n\\end{tabular}\n\nThe longer the rental contract period, the greater the discount on warehouse rental fees. The specific data is listed in Table 1-15.\nTable 1-15\n\\begin{tabular}{c|c|c|c|c}\n\\hline Contract Rental Period $/$ months & 1 & 2 & 3 & 4 \\\\\n\\hline \\begin{tabular}{c} \nRental Fee for Warehouse \\\\\nArea within the Contract Period $/ \\mathrm{m}^2$\n\\end{tabular} & 28 & 45 & 60 & 73 \\\\\n\\hline\n\\end{tabular}\n\nThe warehouse rental contract can be processed at the beginning of each month, and each contract specifies the rental area and period. Therefore, the factory can rent a contract on any month, and each time, they can sign one contract or multiple contracts with different rental areas and rental periods. The overall goal is to minimize the rental fees paid. Try to establish a linear programming mathematical model based on the above requirements.
 """.strip()
 
-    # client = OpenAI()  # 从环境变量读取 OPENAI_API_KEY
+    client = OpenAI()
 
-    client = OpenAI(
-        api_key=os.environ.get('OPENAI_API_KEY'),
-        base_url=os.environ.get('OPENAI_API_BASE')
-    )
-
-    # 在这里改开关做消融实验
-    cfg = _build_pipeline_config(
-        model_name="deepseek-chat",
+    cfg = PipelineConfig(
+        model_name="gpt-4o",
         temperature=0.0,
-
-        enable_dynamic_prompt=False,
-        enable_graph=True,
-        enable_difficulty=True,
-        solve_with_gurobi=True,
+        timelimit_sec=60.0,
     )
 
-    res = run_gm4opt_pipeline(
-        question_text=QUESTION_TEXT,
-        client=client,
-        config=cfg,
-    )
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = os.path.join(ARTIFACT_DIR, f"demo_{run_id}")
+    if SAVE_ARTIFACTS:
+        ensure_dir(out_dir)
 
-    # ===== 输出：LLM 原始输出 =====
-    raw_text = getattr(res, "raw_llm_text", None)
-    if raw_text is not None:
-        print("=== Raw LLM output ===")
-        print(raw_text)
-        print("=== End of raw LLM output ===\n")
+    _print_section("INPUT / CONFIG")
+    print("Run ID:", run_id)
+    print("PipelineConfig:", _pretty(_try_asdict(cfg)))
+    print("\nQuestion (first 600 chars):")
+    print((QUESTION_TEXT[:600] + ("..." if len(QUESTION_TEXT) > 600 else "")))
 
-    # ===== 输出：Graph（如果启用）=====
-    print("Graph built:", getattr(res, "graph_built", None))
+    if SAVE_ARTIFACTS:
+        write_text(os.path.join(out_dir, "question.txt"), QUESTION_TEXT)
+        write_json(os.path.join(out_dir, "pipeline_config.json"), _try_asdict(cfg))
 
-    # ===== 输出：Difficulty（如果启用）=====
-    diff = getattr(res, "difficulty", None)
-    if diff is not None:
-        print(f"\nDifficulty: score={diff.score:.3f}, level={diff.level}")
-        print("Difficulty features:")
-        for k, v in diff.features.items():
-            print(f"  {k}: {v}")
+    # ---- Run pipeline ----
+    try:
+        res = run_gm4opt_pipeline(
+            question_text=QUESTION_TEXT,
+            client=client,
+            config=cfg,
+        )
+    except Exception as e:
+        _print_section("PIPELINE ERROR")
+        print(f"{type(e).__name__}: {e}")
+        traceback.print_exc()
+        return
 
-    # ===== 输出：Gurobi 求解结果 =====
-    status = getattr(res, "gurobi_status", None)
-    if status is not None:
-        print("\n=== Gurobi ===")
-        print("Status code:", status)
-        obj_val = getattr(res, "gurobi_obj_value", None)
-        if obj_val is not None:
-            print("Objective value:", obj_val)
-        else:
-            print("No optimal objective value obtained.")
+    # ---- Extracted JSON ----
+    ir_dict = getattr(res, "ir_dict", None)
+    _print_section("EXTRACTED JSON (ir_dict)")
+    if isinstance(ir_dict, dict):
+        print(_pretty(ir_dict))
+        if SAVE_ARTIFACTS:
+            write_json(os.path.join(out_dir, "ir_dict.json"), ir_dict)
+    else:
+        print("No ir_dict found on PipelineResult (unexpected).")
 
-    # ===== 输出：Graph meta（如果构建了图）=====
+    # ---- ModelIR summary ----
     ir = getattr(res, "ir", None)
-    if ir is not None and getattr(ir, "graph", None) is not None:
-        gmeta = ir.graph.meta or {}
-        print("\n=== Graph meta ===")
-        print("Graph stats:", gmeta.get("stats", {}))
-        print("Graph checks:")
-        for issue in gmeta.get("checks", {}).get("issues", []):
-            print("  -", issue)
+    _print_section("MODELIR SUMMARY")
+    if ir is None:
+        print("No ModelIR found on PipelineResult.")
+    else:
+        meta = getattr(ir, "meta", None)
+        sets_ = getattr(ir, "sets", []) or []
+        params_ = getattr(ir, "params", []) or []
+        vars_ = getattr(ir, "vars", []) or []
+        obj_ = getattr(ir, "objective", None)
+        cons_ = getattr(ir, "constraints", []) or []
+
+        print("meta:", _pretty(_try_asdict(meta)))
+        print(f"\nCounts: sets={len(sets_)}, params={len(params_)}, vars={len(vars_)}, constraints={len(cons_)}")
+        if obj_ is not None:
+            print("\nobjective:", _pretty(_try_asdict(obj_)))
+
+        def _head(items: list, n: int = 3) -> list:
+            return items[:n] if len(items) > n else items
+
+        print("\nsets(head):", _pretty([_try_asdict(x) for x in _head(sets_, 3)]))
+        print("\nparams(head):", _pretty([_try_asdict(x) for x in _head(params_, 3)]))
+        print("\nvars(head):", _pretty([_try_asdict(x) for x in _head(vars_, 3)]))
+        print("\nconstraints(head):", _pretty([_try_asdict(x) for x in _head(cons_, 5)]))
+
+        if SAVE_ARTIFACTS:
+            modelir_dump = {
+                "meta": _try_asdict(meta),
+                "sets": [_try_asdict(x) for x in sets_],
+                "params": [_try_asdict(x) for x in params_],
+                "vars": [_try_asdict(x) for x in vars_],
+                "objective": _try_asdict(obj_),
+                "constraints": [_try_asdict(x) for x in cons_],
+            }
+            write_json(os.path.join(out_dir, "modelir_dump.json"), modelir_dump)
+
+    # ---- Graph ----
+    graph_built = getattr(res, "graph_built", None)
+    _print_section("GRAPH")
+    print("Graph built:", graph_built)
+
+    graph = getattr(ir, "graph", None) if ir is not None else None
+    if graph is None:
+        print("Graph is None.")
+        gmeta = None
+    else:
+        gmeta = getattr(graph, "meta", None) or {}
+        print("\nGraph meta keys:", list(gmeta.keys()) if isinstance(gmeta, dict) else type(gmeta))
+        if isinstance(gmeta, dict):
+            stats = gmeta.get("stats", {})
+            checks = gmeta.get("checks", {})
+            print("\nGraph stats:", _pretty(stats))
+            issues = (checks.get("issues", []) if isinstance(checks, dict) else [])
+            print("\nGraph issues:")
+            if issues:
+                for it in issues:
+                    print("  -", it)
+            else:
+                print("  (none)")
+
+    if SAVE_ARTIFACTS:
+        write_json(
+            os.path.join(out_dir, "graph_meta.json"),
+            gmeta if isinstance(gmeta, dict) else {"meta": str(gmeta)},
+        )
+
+    # ---- Verifier report (placeholder) ----
+    _print_section("VERIFIER")
+    verifier_report = getattr(res, "verifier_report", None)
+    print(_pretty(verifier_report))
+    if SAVE_ARTIFACTS:
+        write_json(os.path.join(out_dir, "verifier_report.json"), verifier_report)
+
+    # ---- Gurobi ----
+    _print_section("GUROBI")
+    print("Build OK:", getattr(res, "solver_build_ok", None))
+    build_err = getattr(res, "solver_build_error", "") or ""
+    if build_err:
+        print("Build error:", build_err)
+
+    print("Status code:", getattr(res, "gurobi_status", None))
+    print("Status name:", getattr(res, "gurobi_status_name", None))
+    print("Objective value:", getattr(res, "gurobi_obj_value", None))
+    print("Metrics:", _pretty(getattr(res, "gurobi_metrics", {})))
+
+    # ---- Estimation (placeholder) ----
+    _print_section("ESTIMATION")
+    estimation = getattr(res, "estimation", None)
+    print(_pretty(estimation))
+    if SAVE_ARTIFACTS:
+        write_json(os.path.join(out_dir, "estimation.json"), estimation)
+
+    # ---- Minimal summary ----
+    _print_section("SUMMARY")
+    print("graph_built:", graph_built)
+    print("verifier_ok:", (verifier_report or {}).get("ok") if isinstance(verifier_report, dict) else None)
+    print("gurobi_status:", getattr(res, "gurobi_status_name", None))
+    print("gurobi_obj_value:", getattr(res, "gurobi_obj_value", None))
+
+    if SAVE_ARTIFACTS:
+        write_json(
+            os.path.join(out_dir, "summary.json"),
+            {
+                "run_id": run_id,
+                "graph_built": graph_built,
+                "verifier_report": verifier_report,
+                "gurobi_status": getattr(res, "gurobi_status", None),
+                "gurobi_status_name": getattr(res, "gurobi_status_name", None),
+                "gurobi_obj_value": getattr(res, "gurobi_obj_value", None),
+                "gurobi_metrics": getattr(res, "gurobi_metrics", {}),
+                "estimation": estimation,
+            },
+        )
+        print(f"\n[Artifacts saved] {out_dir}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,331 @@
+{
+  "meta": {
+    "problem_id": "industryOR_24",
+    "source": "IndustryOR",
+    "description": "Optimize the production planning for a company to meet demand while minimizing costs associated with extra work, storage, hiring, and layoffs.",
+    "sense": "min",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "MONTHS",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "description": "Months in the planning horizon"
+    }
+  ],
+  "params": [
+    {
+      "name": "demand",
+      "indices": [
+        "MONTHS"
+      ],
+      "values": {
+        "1": 700,
+        "2": 600,
+        "3": 500,
+        "4": 800,
+        "5": 900,
+        "6": 800
+      },
+      "description": "Demand for each month"
+    },
+    {
+      "name": "initial_workers",
+      "indices": [],
+      "values": 40,
+      "description": "Initial number of workers"
+    },
+    {
+      "name": "production_per_worker",
+      "indices": [],
+      "values": 20,
+      "description": "Units produced per worker per month"
+    },
+    {
+      "name": "max_extra_units_per_worker",
+      "indices": [],
+      "values": 6,
+      "description": "Maximum extra units a worker can produce per month"
+    },
+    {
+      "name": "cost_extra_unit",
+      "indices": [],
+      "values": 5,
+      "description": "Cost per extra unit produced"
+    },
+    {
+      "name": "storage_cost_per_unit",
+      "indices": [],
+      "values": 10,
+      "description": "Storage cost per unit per month"
+    },
+    {
+      "name": "hiring_cost",
+      "indices": [],
+      "values": 500,
+      "description": "Cost to hire one worker"
+    },
+    {
+      "name": "layoff_cost",
+      "indices": [],
+      "values": 700,
+      "description": "Cost to lay off one worker"
+    },
+    {
+      "name": "max_worker_change",
+      "indices": [],
+      "values": 5,
+      "description": "Maximum change in the number of workers per month"
+    }
+  ],
+  "vars": [
+    {
+      "name": "extra_units",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Extra units produced in each month"
+    },
+    {
+      "name": "stored_units",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Units stored at the end of each month"
+    },
+    {
+      "name": "hired_workers",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of workers hired in each month"
+    },
+    {
+      "name": "laid_off_workers",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of workers laid off in each month"
+    },
+    {
+      "name": "total_workers",
+      "indices": [
+        "MONTHS"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Total number of workers in each month"
+    }
+  ],
+  "objective": {
+    "name": "min_total_cost",
+    "sense": "min",
+    "expr": "sum(cost_extra_unit * extra_units[m] + storage_cost_per_unit * stored_units[m] + hiring_cost * hired_workers[m] + layoff_cost * laid_off_workers[m] for m in ['1', '2', '3', '4', '5', '6'])",
+    "description": "Minimize the total cost of extra production, storage, hiring, and layoffs"
+  },
+  "constraints": [
+    {
+      "name": "production_balance_1",
+      "expr_lhs": "initial_workers * production_per_worker + extra_units['1'] + stored_units['0']",
+      "sense": "==",
+      "expr_rhs": "demand['1'] + stored_units['1']",
+      "description": "Production balance for month 1"
+    },
+    {
+      "name": "production_balance_2",
+      "expr_lhs": "total_workers['1'] * production_per_worker + extra_units['2'] + stored_units['1']",
+      "sense": "==",
+      "expr_rhs": "demand['2'] + stored_units['2']",
+      "description": "Production balance for month 2"
+    },
+    {
+      "name": "production_balance_3",
+      "expr_lhs": "total_workers['2'] * production_per_worker + extra_units['3'] + stored_units['2']",
+      "sense": "==",
+      "expr_rhs": "demand['3'] + stored_units['3']",
+      "description": "Production balance for month 3"
+    },
+    {
+      "name": "production_balance_4",
+      "expr_lhs": "total_workers['3'] * production_per_worker + extra_units['4'] + stored_units['3']",
+      "sense": "==",
+      "expr_rhs": "demand['4'] + stored_units['4']",
+      "description": "Production balance for month 4"
+    },
+    {
+      "name": "production_balance_5",
+      "expr_lhs": "total_workers['4'] * production_per_worker + extra_units['5'] + stored_units['4']",
+      "sense": "==",
+      "expr_rhs": "demand['5'] + stored_units['5']",
+      "description": "Production balance for month 5"
+    },
+    {
+      "name": "production_balance_6",
+      "expr_lhs": "total_workers['5'] * production_per_worker + extra_units['6'] + stored_units['5']",
+      "sense": "==",
+      "expr_rhs": "demand['6'] + stored_units['6']",
+      "description": "Production balance for month 6"
+    },
+    {
+      "name": "initial_storage",
+      "expr_lhs": "stored_units['0']",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Initial storage is empty"
+    },
+    {
+      "name": "final_storage",
+      "expr_lhs": "stored_units['6']",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Final storage must be empty"
+    },
+    {
+      "name": "worker_balance_1",
+      "expr_lhs": "initial_workers + hired_workers['1'] - laid_off_workers['1']",
+      "sense": "==",
+      "expr_rhs": "total_workers['1']",
+      "description": "Worker balance for month 1"
+    },
+    {
+      "name": "worker_balance_2",
+      "expr_lhs": "total_workers['1'] + hired_workers['2'] - laid_off_workers['2']",
+      "sense": "==",
+      "expr_rhs": "total_workers['2']",
+      "description": "Worker balance for month 2"
+    },
+    {
+      "name": "worker_balance_3",
+      "expr_lhs": "total_workers['2'] + hired_workers['3'] - laid_off_workers['3']",
+      "sense": "==",
+      "expr_rhs": "total_workers['3']",
+      "description": "Worker balance for month 3"
+    },
+    {
+      "name": "worker_balance_4",
+      "expr_lhs": "total_workers['3'] + hired_workers['4'] - laid_off_workers['4']",
+      "sense": "==",
+      "expr_rhs": "total_workers['4']",
+      "description": "Worker balance for month 4"
+    },
+    {
+      "name": "worker_balance_5",
+      "expr_lhs": "total_workers['4'] + hired_workers['5'] - laid_off_workers['5']",
+      "sense": "==",
+      "expr_rhs": "total_workers['5']",
+      "description": "Worker balance for month 5"
+    },
+    {
+      "name": "worker_balance_6",
+      "expr_lhs": "total_workers['5'] + hired_workers['6'] - laid_off_workers['6']",
+      "sense": "==",
+      "expr_rhs": "total_workers['6']",
+      "description": "Worker balance for month 6"
+    },
+    {
+      "name": "max_extra_production_1",
+      "expr_lhs": "extra_units['1']",
+      "sense": "<=",
+      "expr_rhs": "total_workers['1'] * max_extra_units_per_worker",
+      "description": "Max extra production for month 1"
+    },
+    {
+      "name": "max_extra_production_2",
+      "expr_lhs": "extra_units['2']",
+      "sense": "<=",
+      "expr_rhs": "total_workers['2'] * max_extra_units_per_worker",
+      "description": "Max extra production for month 2"
+    },
+    {
+      "name": "max_extra_production_3",
+      "expr_lhs": "extra_units['3']",
+      "sense": "<=",
+      "expr_rhs": "total_workers['3'] * max_extra_units_per_worker",
+      "description": "Max extra production for month 3"
+    },
+    {
+      "name": "max_extra_production_4",
+      "expr_lhs": "extra_units['4']",
+      "sense": "<=",
+      "expr_rhs": "total_workers['4'] * max_extra_units_per_worker",
+      "description": "Max extra production for month 4"
+    },
+    {
+      "name": "max_extra_production_5",
+      "expr_lhs": "extra_units['5']",
+      "sense": "<=",
+      "expr_rhs": "total_workers['5'] * max_extra_units_per_worker",
+      "description": "Max extra production for month 5"
+    },
+    {
+      "name": "max_extra_production_6",
+      "expr_lhs": "extra_units['6']",
+      "sense": "<=",
+      "expr_rhs": "total_workers['6'] * max_extra_units_per_worker",
+      "description": "Max extra production for month 6"
+    },
+    {
+      "name": "max_worker_change_1",
+      "expr_lhs": "hired_workers['1'] + laid_off_workers['1']",
+      "sense": "<=",
+      "expr_rhs": "max_worker_change",
+      "description": "Max worker change for month 1"
+    },
+    {
+      "name": "max_worker_change_2",
+      "expr_lhs": "hired_workers['2'] + laid_off_workers['2']",
+      "sense": "<=",
+      "expr_rhs": "max_worker_change",
+      "description": "Max worker change for month 2"
+    },
+    {
+      "name": "max_worker_change_3",
+      "expr_lhs": "hired_workers['3'] + laid_off_workers['3']",
+      "sense": "<=",
+      "expr_rhs": "max_worker_change",
+      "description": "Max worker change for month 3"
+    },
+    {
+      "name": "max_worker_change_4",
+      "expr_lhs": "hired_workers['4'] + laid_off_workers['4']",
+      "sense": "<=",
+      "expr_rhs": "max_worker_change",
+      "description": "Max worker change for month 4"
+    },
+    {
+      "name": "max_worker_change_5",
+      "expr_lhs": "hired_workers['5'] + laid_off_workers['5']",
+      "sense": "<=",
+      "expr_rhs": "max_worker_change",
+      "description": "Max worker change for month 5"
+    },
+    {
+      "name": "max_worker_change_6",
+      "expr_lhs": "hired_workers['6'] + laid_off_workers['6']",
+      "sense": "<=",
+      "expr_rhs": "max_worker_change",
+      "description": "Max worker change for month 6"
+    }
+  ],
+  "graph": null
+}

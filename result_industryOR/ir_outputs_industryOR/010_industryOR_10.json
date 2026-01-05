@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "problem_id": "industryOR_10",
+    "source": "IndustryOR",
+    "description": "Determine the company's production plan to maximize profit for manufacturing three types of tabletop golf toys.",
+    "sense": "max",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "TOY_TYPES",
+      "elements": [
+        "advanced",
+        "intermediate",
+        "basic"
+      ],
+      "description": "Types of tabletop golf toys."
+    }
+  ],
+  "params": [
+    {
+      "name": "labor_hours",
+      "indices": [
+        "TOY_TYPES"
+      ],
+      "values": {
+        "advanced": 17,
+        "intermediate": 10,
+        "basic": 2
+      },
+      "description": "Labor hours required per unit for each toy type."
+    },
+    {
+      "name": "inspection_hours",
+      "indices": [
+        "TOY_TYPES"
+      ],
+      "values": {
+        "advanced": 8,
+        "intermediate": 4,
+        "basic": 2
+      },
+      "description": "Inspection hours required per unit for each toy type."
+    },
+    {
+      "name": "profit",
+      "indices": [
+        "TOY_TYPES"
+      ],
+      "values": {
+        "advanced": 300,
+        "intermediate": 200,
+        "basic": 100
+      },
+      "description": "Profit per unit for each toy type."
+    },
+    {
+      "name": "max_demand",
+      "indices": [
+        "TOY_TYPES"
+      ],
+      "values": {
+        "advanced": 50,
+        "intermediate": 80,
+        "basic": 150
+      },
+      "description": "Maximum demand for each toy type."
+    }
+  ],
+  "vars": [
+    {
+      "name": "production",
+      "indices": [
+        "TOY_TYPES"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Number of units to produce for each toy type."
+    }
+  ],
+  "objective": {
+    "name": "max_total_profit",
+    "sense": "max",
+    "expr": "sum(profit[t] * production[t] for t in ['advanced', 'intermediate', 'basic'])",
+    "description": "Maximize total profit from producing the toys."
+  },
+  "constraints": [
+    {
+      "name": "labor_hours_constraint",
+      "expr_lhs": "sum(labor_hours[t] * production[t] for t in ['advanced', 'intermediate', 'basic'])",
+      "sense": "<=",
+      "expr_rhs": "1000",
+      "description": "Total labor hours used cannot exceed available labor hours."
+    },
+    {
+      "name": "inspection_hours_constraint",
+      "expr_lhs": "sum(inspection_hours[t] * production[t] for t in ['advanced', 'intermediate', 'basic'])",
+      "sense": "<=",
+      "expr_rhs": "500",
+      "description": "Total inspection hours used cannot exceed available inspection hours."
+    },
+    {
+      "name": "demand_constraint_advanced",
+      "expr_lhs": "production['advanced']",
+      "sense": "<=",
+      "expr_rhs": "max_demand['advanced']",
+      "description": "Production of advanced type cannot exceed its demand."
+    },
+    {
+      "name": "demand_constraint_intermediate",
+      "expr_lhs": "production['intermediate']",
+      "sense": "<=",
+      "expr_rhs": "max_demand['intermediate']",
+      "description": "Production of intermediate type cannot exceed its demand."
+    },
+    {
+      "name": "demand_constraint_basic",
+      "expr_lhs": "production['basic']",
+      "sense": "<=",
+      "expr_rhs": "max_demand['basic']",
+      "description": "Production of basic type cannot exceed its demand."
+    }
+  ],
+  "graph": null
+}

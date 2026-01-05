@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "problem_id": "industryOR_9",
+    "source": "IndustryOR",
+    "description": "Select candidates to minimize salary while meeting budget, skill, and experience constraints.",
+    "sense": "min",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "CANDIDATES",
+      "elements": [
+        "F",
+        "G",
+        "H",
+        "I",
+        "J"
+      ],
+      "description": "Set of candidates available for hiring."
+    }
+  ],
+  "params": [
+    {
+      "name": "salary",
+      "indices": [
+        "CANDIDATES"
+      ],
+      "values": {
+        "F": 12000,
+        "G": 15000,
+        "H": 18000,
+        "I": 5000,
+        "J": 10000
+      },
+      "description": "Salary requirements for each candidate."
+    },
+    {
+      "name": "skill_level",
+      "indices": [
+        "CANDIDATES"
+      ],
+      "values": {
+        "F": 2,
+        "G": 3,
+        "H": 4,
+        "I": 1,
+        "J": 2
+      },
+      "description": "Skill level of each candidate."
+    },
+    {
+      "name": "experience",
+      "indices": [
+        "CANDIDATES"
+      ],
+      "values": {
+        "F": 1,
+        "G": 2,
+        "H": 2,
+        "I": 5,
+        "J": 4
+      },
+      "description": "Project management experience in years for each candidate."
+    },
+    {
+      "name": "budget",
+      "indices": [],
+      "values": 40000,
+      "description": "Total budget available for hiring."
+    }
+  ],
+  "vars": [
+    {
+      "name": "hire",
+      "indices": [
+        "CANDIDATES"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "Binary variable indicating if a candidate is hired."
+    }
+  ],
+  "objective": {
+    "name": "min_total_cost",
+    "sense": "min",
+    "expr": "sum(salary[c] * hire[c] for c in ['F', 'G', 'H', 'I', 'J'])",
+    "description": "Minimize the total salary cost of hired candidates."
+  },
+  "constraints": [
+    {
+      "name": "budget_constraint",
+      "expr_lhs": "sum(salary[c] * hire[c] for c in ['F', 'G', 'H', 'I', 'J'])",
+      "sense": "<=",
+      "expr_rhs": "budget",
+      "description": "Total salary must not exceed the budget."
+    },
+    {
+      "name": "max_employees_constraint",
+      "expr_lhs": "sum(hire[c] for c in ['F', 'G', 'H', 'I', 'J'])",
+      "sense": "<=",
+      "expr_rhs": "4",
+      "description": "A maximum of 4 candidates can be hired."
+    },
+    {
+      "name": "skill_level_constraint",
+      "expr_lhs": "sum(skill_level[c] * hire[c] for c in ['F', 'G', 'H', 'I', 'J'])",
+      "sense": ">=",
+      "expr_rhs": "8",
+      "description": "Total skill level of hired candidates must be at least 8."
+    },
+    {
+      "name": "experience_constraint",
+      "expr_lhs": "sum(experience[c] * hire[c] for c in ['F', 'G', 'H', 'I', 'J'])",
+      "sense": ">=",
+      "expr_rhs": "8",
+      "description": "Total project management experience must be at least 8 years."
+    },
+    {
+      "name": "mutual_exclusion_G_J",
+      "expr_lhs": "hire['G'] + hire['J']",
+      "sense": "<=",
+      "expr_rhs": "1",
+      "description": "At most one of candidates G and J can be hired."
+    }
+  ],
+  "graph": null
+}

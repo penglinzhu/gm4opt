@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "problem_id": "industryOR_0",
+    "source": "IndustryOR",
+    "description": "Determine which children the Zhang family should take on their trip to minimize the total cost.",
+    "sense": "min",
+    "version": 1
+  },
+  "sets": [
+    {
+      "name": "CHILDREN",
+      "elements": [
+        "Harry",
+        "Hermione",
+        "Ron",
+        "Fred",
+        "George",
+        "Ginny"
+      ],
+      "description": "The children in the Zhang family."
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "CHILDREN"
+      ],
+      "values": {
+        "Harry": 1200,
+        "Hermione": 1650,
+        "Ron": 750,
+        "Fred": 800,
+        "George": 800,
+        "Ginny": 1500
+      },
+      "description": "The cost of taking each child."
+    }
+  ],
+  "vars": [
+    {
+      "name": "take",
+      "indices": [
+        "CHILDREN"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "Binary variable indicating whether each child is taken on the trip."
+    }
+  ],
+  "objective": {
+    "name": "min_total_cost",
+    "sense": "min",
+    "expr": "sum(cost[c] * take[c] for c in CHILDREN)",
+    "description": "Minimize the total cost of taking the children."
+  },
+  "constraints": [
+    {
+      "name": "max_4_children",
+      "expr_lhs": "sum(take[c] for c in CHILDREN)",
+      "sense": "<=",
+      "expr_rhs": "4",
+      "description": "The couple can take a maximum of 4 children."
+    },
+    {
+      "name": "take_ginny",
+      "expr_lhs": "take['Ginny']",
+      "sense": "==",
+      "expr_rhs": "1",
+      "description": "Ginny is the youngest, so the Zhang family will definitely take her."
+    },
+    {
+      "name": "no_harry_fred",
+      "expr_lhs": "take['Harry'] + take['Fred']",
+      "sense": "<=",
+      "expr_rhs": "1",
+      "description": "If the couple takes Harry, they will not take Fred."
+    },
+    {
+      "name": "no_harry_george",
+      "expr_lhs": "take['Harry'] + take['George']",
+      "sense": "<=",
+      "expr_rhs": "1",
+      "description": "If the couple takes Harry, they will not take George."
+    },
+    {
+      "name": "george_fred",
+      "expr_lhs": "take['George'] - take['Fred']",
+      "sense": "<=",
+      "expr_rhs": "0",
+      "description": "If they take George, they must also take Fred."
+    },
+    {
+      "name": "george_hermione",
+      "expr_lhs": "take['George'] - take['Hermione']",
+      "sense": "<=",
+      "expr_rhs": "0",
+      "description": "If they take George, they must also take Hermione."
+    },
+    {
+      "name": "min_3_children",
+      "expr_lhs": "sum(take[c] for c in CHILDREN)",
+      "sense": ">=",
+      "expr_rhs": "3",
+      "description": "The Zhang family has decided to take at least three children."
+    }
+  ],
+  "graph": null
+}
