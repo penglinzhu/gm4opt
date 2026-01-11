@@ -2,113 +2,112 @@
   "meta": {
     "problem_id": "industryOR_2",
     "source": "IndustryOR",
-    "description": "Optimize the number of cows, sheep, and chickens to maximize profit given constraints on manure cleaning capacity, farm size, and minimum animal requirements.",
+    "description": "A farmer needs to decide how many cows, sheep, and chickens to raise in order to maximize profit. The farmer can sell cows, sheep, and chickens for $500, $200, and $8 respectively. The feed costs for each cow, sheep, and chicken are $100, $80, and $5 respectively. Profit is the difference between the selling price and the feed cost. Cows, sheep, and chickens produce 10, 5, and 3 units of manure per day respectively. Due to limited time for farm employees to clean the farm, they can clean a maximum of 800 units of manure per day. Additionally, due to the limited size of the farm, the farmer can raise a maximum of 50 chickens. Furthermore, the farmer must have at least 10 cows to meet customer demand. The farmer must also have at least 20 sheep. Finally, the total number of animals cannot exceed 100.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "ANIMALS",
+      "name": "Animals",
       "elements": [
         "cows",
         "sheep",
         "chickens"
       ],
-      "description": "Types of animals the farmer can raise."
+      "description": null
     }
   ],
   "params": [
     {
       "name": "selling_price",
       "indices": [
-        "ANIMALS"
+        "Animals"
       ],
       "values": {
-        "cows": 500,
-        "sheep": 200,
-        "chickens": 8
+        "cows": 500.0,
+        "sheep": 200.0,
+        "chickens": 8.0
       },
-      "description": "Selling price for each type of animal."
+      "description": null
     },
     {
       "name": "feed_cost",
       "indices": [
-        "ANIMALS"
+        "Animals"
       ],
       "values": {
-        "cows": 100,
-        "sheep": 80,
-        "chickens": 5
+        "cows": 100.0,
+        "sheep": 80.0,
+        "chickens": 5.0
       },
-      "description": "Feed cost for each type of animal."
+      "description": null
     },
     {
       "name": "manure_production",
       "indices": [
-        "ANIMALS"
+        "Animals"
       ],
       "values": {
-        "cows": 10,
-        "sheep": 5,
-        "chickens": 3
+        "cows": 10.0,
+        "sheep": 5.0,
+        "chickens": 3.0
       },
-      "description": "Manure production per day for each type of animal."
+      "description": null
     }
   ],
   "vars": [
     {
       "name": "num_animals",
       "indices": [
-        "ANIMALS"
+        "Animals"
       ],
       "vartype": "integer",
-      "lb": 0,
+      "lb": 0.0,
       "ub": null,
-      "description": "Number of each type of animal to raise."
+      "description": null
     }
   ],
   "objective": {
-    "name": "max_profit",
+    "name": "profit",
     "sense": "max",
-    "expr": "sum((selling_price[a] - feed_cost[a]) * num_animals[a] for a in ['cows', 'sheep', 'chickens'])",
-    "description": "Maximize the profit from selling animals after deducting feed costs."
+    "expr": "quicksum((selling_price[a] - feed_cost[a]) * num_animals[a] for a in Animals)",
+    "description": null
   },
   "constraints": [
     {
-      "name": "manure_capacity",
-      "expr_lhs": "sum(manure_production[a] * num_animals[a] for a in ['cows', 'sheep', 'chickens'])",
+      "name": "manure_limit",
+      "expr_lhs": "quicksum(manure_production[a] * num_animals[a] for a in Animals)",
       "sense": "<=",
-      "expr_rhs": "800",
-      "description": "The total manure production must not exceed the cleaning capacity of 800 units per day."
+      "expr_rhs": "800.0",
+      "description": "Manure production limit"
     },
     {
-      "name": "max_chickens",
+      "name": "chicken_limit",
       "expr_lhs": "num_animals['chickens']",
       "sense": "<=",
-      "expr_rhs": "50",
-      "description": "The number of chickens must not exceed 50 due to farm size limitations."
+      "expr_rhs": "50.0",
+      "description": "Maximum number of chickens"
     },
     {
       "name": "min_cows",
       "expr_lhs": "num_animals['cows']",
       "sense": ">=",
-      "expr_rhs": "10",
-      "description": "The number of cows must be at least 10 to meet customer demand."
+      "expr_rhs": "10.0",
+      "description": "Minimum number of cows"
     },
     {
       "name": "min_sheep",
       "expr_lhs": "num_animals['sheep']",
       "sense": ">=",
-      "expr_rhs": "20",
-      "description": "The number of sheep must be at least 20."
+      "expr_rhs": "20.0",
+      "description": "Minimum number of sheep"
     },
     {
-      "name": "total_animals",
-      "expr_lhs": "sum(num_animals[a] for a in ['cows', 'sheep', 'chickens'])",
+      "name": "total_animals_limit",
+      "expr_lhs": "quicksum(num_animals[a] for a in Animals)",
       "sense": "<=",
-      "expr_rhs": "100",
-      "description": "The total number of animals must not exceed 100."
+      "expr_rhs": "100.0",
+      "description": "Total number of animals limit"
     }
-  ],
-  "graph": null
+  ]
 }

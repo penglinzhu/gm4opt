@@ -1,55 +1,29 @@
 # run_nl2ir_demo.py
-# 单样例 demo：跑通 GM4OPT 新版 pipeline，并输出对 verifier 纠错最关键的中间结果：
-# - ir_dict（抽取 JSON）
-# - ModelIR 摘要（sets/params/vars/constraints/obj）
-# - GraphIR meta/stats/checks
-# - verifier_report（占位）
-# - Gurobi 求解结果（status/obj/metrics）
-# - estimation（占位）
+# single-instance demo
+# NL -> ir2solve_pipeline -> print/save artifacts
 
 from __future__ import annotations
 
-import json
 import os
+import json
 import traceback
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from openai import OpenAI
-
-from gm4opt_pipeline import PipelineConfig, run_gm4opt_pipeline
+from ir2solve_pipeline import PipelineConfig, run_ir2solve_pipeline
 
 SAVE_ARTIFACTS = True
 ARTIFACT_DIR = "demo_artifacts"
 
 
+# -------------------------
+# utils
+# -------------------------
 def ensure_dir(path: str) -> None:
     if path and not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
-
-
-def write_text(path: str, text: str) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(text)
-
-
-def write_json(path: str, obj: Any) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, ensure_ascii=False, indent=2)
-
-
-def _pretty(obj: Any) -> str:
-    try:
-        return json.dumps(obj, ensure_ascii=False, indent=2)
-    except Exception:
-        return str(obj)
-
-
-def _print_section(title: str) -> None:
-    print("\n" + "=" * 80)
-    print(title)
-    print("=" * 80)
 
 
 def _try_asdict(x: Any) -> Any:
@@ -61,171 +35,182 @@ def _try_asdict(x: Any) -> Any:
     return x
 
 
-def main():
+def _json_safe(x: Any) -> Any:
+    """Make obj JSON-serializable (tuple/set -> list; tuple keys -> str)."""
+    if is_dataclass(x):
+        try:
+            x = asdict(x)
+        except Exception:
+            return str(x)
+
+    if isinstance(x, dict):
+        out = {}
+        for k, v in x.items():
+            if isinstance(k, tuple):
+                k = "->".join(map(str, k))
+            elif not isinstance(k, (str, int, float, bool)) and k is not None:
+                k = str(k)
+            out[k] = _json_safe(v)
+        return out
+
+    if isinstance(x, (list, tuple, set)):
+        return [_json_safe(t) for t in x]
+
+    return x
+
+
+def write_text(path: str, text: str) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
+def write_json(path: str, obj: Any) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(_json_safe(obj), f, ensure_ascii=False, indent=2)
+
+
+def _pretty(obj: Any) -> str:
+    try:
+        return json.dumps(_json_safe(obj), ensure_ascii=False, indent=2)
+    except Exception:
+        return str(obj)
+
+
+def _extract_kinds(report: Any, key: str) -> List[str]:
+    out: List[str] = []
+    if not isinstance(report, dict):
+        return out
+    for it in (report.get(key, []) or []):
+        if isinstance(it, dict):
+            k = it.get("kind")
+            if k and k not in out:
+                out.append(str(k))
+        elif isinstance(it, str) and it and it not in out:
+            out.append(it)
+    return out
+
+
+# -------------------------
+# main
+# -------------------------
+def main() -> None:
     QUESTION_TEXT = """
-A factory needs to rent a warehouse to store materials for the next 4 months. The required warehouse area for each month is listed in Table 1-14.\nTable 1-14\n\\begin{tabular}{c|c|c|c|c}\n\\hline Month & 1 & 2 & 3 & 4 \\\\\n\\hline Required Warehouse Area $/ \\mathrm{m}^2$ & 1500 & 1000 & 2000 & 1200 \\\\\n\\hline\n\\end{tabular}\n\nThe longer the rental contract period, the greater the discount on warehouse rental fees. The specific data is listed in Table 1-15.\nTable 1-15\n\\begin{tabular}{c|c|c|c|c}\n\\hline Contract Rental Period $/$ months & 1 & 2 & 3 & 4 \\\\\n\\hline \\begin{tabular}{c} \nRental Fee for Warehouse \\\\\nArea within the Contract Period $/ \\mathrm{m}^2$\n\\end{tabular} & 28 & 45 & 60 & 73 \\\\\n\\hline\n\\end{tabular}\n\nThe warehouse rental contract can be processed at the beginning of each month, and each contract specifies the rental area and period. Therefore, the factory can rent a contract on any month, and each time, they can sign one contract or multiple contracts with different rental areas and rental periods. The overall goal is to minimize the rental fees paid. Try to establish a linear programming mathematical model based on the above requirements.
+Now we need to determine 4 out of 5 workers to each complete one of the four tasks. Since each worker has different skill sets, the amount of time required for each worker to complete each task is also different. The time required for each worker to complete each task is shown in Table 5-2.\nTable 5-2\n\\begin{tabular}{|c|c|c|c|c|}\n\\hline Task Time Required & $A$ & $B$ & $C$ & $D$ \\\\\n\\hline Worker & & & & \\\\\n\\hline I & 9 & 4 & 3 & 7 \\\\\n\\hline II & 4 & 6 & 5 & 6 \\\\\n\\hline III & 5 & 4 & 7 & 5 \\\\\n\\hline IV & 7 & 5 & 2 & 3 \\\\\n\\hline V & 10 & 6 & 7 & 4 \\\\\n\\hline\n\\end{tabular}\n\nTry to find a work assignment plan that minimizes the total working hours.
 """.strip()
 
-    client = OpenAI()
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    problem_id = f"demo_{run_id}"
 
+    # switches for ablations
     cfg = PipelineConfig(
         model_name="gpt-4o",
         temperature=0.0,
         timelimit_sec=60.0,
+        layer1_on=True,
+        layer2_on=True,
+        layer3_on=True,
+        repairs_on=True,
     )
 
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_dir = os.path.join(ARTIFACT_DIR, f"demo_{run_id}")
     if SAVE_ARTIFACTS:
         ensure_dir(out_dir)
-
-    _print_section("INPUT / CONFIG")
-    print("Run ID:", run_id)
-    print("PipelineConfig:", _pretty(_try_asdict(cfg)))
-    print("\nQuestion (first 600 chars):")
-    print((QUESTION_TEXT[:600] + ("..." if len(QUESTION_TEXT) > 600 else "")))
-
-    if SAVE_ARTIFACTS:
         write_text(os.path.join(out_dir, "question.txt"), QUESTION_TEXT)
         write_json(os.path.join(out_dir, "pipeline_config.json"), _try_asdict(cfg))
 
-    # ---- Run pipeline ----
+    print(f"\n==== IR2Solve DEMO ({problem_id}) ====")
+    print("Config:", _pretty(_try_asdict(cfg)))
+    print("\nQuestion(first 400 chars):")
+    print(QUESTION_TEXT[:400] + ("..." if len(QUESTION_TEXT) > 400 else ""))
+
+    client = OpenAI()
+
     try:
-        res = run_gm4opt_pipeline(
+        res = run_ir2solve_pipeline(
             question_text=QUESTION_TEXT,
             client=client,
             config=cfg,
+            problem_id=problem_id,
+            meta_override={"source": "demo"},
         )
     except Exception as e:
-        _print_section("PIPELINE ERROR")
+        print("\n[PIPELINE EXCEPTION]")
         print(f"{type(e).__name__}: {e}")
-        traceback.print_exc()
+        traceback.print_exc(limit=20)
+        if SAVE_ARTIFACTS:
+            write_json(
+                os.path.join(out_dir, "summary.json"),
+                {"problem_id": problem_id, "failure_stage": "pipeline_exception", "error": f"{type(e).__name__}: {e}"},
+            )
         return
 
-    # ---- Extracted JSON ----
-    ir_dict = getattr(res, "ir_dict", None)
-    _print_section("EXTRACTED JSON (ir_dict)")
-    if isinstance(ir_dict, dict):
-        print(_pretty(ir_dict))
-        if SAVE_ARTIFACTS:
-            write_json(os.path.join(out_dir, "ir_dict.json"), ir_dict)
-    else:
-        print("No ir_dict found on PipelineResult (unexpected).")
+    failure_stage = getattr(res, "failure_stage", "") or ""
+    error = getattr(res, "error", "") or ""
+    print("\n[STATUS]")
+    print("failure_stage:", failure_stage)
+    print("error:", error)
 
-    # ---- ModelIR summary ----
+    # --- IR dict ---
+    ir_dict = getattr(res, "ir_dict", None) or {}
+    if SAVE_ARTIFACTS:
+        write_json(os.path.join(out_dir, "ir_dict.json"), ir_dict)
+
+    # --- ModelIR counts ---
     ir = getattr(res, "ir", None)
-    _print_section("MODELIR SUMMARY")
     if ir is None:
-        print("No ModelIR found on PipelineResult.")
+        print("\n[MODELIR] None (failed at ir_parse or earlier).")
+        sets_n = params_n = vars_n = cons_n = 0
     else:
-        meta = getattr(ir, "meta", None)
-        sets_ = getattr(ir, "sets", []) or []
-        params_ = getattr(ir, "params", []) or []
-        vars_ = getattr(ir, "vars", []) or []
-        obj_ = getattr(ir, "objective", None)
-        cons_ = getattr(ir, "constraints", []) or []
+        sets_n = len(getattr(ir, "sets", []) or [])
+        params_n = len(getattr(ir, "params", []) or [])
+        vars_n = len(getattr(ir, "vars", []) or [])
+        cons_n = len(getattr(ir, "constraints", []) or [])
+        print("\n[MODELIR COUNTS]")
+        print(f"sets={sets_n}, params={params_n}, vars={vars_n}, constraints={cons_n}")
 
-        print("meta:", _pretty(_try_asdict(meta)))
-        print(f"\nCounts: sets={len(sets_)}, params={len(params_)}, vars={len(vars_)}, constraints={len(cons_)}")
-        if obj_ is not None:
-            print("\nobjective:", _pretty(_try_asdict(obj_)))
-
-        def _head(items: list, n: int = 3) -> list:
-            return items[:n] if len(items) > n else items
-
-        print("\nsets(head):", _pretty([_try_asdict(x) for x in _head(sets_, 3)]))
-        print("\nparams(head):", _pretty([_try_asdict(x) for x in _head(params_, 3)]))
-        print("\nvars(head):", _pretty([_try_asdict(x) for x in _head(vars_, 3)]))
-        print("\nconstraints(head):", _pretty([_try_asdict(x) for x in _head(cons_, 5)]))
-
-        if SAVE_ARTIFACTS:
-            modelir_dump = {
-                "meta": _try_asdict(meta),
-                "sets": [_try_asdict(x) for x in sets_],
-                "params": [_try_asdict(x) for x in params_],
-                "vars": [_try_asdict(x) for x in vars_],
-                "objective": _try_asdict(obj_),
-                "constraints": [_try_asdict(x) for x in cons_],
-            }
-            write_json(os.path.join(out_dir, "modelir_dump.json"), modelir_dump)
-
-    # ---- Graph ----
-    graph_built = getattr(res, "graph_built", None)
-    _print_section("GRAPH")
-    print("Graph built:", graph_built)
-
-    graph = getattr(ir, "graph", None) if ir is not None else None
-    if graph is None:
-        print("Graph is None.")
-        gmeta = None
-    else:
-        gmeta = getattr(graph, "meta", None) or {}
-        print("\nGraph meta keys:", list(gmeta.keys()) if isinstance(gmeta, dict) else type(gmeta))
-        if isinstance(gmeta, dict):
-            stats = gmeta.get("stats", {})
-            checks = gmeta.get("checks", {})
-            print("\nGraph stats:", _pretty(stats))
-            issues = (checks.get("issues", []) if isinstance(checks, dict) else [])
-            print("\nGraph issues:")
-            if issues:
-                for it in issues:
-                    print("  -", it)
-            else:
-                print("  (none)")
+    # --- Verifier kinds ---
+    verifier_report = getattr(res, "verifier_report", None) or {}
+    issues_kinds = _extract_kinds(verifier_report, "issues")
+    repairs_kinds = _extract_kinds(verifier_report, "repairs")
+    print("\n[VERIFIER KINDS]")
+    print("issues:", issues_kinds)
+    print("repairs:", repairs_kinds)
 
     if SAVE_ARTIFACTS:
         write_json(
-            os.path.join(out_dir, "graph_meta.json"),
-            gmeta if isinstance(gmeta, dict) else {"meta": str(gmeta)},
+            os.path.join(out_dir, "verifier_kinds.json"),
+            {"issues": issues_kinds, "repairs": repairs_kinds},
         )
 
-    # ---- Verifier report (placeholder) ----
-    _print_section("VERIFIER")
-    verifier_report = getattr(res, "verifier_report", None)
-    print(_pretty(verifier_report))
+    # --- Solver result ---
+    status_name = getattr(res, "gurobi_status_name", None)
+    obj_value = getattr(res, "gurobi_obj_value", None)
+    print("\n[SOLVER]")
+    print("status_name:", status_name)
+    print("obj_value:", obj_value)
+
+    # --- Trace ---
+    trace = getattr(res, "trace", None) or {}
     if SAVE_ARTIFACTS:
-        write_json(os.path.join(out_dir, "verifier_report.json"), verifier_report)
+        write_json(os.path.join(out_dir, "trace.json"), trace)
 
-    # ---- Gurobi ----
-    _print_section("GUROBI")
-    print("Build OK:", getattr(res, "solver_build_ok", None))
-    build_err = getattr(res, "solver_build_error", "") or ""
-    if build_err:
-        print("Build error:", build_err)
-
-    print("Status code:", getattr(res, "gurobi_status", None))
-    print("Status name:", getattr(res, "gurobi_status_name", None))
-    print("Objective value:", getattr(res, "gurobi_obj_value", None))
-    print("Metrics:", _pretty(getattr(res, "gurobi_metrics", {})))
-
-    # ---- Estimation (placeholder) ----
-    _print_section("ESTIMATION")
-    estimation = getattr(res, "estimation", None)
-    print(_pretty(estimation))
-    if SAVE_ARTIFACTS:
-        write_json(os.path.join(out_dir, "estimation.json"), estimation)
-
-    # ---- Minimal summary ----
-    _print_section("SUMMARY")
-    print("graph_built:", graph_built)
-    print("verifier_ok:", (verifier_report or {}).get("ok") if isinstance(verifier_report, dict) else None)
-    print("gurobi_status:", getattr(res, "gurobi_status_name", None))
-    print("gurobi_obj_value:", getattr(res, "gurobi_obj_value", None))
+    # --- Summary ---
+    summary = {
+        "problem_id": problem_id,
+        "failure_stage": failure_stage,
+        "error": error,
+        "modelir_counts": {"sets": sets_n, "params": params_n, "vars": vars_n, "constraints": cons_n},
+        "verifier_issues": issues_kinds,
+        "verifier_repairs": repairs_kinds,
+        "solver_status_name": status_name,
+        "obj_value": obj_value,
+        "artifacts_dir": out_dir if SAVE_ARTIFACTS else None,
+    }
+    print("\n[SUMMARY]")
+    print(_pretty(summary))
 
     if SAVE_ARTIFACTS:
-        write_json(
-            os.path.join(out_dir, "summary.json"),
-            {
-                "run_id": run_id,
-                "graph_built": graph_built,
-                "verifier_report": verifier_report,
-                "gurobi_status": getattr(res, "gurobi_status", None),
-                "gurobi_status_name": getattr(res, "gurobi_status_name", None),
-                "gurobi_obj_value": getattr(res, "gurobi_obj_value", None),
-                "gurobi_metrics": getattr(res, "gurobi_metrics", {}),
-                "estimation": estimation,
-            },
-        )
+        write_json(os.path.join(out_dir, "summary.json"), summary)
         print(f"\n[Artifacts saved] {out_dir}")
 
 

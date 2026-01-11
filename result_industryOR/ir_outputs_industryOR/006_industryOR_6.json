@@ -2,40 +2,40 @@
   "meta": {
     "problem_id": "industryOR_6",
     "source": "IndustryOR",
-    "description": "The Zhang family decides which restaurants to purchase to maximize their annual income within a budget constraint.",
+    "description": "The Zhang family has decided to invest in several different restaurants. Restaurant A has an annual income of $15,000, Restaurant B has an annual income of $40,000, Restaurant C has an annual income of $30,000, and Restaurant D has an annual income of $50,000. They need to decide whether to purchase each restaurant, and each restaurant can only be purchased once. Help them decide which restaurants to purchase to maximize their annual income.\nThe cost of Restaurant A is $1.6 million, the cost of Restaurant B is $2.5 million, the cost of Restaurant C is $1.8 million, and the cost of Restaurant D is $3 million. The Zhang family's investment budget is $6 million.\n\nIf they purchase Restaurant D, they cannot purchase Restaurant A.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "RESTAURANTS",
+      "name": "R",
       "elements": [
         "A",
         "B",
         "C",
         "D"
       ],
-      "description": "The set of restaurants available for purchase."
+      "description": "Set of restaurants"
     }
   ],
   "params": [
     {
       "name": "income",
       "indices": [
-        "RESTAURANTS"
+        "R"
       ],
       "values": {
-        "A": 15000,
-        "B": 40000,
-        "C": 30000,
-        "D": 50000
+        "A": 15000.0,
+        "B": 40000.0,
+        "C": 30000.0,
+        "D": 50000.0
       },
-      "description": "Annual income of each restaurant."
+      "description": "Annual income from each restaurant"
     },
     {
       "name": "cost",
       "indices": [
-        "RESTAURANTS"
+        "R"
       ],
       "values": {
         "A": 1.6,
@@ -43,48 +43,41 @@
         "C": 1.8,
         "D": 3.0
       },
-      "description": "Cost in millions to purchase each restaurant."
-    },
-    {
-      "name": "budget",
-      "indices": [],
-      "values": 6.0,
-      "description": "Total investment budget in millions."
+      "description": "Cost in millions to purchase each restaurant"
     }
   ],
   "vars": [
     {
       "name": "purchase",
       "indices": [
-        "RESTAURANTS"
+        "R"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary decision variable indicating whether to purchase a restaurant."
+      "description": "Binary decision to purchase each restaurant"
     }
   ],
   "objective": {
-    "name": "max_total_income",
+    "name": "max_income",
     "sense": "max",
-    "expr": "sum(income[r] * purchase[r] for r in ['A', 'B', 'C', 'D'])",
-    "description": "Maximize the total annual income from purchased restaurants."
+    "expr": "quicksum(income[r] * purchase[r] for r in R)",
+    "description": "Maximize total annual income from purchased restaurants"
   },
   "constraints": [
     {
       "name": "budget_constraint",
-      "expr_lhs": "sum(cost[r] * purchase[r] for r in ['A', 'B', 'C', 'D'])",
+      "expr_lhs": "quicksum(cost[r] * purchase[r] for r in R)",
       "sense": "<=",
-      "expr_rhs": "budget",
-      "description": "Total cost of purchased restaurants must not exceed the budget."
+      "expr_rhs": "6.0",
+      "description": "Total cost of purchased restaurants must not exceed budget"
     },
     {
       "name": "mutual_exclusivity_AD",
       "expr_lhs": "purchase['A'] + purchase['D']",
       "sense": "<=",
-      "expr_rhs": "1",
-      "description": "If Restaurant D is purchased, Restaurant A cannot be purchased."
+      "expr_rhs": "1.0",
+      "description": "Cannot purchase both Restaurant A and Restaurant D"
     }
-  ],
-  "graph": null
+  ]
 }

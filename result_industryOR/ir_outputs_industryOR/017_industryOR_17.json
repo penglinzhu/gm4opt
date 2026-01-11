@@ -2,114 +2,113 @@
   "meta": {
     "problem_id": "industryOR_17",
     "source": "IndustryOR",
-    "description": "Determine the number of trucks to send to warehouses A and B to meet material requirements at minimum cost.",
+    "description": "A production base needs to extract raw materials from warehouses A and B every day for production. The required amounts of raw materials are: at least 240 units of material A, at least 80 kg of material B, and at least 120 tons of material C. It is known that each truck from warehouse A can transport 4 units of material A, 2 kg of material B, and 6 tons of material C, with a freight cost of $200 per truck. Each truck from warehouse B can transport 7 units of material A, 2 kg of material B, and 2 tons of material C, with a freight cost of $160 per truck. The question is: to meet the production needs, how many trucks should the production base send to warehouses A and B each day to minimize the total freight cost?",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "WAREHOUSES",
+      "name": "Warehouses",
       "elements": [
         "A",
         "B"
       ],
-      "description": "Warehouses from which materials are transported."
+      "description": "Warehouses from which materials are transported"
     },
     {
-      "name": "MATERIALS",
+      "name": "Materials",
       "elements": [
-        "A",
-        "B",
-        "C"
+        "MaterialA",
+        "MaterialB",
+        "MaterialC"
       ],
-      "description": "Types of materials required for production."
+      "description": "Types of materials to be transported"
     }
   ],
   "params": [
     {
       "name": "transport_capacity",
       "indices": [
-        "WAREHOUSES",
-        "MATERIALS"
+        "Warehouses",
+        "Materials"
       ],
       "values": {
         "A": {
-          "A": 4,
-          "B": 2,
-          "C": 6
+          "MaterialA": 4.0,
+          "MaterialB": 2.0,
+          "MaterialC": 6.0
         },
         "B": {
-          "A": 7,
-          "B": 2,
-          "C": 2
+          "MaterialA": 7.0,
+          "MaterialB": 2.0,
+          "MaterialC": 2.0
         }
       },
-      "description": "Transport capacity of each truck from each warehouse for each material."
+      "description": "Transport capacity of each truck from each warehouse for each material"
     },
     {
       "name": "freight_cost",
       "indices": [
-        "WAREHOUSES"
+        "Warehouses"
       ],
       "values": {
-        "A": 200,
-        "B": 160
+        "A": 200.0,
+        "B": 160.0
       },
-      "description": "Freight cost per truck from each warehouse."
+      "description": "Freight cost per truck from each warehouse"
     },
     {
-      "name": "required_amount",
+      "name": "demand",
       "indices": [
-        "MATERIALS"
+        "Materials"
       ],
       "values": {
-        "A": 240,
-        "B": 80,
-        "C": 120
+        "MaterialA": 240.0,
+        "MaterialB": 80.0,
+        "MaterialC": 120.0
       },
-      "description": "Required amount of each material for production."
+      "description": "Minimum required amount of each material"
     }
   ],
   "vars": [
     {
       "name": "trucks",
       "indices": [
-        "WAREHOUSES"
+        "Warehouses"
       ],
       "vartype": "integer",
-      "lb": 0,
+      "lb": 0.0,
       "ub": null,
-      "description": "Number of trucks to send from each warehouse."
+      "description": "Number of trucks to send from each warehouse"
     }
   ],
   "objective": {
-    "name": "min_total_cost",
+    "name": "minimize_cost",
     "sense": "min",
-    "expr": "sum(freight_cost[w] * trucks[w] for w in ['A', 'B'])",
-    "description": "Minimize the total freight cost of sending trucks from warehouses A and B."
+    "expr": "quicksum(freight_cost[w] * trucks[w] for w in Warehouses)",
+    "description": "Minimize the total freight cost"
   },
   "constraints": [
     {
-      "name": "material_A_requirement",
-      "expr_lhs": "sum(transport_capacity[w]['A'] * trucks[w] for w in ['A', 'B'])",
+      "name": "materialA_requirement",
+      "expr_lhs": "quicksum(transport_capacity[w]['MaterialA'] * trucks[w] for w in Warehouses)",
       "sense": ">=",
-      "expr_rhs": "required_amount['A']",
-      "description": "Ensure at least the required amount of material A is transported."
+      "expr_rhs": "demand['MaterialA']",
+      "description": "Ensure enough Material A is transported"
     },
     {
-      "name": "material_B_requirement",
-      "expr_lhs": "sum(transport_capacity[w]['B'] * trucks[w] for w in ['A', 'B'])",
+      "name": "materialB_requirement",
+      "expr_lhs": "quicksum(transport_capacity[w]['MaterialB'] * trucks[w] for w in Warehouses)",
       "sense": ">=",
-      "expr_rhs": "required_amount['B']",
-      "description": "Ensure at least the required amount of material B is transported."
+      "expr_rhs": "demand['MaterialB']",
+      "description": "Ensure enough Material B is transported"
     },
     {
-      "name": "material_C_requirement",
-      "expr_lhs": "sum(transport_capacity[w]['C'] * trucks[w] for w in ['A', 'B'])",
+      "name": "materialC_requirement",
+      "expr_lhs": "quicksum(transport_capacity[w]['MaterialC'] * trucks[w] for w in Warehouses)",
       "sense": ">=",
-      "expr_rhs": "required_amount['C']",
-      "description": "Ensure at least the required amount of material C is transported."
+      "expr_rhs": "demand['MaterialC']",
+      "description": "Ensure enough Material C is transported"
     }
-  ],
-  "graph": null
+  ]
 }

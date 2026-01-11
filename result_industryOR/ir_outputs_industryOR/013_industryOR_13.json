@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_13",
     "source": "IndustryOR",
-    "description": "Determine the minimum number of chain stores to be built in a new residential area such that the distance from any residential area to one of the chain stores does not exceed 800 meters.",
+    "description": "A convenience store plans to open several chain stores in a new residential area in the northwest suburbs of the city. To facilitate shopping, the distance from any residential area to one of the chain stores should not exceed $800 \\mathrm{~m}$. Table 5-1 gives the newly built residential areas and the various areas within a radius of $800 \\mathrm{~m}$ of each residential area. How many chain stores should the supermarket build in the above-mentioned areas and in which areas should they be built?\nTable 5-1\n\\begin{tabular}{c|c}\n\\hline Area Code & Areas within $800 \\mathrm{~m}$ radius \\\\\n\\hline A & A C E G H I \\\\\nB & B H I \\\\\nC & A C G H I \\\\\nD & D J \\\\\nE & A E G \\\\\nF & F J K \\\\\nG & A C E G \\\\\nH & A B C H I \\\\\nI & A B C H I \\\\\nJ & D F J K L \\\\\nK & F J K L \\\\\nL & J K L \\\\\n\\hline\n\\end{tabular}",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "AREAS",
+      "name": "Areas",
       "elements": [
         "A",
         "B",
@@ -23,14 +23,14 @@
         "K",
         "L"
       ],
-      "description": "Areas in the new residential region."
+      "description": "Residential areas where stores can be opened"
     }
   ],
   "params": [
     {
       "name": "coverage",
       "indices": [
-        "AREAS"
+        "Areas"
       ],
       "values": {
         "A": [
@@ -106,112 +106,111 @@
           "L"
         ]
       },
-      "description": "Areas within 800 meters radius of each area."
+      "description": "Areas within 800m radius of each area"
     }
   ],
   "vars": [
     {
       "name": "y",
       "indices": [
-        "AREAS"
+        "Areas"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary variable indicating if a store is built in a given area."
+      "description": "1 if a store is opened in the area, 0 otherwise"
     }
   ],
   "objective": {
-    "name": "min_total_stores",
+    "name": "min_stores",
     "sense": "min",
-    "expr": "sum(y[a] for a in AREAS)",
-    "description": "Minimize the total number of chain stores to be built."
+    "expr": "quicksum(y[i] for i in Areas)",
+    "description": "Minimize the number of stores opened"
   },
   "constraints": [
     {
-      "name": "coverage_constraint_A",
+      "name": "coverage_A",
       "expr_lhs": "y['A'] + y['C'] + y['E'] + y['G'] + y['H'] + y['I']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area A is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area A must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_B",
+      "name": "coverage_B",
       "expr_lhs": "y['B'] + y['H'] + y['I']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area B is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area B must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_C",
+      "name": "coverage_C",
       "expr_lhs": "y['A'] + y['C'] + y['G'] + y['H'] + y['I']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area C is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area C must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_D",
+      "name": "coverage_D",
       "expr_lhs": "y['D'] + y['J']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area D is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area D must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_E",
+      "name": "coverage_E",
       "expr_lhs": "y['A'] + y['E'] + y['G']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area E is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area E must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_F",
+      "name": "coverage_F",
       "expr_lhs": "y['F'] + y['J'] + y['K']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area F is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area F must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_G",
+      "name": "coverage_G",
       "expr_lhs": "y['A'] + y['C'] + y['E'] + y['G']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area G is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area G must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_H",
+      "name": "coverage_H",
       "expr_lhs": "y['A'] + y['B'] + y['C'] + y['H'] + y['I']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area H is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area H must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_I",
+      "name": "coverage_I",
       "expr_lhs": "y['A'] + y['B'] + y['C'] + y['H'] + y['I']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area I is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area I must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_J",
+      "name": "coverage_J",
       "expr_lhs": "y['D'] + y['F'] + y['J'] + y['K'] + y['L']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area J is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area J must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_K",
+      "name": "coverage_K",
       "expr_lhs": "y['F'] + y['J'] + y['K'] + y['L']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area K is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area K must be covered by at least one store"
     },
     {
-      "name": "coverage_constraint_L",
+      "name": "coverage_L",
       "expr_lhs": "y['J'] + y['K'] + y['L']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Ensure area L is covered by at least one store."
+      "expr_rhs": "1.0",
+      "description": "Area L must be covered by at least one store"
     }
-  ],
-  "graph": null
+  ]
 }

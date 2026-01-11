@@ -1,0 +1,253 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_60",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine a complex transportation network across 9 key hub cities that are tasked with delivering critical supplies from a central distribution center to a remote area in need. Each city (or hub) in this network can send and receive supplies through established routes, each with a specific maximum capacity. The goal is to maximize the flow of supplies from the source hub to the destination hub, ensuring that the delivery system operates at its peak efficiency without overloading any route.\n\nHere's a detailed look at the capacities, in tons of supplies, that each route can handle between the cities:\n\n- From City 0 (Source): Can send supplies to City 2 (20 tons), City 3 (10 tons), City 5 (2 tons), City 6 (11 tons), City 7 (5 tons), and City 8 (12 tons).\n- City 1: Can receive and then send supplies to City 0 (7 tons), City 2 (5 tons), City 3 (9 tons), City 4 (9 tons), City 5 (16 tons), City 6 (1 ton), City 7 (17 tons), and City 8 (7 tons).\n- City 2: Can manage supplies from City 0 (3 tons), and then distribute to City 1 (17 tons), City 3 (1 ton), City 4 (5 tons), City 5 (18 tons), City 6 (13 tons), City 7 (12 tons), and City 8 (14 tons).\n- City 3: Starts with supplies from City 0 (9 tons), forwarding to City 1 (10 tons), City 2 (2 tons), City 4 (10 tons), City 5 (11 tons), City 6 (11 tons), City 7 (5 tons), and City 8 (10 tons).\n- City 4: Receives from City 0 (7 tons) and redistributes to City 1 (5 tons), City 2 (1 ton), City 3 (19 tons), City 5 (19 tons), City 6 (12 tons), City 7 (14 tons), and City 8 (15 tons).\n- City 5: Gathers supplies from City 0 (16 tons) and can send out to City 1 (4 tons), City 2 (6 tons), City 3 (15 tons), City 4 (19 tons), City 6 (0 tons), and City 8 (20 tons).\n- City 6: Channels supplies from City 0 (3 tons) towards City 1 (0 tons), City 2 (17 tons), City 3 (16 tons), City 4 (19 tons), City 5 (8 tons), City 7 (8 tons), and City 8 (9 tons).\n- City 7: Starts with resources from City 0 (14 tons), sending to City 1 (11 tons), City 2 (13 tons), City 3 (17 tons), City 4 (10 tons), City 5 (13 tons), City 6 (20 tons), and City 8 (16 tons).\n- City 8 (Destination): Can receive from City 0 (20 tons), City 1 (5 tons), City 2 (20 tons), City 3 (16 tons), City 4 (0 tons), City 5 (15 tons), City 6 (1 ton), and City 7 (12 tons).\n\nIn this scenario, a \"0\" indicates that there is no established route for supplies to move directly between those two cities.\n\nThe challenge lies in determining the maximum tonnage of supplies that can be transported from City 0 (the source) to City 8 (the destination) without exceeding the capacity of any individual route in the network. What is the optimal value of supplies, in tons, that can be moved through this network?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Cities",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "description": "Set of cities in the network"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "values": {
+        "0": {
+          "2": 20,
+          "3": 10,
+          "5": 2,
+          "6": 11,
+          "7": 5,
+          "8": 12,
+          "0": 0.0
+        },
+        "1": {
+          "0": 7,
+          "2": 5,
+          "3": 9,
+          "4": 9,
+          "5": 16,
+          "6": 1,
+          "7": 17,
+          "8": 7,
+          "1": 0.0
+        },
+        "2": {
+          "0": 3,
+          "1": 17,
+          "3": 1,
+          "4": 5,
+          "5": 18,
+          "6": 13,
+          "7": 12,
+          "8": 14,
+          "2": 0.0
+        },
+        "3": {
+          "0": 9,
+          "1": 10,
+          "2": 2,
+          "4": 10,
+          "5": 11,
+          "6": 11,
+          "7": 5,
+          "8": 10,
+          "3": 0.0
+        },
+        "4": {
+          "0": 7,
+          "1": 5,
+          "2": 1,
+          "3": 19,
+          "5": 19,
+          "6": 12,
+          "7": 14,
+          "8": 15,
+          "4": 0.0
+        },
+        "5": {
+          "0": 16,
+          "1": 4,
+          "2": 6,
+          "3": 15,
+          "4": 19,
+          "6": 0,
+          "8": 20,
+          "5": 0.0
+        },
+        "6": {
+          "0": 3,
+          "1": 0,
+          "2": 17,
+          "3": 16,
+          "4": 19,
+          "5": 8,
+          "7": 8,
+          "8": 9,
+          "6": 0.0
+        },
+        "7": {
+          "0": 14,
+          "1": 11,
+          "2": 13,
+          "3": 17,
+          "4": 10,
+          "5": 13,
+          "6": 20,
+          "8": 16,
+          "7": 0.0
+        },
+        "8": {
+          "0": 20,
+          "1": 5,
+          "2": 20,
+          "3": 16,
+          "4": 0,
+          "5": 15,
+          "6": 1,
+          "7": 12,
+          "8": 0.0
+        }
+      },
+      "description": "Capacity of routes between cities"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Flow of supplies between cities"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "quicksum(flow['0'][j] for j in Cities) - quicksum(flow[i]['0'] for i in Cities)",
+    "description": "Maximize the flow from source (City 0) to destination (City 8)"
+  },
+  "constraints": [
+    {
+      "name": "capacity_constraint_0_2",
+      "expr_lhs": "flow['0']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['2']",
+      "description": "Capacity constraint for route from City 0 to City 2"
+    },
+    {
+      "name": "capacity_constraint_0_3",
+      "expr_lhs": "flow['0']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['3']",
+      "description": "Capacity constraint for route from City 0 to City 3"
+    },
+    {
+      "name": "capacity_constraint_0_5",
+      "expr_lhs": "flow['0']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['5']",
+      "description": "Capacity constraint for route from City 0 to City 5"
+    },
+    {
+      "name": "capacity_constraint_0_6",
+      "expr_lhs": "flow['0']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['6']",
+      "description": "Capacity constraint for route from City 0 to City 6"
+    },
+    {
+      "name": "capacity_constraint_0_7",
+      "expr_lhs": "flow['0']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['7']",
+      "description": "Capacity constraint for route from City 0 to City 7"
+    },
+    {
+      "name": "capacity_constraint_0_8",
+      "expr_lhs": "flow['0']['8']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['8']",
+      "description": "Capacity constraint for route from City 0 to City 8"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow[i]['1'] for i in Cities) - quicksum(flow['1'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow[i]['2'] for i in Cities) - quicksum(flow['2'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow[i]['3'] for i in Cities) - quicksum(flow['3'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow[i]['4'] for i in Cities) - quicksum(flow['4'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow[i]['5'] for i in Cities) - quicksum(flow['5'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 5"
+    },
+    {
+      "name": "flow_conservation_6",
+      "expr_lhs": "quicksum(flow[i]['6'] for i in Cities) - quicksum(flow['6'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 6"
+    },
+    {
+      "name": "flow_conservation_7",
+      "expr_lhs": "quicksum(flow[i]['7'] for i in Cities) - quicksum(flow['7'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 7"
+    },
+    {
+      "name": "flow_conservation_8",
+      "expr_lhs": "quicksum(flow[i]['8'] for i in Cities) - quicksum(flow['8'][j] for j in Cities)",
+      "sense": "==",
+      "expr_rhs": "0",
+      "description": "Flow conservation at City 8"
+    }
+  ]
+}

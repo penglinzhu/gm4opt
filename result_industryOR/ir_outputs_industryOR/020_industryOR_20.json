@@ -2,140 +2,132 @@
   "meta": {
     "problem_id": "industryOR_20",
     "source": "IndustryOR",
-    "description": "Maximize profit from selling products A, B, and byproduct C considering production and disposal constraints.",
+    "description": "There are two products, A and B, which both require two chemical reaction processes: one before and one after. Each unit of product A requires 2 hours for the front process and 3 hours for the back process. Each unit of product B requires 3 hours for the front process and 4 hours for the back process. There are 16 hours available for the front process and 24 hours available for the back process.\n\nFor each unit of product B produced, two units of byproduct C are generated, which do not require any additional cost. Up to 5 units of byproduct C can be sold, while the remaining units must be disposed of, with a disposal cost of $2 per unit.\n\nSelling one unit of product A yields a profit of $4, selling one unit of product B yields a profit of $10, and selling one unit of byproduct C yields a profit of $3.\n\nTo maximize the total profit obtained, establish the linear programming model for this problem.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "PRODUCTS",
+      "name": "Products",
       "elements": [
         "A",
         "B"
       ],
-      "description": "Set of products."
+      "description": "Set of products"
     }
   ],
   "params": [
     {
-      "name": "front_process_time",
+      "name": "front_time",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "values": {
-        "A": 2,
-        "B": 3
+        "A": 2.0,
+        "B": 3.0
       },
-      "description": "Time required for the front process for each product."
+      "description": "Time required for front process per unit of product"
     },
     {
-      "name": "back_process_time",
+      "name": "back_time",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "values": {
-        "A": 3,
-        "B": 4
+        "A": 3.0,
+        "B": 4.0
       },
-      "description": "Time required for the back process for each product."
-    },
-    {
-      "name": "front_process_capacity",
-      "indices": [],
-      "values": 16,
-      "description": "Total available hours for the front process."
-    },
-    {
-      "name": "back_process_capacity",
-      "indices": [],
-      "values": 24,
-      "description": "Total available hours for the back process."
+      "description": "Time required for back process per unit of product"
     },
     {
       "name": "profit",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "values": {
-        "A": 4,
-        "B": 10
+        "A": 4.0,
+        "B": 10.0
       },
-      "description": "Profit from selling one unit of each product."
+      "description": "Profit per unit of product sold"
     },
     {
       "name": "byproduct_profit",
       "indices": [],
-      "values": 3,
-      "description": "Profit from selling one unit of byproduct C."
+      "values": 3.0,
+      "description": "Profit per unit of byproduct C sold"
     },
     {
       "name": "disposal_cost",
       "indices": [],
-      "values": 2,
-      "description": "Cost of disposing one unit of byproduct C."
+      "values": 2.0,
+      "description": "Cost per unit of byproduct C disposed"
+    },
+    {
+      "name": "max_front_hours",
+      "indices": [],
+      "values": 16.0,
+      "description": "Maximum available hours for front process"
+    },
+    {
+      "name": "max_back_hours",
+      "indices": [],
+      "values": 24.0,
+      "description": "Maximum available hours for back process"
     },
     {
       "name": "max_byproduct_sales",
       "indices": [],
-      "values": 5,
-      "description": "Maximum units of byproduct C that can be sold."
+      "values": 5.0,
+      "description": "Maximum units of byproduct C that can be sold"
     }
   ],
   "vars": [
     {
       "name": "x",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "vartype": "integer",
       "lb": 0.0,
       "ub": null,
-      "description": "Number of units produced for each product."
+      "description": "Units of product produced"
     },
     {
       "name": "y",
       "indices": [],
       "vartype": "integer",
       "lb": 0.0,
-      "ub": null,
-      "description": "Number of units of byproduct C sold."
+      "ub": 5.0,
+      "description": "Units of byproduct C sold"
     }
   ],
   "objective": {
-    "name": "max_total_profit",
+    "name": "total_profit",
     "sense": "max",
-    "expr": "profit['A'] * x['A'] + profit['B'] * x['B'] + byproduct_profit * y - disposal_cost * (2 * x['B'] - y)",
-    "description": "Maximize total profit from selling products A, B, and byproduct C, considering disposal costs."
+    "expr": "quicksum(profit[p] * x[p] for p in Products) + byproduct_profit * y - disposal_cost * (2 * x['B'] - y)",
+    "description": "Maximize total profit from products and byproduct sales"
   },
   "constraints": [
     {
-      "name": "front_process_capacity_constraint",
-      "expr_lhs": "front_process_time['A'] * x['A'] + front_process_time['B'] * x['B']",
+      "name": "front_process_hours",
+      "expr_lhs": "quicksum(front_time[p] * x[p] for p in Products)",
       "sense": "<=",
-      "expr_rhs": "front_process_capacity",
-      "description": "Total time used in the front process must not exceed available capacity."
+      "expr_rhs": "max_front_hours",
+      "description": "Front process hours constraint"
     },
     {
-      "name": "back_process_capacity_constraint",
-      "expr_lhs": "back_process_time['A'] * x['A'] + back_process_time['B'] * x['B']",
+      "name": "back_process_hours",
+      "expr_lhs": "quicksum(back_time[p] * x[p] for p in Products)",
       "sense": "<=",
-      "expr_rhs": "back_process_capacity",
-      "description": "Total time used in the back process must not exceed available capacity."
+      "expr_rhs": "max_back_hours",
+      "description": "Back process hours constraint"
     },
     {
-      "name": "byproduct_sales_limit",
-      "expr_lhs": "y",
-      "sense": "<=",
-      "expr_rhs": "max_byproduct_sales",
-      "description": "Units of byproduct C sold must not exceed the maximum sales limit."
-    },
-    {
-      "name": "byproduct_production_constraint",
+      "name": "byproduct_balance",
       "expr_lhs": "y",
       "sense": "<=",
       "expr_rhs": "2 * x['B']",
-      "description": "Units of byproduct C sold must not exceed the amount produced."
+      "description": "Byproduct C sales cannot exceed production"
     }
-  ],
-  "graph": null
+  ]
 }

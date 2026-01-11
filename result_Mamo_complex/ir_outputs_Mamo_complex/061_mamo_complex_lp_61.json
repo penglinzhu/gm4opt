@@ -1,0 +1,262 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_61",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine a futuristic transportation network connecting 9 bustling sectors of a newly established colony on Mars, where each sector specializes in different aspects of Martian life, from agriculture to tech development. The network is designed to transport vital resources, such as water, food, and technology, from the colony's central supply hub (Sector 0) to its farthest outpost (Sector 8). The sectors are interconnected through a series of high-speed transport tubes, each with a specific capacity for carrying resources per Martian day.\n\nThe capacity for resource flow from one sector to another is as follows:\n\n- From Sector 0 (Central Supply Hub): Can send resources to Sector 1 (7 units), Sector 2 (4 units), Sector 3 (17 units), Sector 4 (4 units), Sector 5 (18 units), Sector 6 (17 units), Sector 7 (5 units), and Sector 8 (14 units).\n- From Sector 1: Can send resources to Sector 0 (2 units), Sector 2 (11 units), Sector 3 (10 units), Sector 4 (1 unit), Sector 5 (19 units), Sector 6 (6 units), Sector 7 (16 units), and Sector 8 (13 units).\n- From Sector 2: Can send resources to Sector 0 (8 units), Sector 1 (15 units), Sector 3 (5 units), Sector 4 (1 unit), Sector 5 (5 units), Sector 6 (11 units), Sector 7 (17 units), and Sector 8 (18 units).\n- From Sector 3: Can send resources to Sector 0 (2 units), Sector 1 (5 units), Sector 4 (6 units), Sector 5 (17 units), Sector 6 (1 unit), Sector 7 (16 units), and Sector 8 (14 units).\n- From Sector 4: Can send resources to Sector 0 (15 units), Sector 1 (6 units), Sector 2 (20 units), Sector 3 (15 units), Sector 5 (7 units), Sector 6 (13 units), Sector 7 (6 units), and Sector 8 (19 units).\n- From Sector 5: Can send resources to Sector 0 (15 units), Sector 1 (2 units), Sector 2 (8 units), Sector 3 (2 units), Sector 4 (3 units), Sector 6 (2 units), Sector 7 (9 units), and Sector 8 (2 units).\n- From Sector 6: Can send resources to Sector 0 (10 units), Sector 1 (12 units), Sector 2 (11 units), Sector 3 (10 units), Sector 4 (19 units), Sector 5 (9 units), Sector 7 (17 units), and Sector 8 (1 unit).\n- From Sector 7: Can send resources to Sector 0 (0 units), Sector 1 (20 units), Sector 2 (15 units), Sector 3 (19 units), Sector 4 (20 units), Sector 5 (18 units), Sector 6 (14 units), and Sector 8 (8 units).\n- From Sector 8 (Farthest Outpost): Can send resources back to Sector 0 (16 units), Sector 1 (13 units), Sector 2 (3 units), Sector 3 (3 units), Sector 4 (20 units), Sector 5 (19 units), Sector 6 (2 units), and Sector 7 (7 units).\n\nIn this Martian colony, a capacity of \"0\" means there is no direct transport tube connection between those two sectors.\n\nYour task is to calculate the maximum amount of resources that can be transported from the Central Supply Hub (Sector 0) to the Farthest Outpost (Sector 8) per Martian day, ensuring that the flow through each transport tube does not exceed its specified capacity. What is the maximum amount of resources that can be sent from the Central Supply Hub to the Farthest Outpost in units per Martian day?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Sectors",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "description": "Sectors in the Martian colony"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "Sectors",
+        "Sectors"
+      ],
+      "values": {
+        "0": {
+          "1": 7,
+          "2": 4,
+          "3": 17,
+          "4": 4,
+          "5": 18,
+          "6": 17,
+          "7": 5,
+          "8": 14,
+          "0": 0.0
+        },
+        "1": {
+          "0": 2,
+          "2": 11,
+          "3": 10,
+          "4": 1,
+          "5": 19,
+          "6": 6,
+          "7": 16,
+          "8": 13,
+          "1": 0.0
+        },
+        "2": {
+          "0": 8,
+          "1": 15,
+          "3": 5,
+          "4": 1,
+          "5": 5,
+          "6": 11,
+          "7": 17,
+          "8": 18,
+          "2": 0.0
+        },
+        "3": {
+          "0": 2,
+          "1": 5,
+          "4": 6,
+          "5": 17,
+          "6": 1,
+          "7": 16,
+          "8": 14,
+          "3": 0.0
+        },
+        "4": {
+          "0": 15,
+          "1": 6,
+          "2": 20,
+          "3": 15,
+          "5": 7,
+          "6": 13,
+          "7": 6,
+          "8": 19,
+          "4": 0.0
+        },
+        "5": {
+          "0": 15,
+          "1": 2,
+          "2": 8,
+          "3": 2,
+          "4": 3,
+          "6": 2,
+          "7": 9,
+          "8": 2,
+          "5": 0.0
+        },
+        "6": {
+          "0": 10,
+          "1": 12,
+          "2": 11,
+          "3": 10,
+          "4": 19,
+          "5": 9,
+          "7": 17,
+          "8": 1,
+          "6": 0.0
+        },
+        "7": {
+          "0": 0,
+          "1": 20,
+          "2": 15,
+          "3": 19,
+          "4": 20,
+          "5": 18,
+          "6": 14,
+          "8": 8,
+          "7": 0.0
+        },
+        "8": {
+          "0": 16,
+          "1": 13,
+          "2": 3,
+          "3": 3,
+          "4": 20,
+          "5": 19,
+          "6": 2,
+          "7": 7,
+          "8": 0.0
+        }
+      },
+      "description": "Capacity of transport tubes between sectors"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "Sectors",
+        "Sectors"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Flow of resources between sectors"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "flow['0']['8']",
+    "description": "Maximize the flow from Sector 0 to Sector 8"
+  },
+  "constraints": [
+    {
+      "name": "capacity_constraint_0_1",
+      "expr_lhs": "flow['0']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['1']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 1"
+    },
+    {
+      "name": "capacity_constraint_0_2",
+      "expr_lhs": "flow['0']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['2']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 2"
+    },
+    {
+      "name": "capacity_constraint_0_3",
+      "expr_lhs": "flow['0']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['3']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 3"
+    },
+    {
+      "name": "capacity_constraint_0_4",
+      "expr_lhs": "flow['0']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['4']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 4"
+    },
+    {
+      "name": "capacity_constraint_0_5",
+      "expr_lhs": "flow['0']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['5']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 5"
+    },
+    {
+      "name": "capacity_constraint_0_6",
+      "expr_lhs": "flow['0']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['6']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 6"
+    },
+    {
+      "name": "capacity_constraint_0_7",
+      "expr_lhs": "flow['0']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['7']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 7"
+    },
+    {
+      "name": "capacity_constraint_0_8",
+      "expr_lhs": "flow['0']['8']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['8']",
+      "description": "Capacity constraint for flow from Sector 0 to Sector 8"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow['0']['1'] for j in Sectors if j != '1') + quicksum(flow[i]['1'] for i in Sectors if i != '1')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['1'][j] for j in Sectors if j != '1') + quicksum(flow[i]['1'] for i in Sectors if i != '1')",
+      "description": "Flow conservation at Sector 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow['0']['2'] for j in Sectors if j != '2') + quicksum(flow[i]['2'] for i in Sectors if i != '2')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['2'][j] for j in Sectors if j != '2') + quicksum(flow[i]['2'] for i in Sectors if i != '2')",
+      "description": "Flow conservation at Sector 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow['0']['3'] for j in Sectors if j != '3') + quicksum(flow[i]['3'] for i in Sectors if i != '3')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['3'][j] for j in Sectors if j != '3') + quicksum(flow[i]['3'] for i in Sectors if i != '3')",
+      "description": "Flow conservation at Sector 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow['0']['4'] for j in Sectors if j != '4') + quicksum(flow[i]['4'] for i in Sectors if i != '4')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['4'][j] for j in Sectors if j != '4') + quicksum(flow[i]['4'] for i in Sectors if i != '4')",
+      "description": "Flow conservation at Sector 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow['0']['5'] for j in Sectors if j != '5') + quicksum(flow[i]['5'] for i in Sectors if i != '5')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['5'][j] for j in Sectors if j != '5') + quicksum(flow[i]['5'] for i in Sectors if i != '5')",
+      "description": "Flow conservation at Sector 5"
+    },
+    {
+      "name": "flow_conservation_6",
+      "expr_lhs": "quicksum(flow['0']['6'] for j in Sectors if j != '6') + quicksum(flow[i]['6'] for i in Sectors if i != '6')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['6'][j] for j in Sectors if j != '6') + quicksum(flow[i]['6'] for i in Sectors if i != '6')",
+      "description": "Flow conservation at Sector 6"
+    },
+    {
+      "name": "flow_conservation_7",
+      "expr_lhs": "quicksum(flow['0']['7'] for j in Sectors if j != '7') + quicksum(flow[i]['7'] for i in Sectors if i != '7')",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow['7'][j] for j in Sectors if j != '7') + quicksum(flow[i]['7'] for i in Sectors if i != '7')",
+      "description": "Flow conservation at Sector 7"
+    }
+  ]
+}

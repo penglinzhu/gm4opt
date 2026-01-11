@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_3",
     "source": "IndustryOR",
-    "description": "A company wants to hire new employees to minimize salary costs while meeting various constraints.",
+    "description": "A company wants to hire new employees for their team. The salary requirements of candidates A, B, C, D, and E are $8100, $20000, $21000, $3000, and $8000 respectively. They need to decide whether to hire each candidate. The team wants to minimize the total amount paid to the candidates.\n\nThey want to hire a maximum of 3 new employees.\n\nThe team has a limited budget of $35,000. They need to ensure that the total payment to the selected candidates does not exceed the budget.\n\nThe qualifications of the five candidates are as follows:\nCandidate A: Bachelor's degree;\nCandidate B: Master's degree;\nCandidate C: PhD degree;\nCandidate D: No degree;\nCandidate E: No degree.\nThey will select at least one candidate with a master's or PhD degree.\n\nThe work experience of the five candidates is as follows:\nCandidate A: 3 years of work experience;\nCandidate B: 10 years of work experience;\nCandidate C: 4 years of work experience;\nCandidate D: 3 years of work experience;\nCandidate E: 7 years of work experience.\nThey want the total work experience of the selected candidates to be at least 12 years.\n\nDue to the similar professional skills of candidates A and E, the company will choose at most one of them.\n\nThey will hire at least 2 new employees.",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "CANDIDATES",
+      "name": "Candidates",
       "elements": [
         "A",
         "B",
@@ -16,28 +16,42 @@
         "D",
         "E"
       ],
-      "description": "The candidates available for hiring."
+      "description": "List of candidates"
     }
   ],
   "params": [
     {
       "name": "salary",
       "indices": [
-        "CANDIDATES"
+        "Candidates"
       ],
       "values": {
-        "A": 8100,
-        "B": 20000,
-        "C": 21000,
-        "D": 3000,
-        "E": 8000
+        "A": 8100.0,
+        "B": 20000.0,
+        "C": 21000.0,
+        "D": 3000.0,
+        "E": 8000.0
       },
-      "description": "Salary requirements of each candidate."
+      "description": "Salary requirements of candidates"
     },
     {
-      "name": "qualification",
+      "name": "experience",
       "indices": [
-        "CANDIDATES"
+        "Candidates"
+      ],
+      "values": {
+        "A": 3.0,
+        "B": 10.0,
+        "C": 4.0,
+        "D": 3.0,
+        "E": 7.0
+      },
+      "description": "Work experience of candidates"
+    },
+    {
+      "name": "degree",
+      "indices": [
+        "Candidates"
       ],
       "values": {
         "A": "Bachelor",
@@ -46,84 +60,69 @@
         "D": "None",
         "E": "None"
       },
-      "description": "Qualifications of each candidate."
-    },
-    {
-      "name": "experience",
-      "indices": [
-        "CANDIDATES"
-      ],
-      "values": {
-        "A": 3,
-        "B": 10,
-        "C": 4,
-        "D": 3,
-        "E": 7
-      },
-      "description": "Work experience of each candidate in years."
+      "description": "Qualifications of candidates"
     }
   ],
   "vars": [
     {
       "name": "hire",
       "indices": [
-        "CANDIDATES"
+        "Candidates"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary decision variable indicating whether to hire a candidate."
+      "description": "Decision to hire candidate"
     }
   ],
   "objective": {
-    "name": "min_total_cost",
+    "name": "total_salary",
     "sense": "min",
-    "expr": "sum(salary[c] * hire[c] for c in CANDIDATES)",
-    "description": "Minimize the total salary paid to the hired candidates."
+    "expr": "quicksum(salary[c] * hire[c] for c in Candidates)",
+    "description": "Minimize total salary of hired candidates"
   },
   "constraints": [
     {
-      "name": "max_3_employees",
-      "expr_lhs": "sum(hire[c] for c in CANDIDATES)",
+      "name": "max_hires",
+      "expr_lhs": "quicksum(hire[c] for c in Candidates)",
       "sense": "<=",
-      "expr_rhs": "3",
-      "description": "Hire at most 3 new employees."
+      "expr_rhs": "3.0",
+      "description": "Hire at most 3 candidates"
     },
     {
       "name": "budget_limit",
-      "expr_lhs": "sum(salary[c] * hire[c] for c in CANDIDATES)",
+      "expr_lhs": "quicksum(salary[c] * hire[c] for c in Candidates)",
       "sense": "<=",
-      "expr_rhs": "35000",
-      "description": "Total payment to selected candidates must not exceed the budget."
+      "expr_rhs": "35000.0",
+      "description": "Total salary must not exceed budget"
     },
     {
-      "name": "at_least_one_master_or_phd",
+      "name": "min_degree",
       "expr_lhs": "hire['B'] + hire['C']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "Select at least one candidate with a master's or PhD degree."
+      "expr_rhs": "1.0",
+      "description": "At least one candidate with Master or PhD"
     },
     {
-      "name": "min_12_years_experience",
-      "expr_lhs": "sum(experience[c] * hire[c] for c in CANDIDATES)",
+      "name": "min_experience",
+      "expr_lhs": "quicksum(experience[c] * hire[c] for c in Candidates)",
       "sense": ">=",
-      "expr_rhs": "12",
-      "description": "Total work experience of selected candidates must be at least 12 years."
+      "expr_rhs": "12.0",
+      "description": "Total work experience of hired candidates must be at least 12 years"
     },
     {
-      "name": "at_most_one_of_A_or_E",
+      "name": "exclusive_A_E",
       "expr_lhs": "hire['A'] + hire['E']",
       "sense": "<=",
-      "expr_rhs": "1",
-      "description": "Choose at most one of candidates A or E."
+      "expr_rhs": "1.0",
+      "description": "At most one of A or E can be hired"
     },
     {
-      "name": "min_2_employees",
-      "expr_lhs": "sum(hire[c] for c in CANDIDATES)",
+      "name": "min_hires",
+      "expr_lhs": "quicksum(hire[c] for c in Candidates)",
       "sense": ">=",
-      "expr_rhs": "2",
-      "description": "Hire at least 2 new employees."
+      "expr_rhs": "2.0",
+      "description": "Hire at least 2 candidates"
     }
-  ],
-  "graph": null
+  ]
 }

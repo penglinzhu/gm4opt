@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_48",
+    "source": "Mamo_complex_lp",
+    "description": "Consider a scenario where a delivery driver has a list of five different locations: Shop1, Shop2, Shop3, Shop4, and Shop5. The driver's task is to deliver packages to each shop and then return to the starting point. The catch is, the driver can visit each shop only once. The cost associated with traveling from one location to another varies, and might include factors such as fuel costs, traffic considerations, and road tolls. The driver's goal is to minimize the total travel cost. \n\nHere's a quick summary of the travel costs between the shops:\n\nThe cost to travel from Shop1 to Shop2 is 13 units, to Shop3 is 87 units, to Shop4 is 76 units, and to Shop5 is 50 units.\nFrom Shop2, it costs 13 units to reach Shop1, 15 units to get to Shop3, 65 units to Shop4, and 85 units to Shop5.\nTraveling from Shop3, the costs are 87 units to Shop1, 15 units to Shop2, 45 units to Shop4, and 81 units to Shop5.\nFrom Shop4, it costs 76 units to go to Shop1, 65 units to Shop2, 45 units to Shop3, and 80 units to Shop5.\nLastly, from Shop5, it takes 50 units to reach Shop1, 85 units to Shop2, 81 units to Shop3, and 80 units to Shop4.\n\nWhat is the optimal travel cost for the driver to deliver packages to each shop exactly once and return to the starting point, while minimizing the total travel cost?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Locations",
+      "elements": [
+        "Shop1",
+        "Shop2",
+        "Shop3",
+        "Shop4",
+        "Shop5"
+      ],
+      "description": "List of shops to be visited"
+    }
+  ],
+  "params": [
+    {
+      "name": "travel_cost",
+      "indices": [
+        "Locations",
+        "Locations"
+      ],
+      "values": {
+        "Shop1": {
+          "Shop2": 13.0,
+          "Shop3": 87.0,
+          "Shop4": 76.0,
+          "Shop5": 50.0,
+          "Shop1": 0.0
+        },
+        "Shop2": {
+          "Shop1": 13.0,
+          "Shop3": 15.0,
+          "Shop4": 65.0,
+          "Shop5": 85.0,
+          "Shop2": 0.0
+        },
+        "Shop3": {
+          "Shop1": 87.0,
+          "Shop2": 15.0,
+          "Shop4": 45.0,
+          "Shop5": 81.0,
+          "Shop3": 0.0
+        },
+        "Shop4": {
+          "Shop1": 76.0,
+          "Shop2": 65.0,
+          "Shop3": 45.0,
+          "Shop5": 80.0,
+          "Shop4": 0.0
+        },
+        "Shop5": {
+          "Shop1": 50.0,
+          "Shop2": 85.0,
+          "Shop3": 81.0,
+          "Shop4": 80.0,
+          "Shop5": 0.0
+        }
+      },
+      "description": "Cost of traveling between shops"
+    }
+  ],
+  "vars": [
+    {
+      "name": "visit",
+      "indices": [
+        "Locations",
+        "Locations"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "Binary variable indicating if a route between two shops is used"
+    }
+  ],
+  "objective": {
+    "name": "minimize_travel_cost",
+    "sense": "min",
+    "expr": "quicksum(travel_cost[i][j] * visit[i][j] for i in Locations for j in Locations if i != j)",
+    "description": "Minimize the total travel cost"
+  },
+  "constraints": [
+    {
+      "name": "visit_each_shop_once_1",
+      "expr_lhs": "quicksum(visit['Shop1'][j] for j in Locations if j != 'Shop1')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave Shop1 exactly once"
+    },
+    {
+      "name": "visit_each_shop_once_2",
+      "expr_lhs": "quicksum(visit['Shop2'][j] for j in Locations if j != 'Shop2')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave Shop2 exactly once"
+    },
+    {
+      "name": "visit_each_shop_once_3",
+      "expr_lhs": "quicksum(visit['Shop3'][j] for j in Locations if j != 'Shop3')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave Shop3 exactly once"
+    },
+    {
+      "name": "visit_each_shop_once_4",
+      "expr_lhs": "quicksum(visit['Shop4'][j] for j in Locations if j != 'Shop4')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave Shop4 exactly once"
+    },
+    {
+      "name": "visit_each_shop_once_5",
+      "expr_lhs": "quicksum(visit['Shop5'][j] for j in Locations if j != 'Shop5')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave Shop5 exactly once"
+    },
+    {
+      "name": "enter_each_shop_once_1",
+      "expr_lhs": "quicksum(visit[i]['Shop1'] for i in Locations if i != 'Shop1')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter Shop1 exactly once"
+    },
+    {
+      "name": "enter_each_shop_once_2",
+      "expr_lhs": "quicksum(visit[i]['Shop2'] for i in Locations if i != 'Shop2')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter Shop2 exactly once"
+    },
+    {
+      "name": "enter_each_shop_once_3",
+      "expr_lhs": "quicksum(visit[i]['Shop3'] for i in Locations if i != 'Shop3')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter Shop3 exactly once"
+    },
+    {
+      "name": "enter_each_shop_once_4",
+      "expr_lhs": "quicksum(visit[i]['Shop4'] for i in Locations if i != 'Shop4')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter Shop4 exactly once"
+    },
+    {
+      "name": "enter_each_shop_once_5",
+      "expr_lhs": "quicksum(visit[i]['Shop5'] for i in Locations if i != 'Shop5')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter Shop5 exactly once"
+    }
+  ]
+}

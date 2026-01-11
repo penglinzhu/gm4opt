@@ -1,0 +1,240 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_41",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine a scenario where a salesperson needs to visit five different cities, identified as Cities 1 through 5, to present their products. The salesperson has the flexibility to choose any city as a starting point; however, they are required to visit each city exactly once and then return to the starting city. The primary goal is to complete this circuit while incurring the lowest possible travel cost.\n\nHere’s a summary of the travel costs between the cities:\n- The cost to travel from City 1 to City 2 is 28 units, to City 3 is 89 units, to City 4 is 59 units, and to City 5 is 41 units.\n- From City 2, it costs 28 units to reach City 1, 85 units to get to City 3, 12 units to City 4, and 68 units to City 5.\n- Traveling from City 3, the costs are 89 units to City 1, 85 units to City 2, 22 units to City 4, and 70 units to City 5.\n- From City 4, the journey costs 59 units to City 1, 12 units to City 2, 22 units to City 3, and 48 units to City 5.\n- Lastly, from City 5, it costs 41 units to travel to City 1, 68 units to City 2, 70 units to City 3, and 48 units to City 4.\n\nWhat is the minimum total travel cost for the salesperson to visit each of the five cities exactly once and return to the starting city?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Cities",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "description": "Set of cities to be visited"
+    }
+  ],
+  "params": [
+    {
+      "name": "travel_cost",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "values": {
+        "1": {
+          "2": 28.0,
+          "3": 89.0,
+          "4": 59.0,
+          "5": 41.0,
+          "1": 0.0
+        },
+        "2": {
+          "1": 28.0,
+          "3": 85.0,
+          "4": 12.0,
+          "5": 68.0,
+          "2": 0.0
+        },
+        "3": {
+          "1": 89.0,
+          "2": 85.0,
+          "4": 22.0,
+          "5": 70.0,
+          "3": 0.0
+        },
+        "4": {
+          "1": 59.0,
+          "2": 12.0,
+          "3": 22.0,
+          "5": 48.0,
+          "4": 0.0
+        },
+        "5": {
+          "1": 41.0,
+          "2": 68.0,
+          "3": 70.0,
+          "4": 48.0,
+          "5": 0.0
+        }
+      },
+      "description": "Cost of travel between cities"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if travel from city i to city j is chosen, 0 otherwise"
+    },
+    {
+      "name": "u",
+      "indices": [
+        "Cities"
+      ],
+      "vartype": "integer",
+      "lb": 1.0,
+      "ub": 5.0,
+      "description": "Subtour elimination variable"
+    }
+  ],
+  "objective": {
+    "name": "min_travel_cost",
+    "sense": "min",
+    "expr": "quicksum(travel_cost[i][j] * x[i][j] for i in Cities for j in Cities if i != j)",
+    "description": "Minimize total travel cost"
+  },
+  "constraints": [
+    {
+      "name": "visit_each_city_once_1",
+      "expr_lhs": "quicksum(x['1'][j] for j in Cities if j != '1')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave city 1 exactly once"
+    },
+    {
+      "name": "visit_each_city_once_2",
+      "expr_lhs": "quicksum(x['2'][j] for j in Cities if j != '2')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave city 2 exactly once"
+    },
+    {
+      "name": "visit_each_city_once_3",
+      "expr_lhs": "quicksum(x['3'][j] for j in Cities if j != '3')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave city 3 exactly once"
+    },
+    {
+      "name": "visit_each_city_once_4",
+      "expr_lhs": "quicksum(x['4'][j] for j in Cities if j != '4')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave city 4 exactly once"
+    },
+    {
+      "name": "visit_each_city_once_5",
+      "expr_lhs": "quicksum(x['5'][j] for j in Cities if j != '5')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave city 5 exactly once"
+    },
+    {
+      "name": "enter_each_city_once_1",
+      "expr_lhs": "quicksum(x[i]['1'] for i in Cities if i != '1')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter city 1 exactly once"
+    },
+    {
+      "name": "enter_each_city_once_2",
+      "expr_lhs": "quicksum(x[i]['2'] for i in Cities if i != '2')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter city 2 exactly once"
+    },
+    {
+      "name": "enter_each_city_once_3",
+      "expr_lhs": "quicksum(x[i]['3'] for i in Cities if i != '3')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter city 3 exactly once"
+    },
+    {
+      "name": "enter_each_city_once_4",
+      "expr_lhs": "quicksum(x[i]['4'] for i in Cities if i != '4')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter city 4 exactly once"
+    },
+    {
+      "name": "enter_each_city_once_5",
+      "expr_lhs": "quicksum(x[i]['5'] for i in Cities if i != '5')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter city 5 exactly once"
+    },
+    {
+      "name": "subtour_elimination_1",
+      "expr_lhs": "u['1'] - u['2'] + 5 * x['1']['2']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 1 and 2"
+    },
+    {
+      "name": "subtour_elimination_2",
+      "expr_lhs": "u['1'] - u['3'] + 5 * x['1']['3']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 1 and 3"
+    },
+    {
+      "name": "subtour_elimination_3",
+      "expr_lhs": "u['1'] - u['4'] + 5 * x['1']['4']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 1 and 4"
+    },
+    {
+      "name": "subtour_elimination_4",
+      "expr_lhs": "u['1'] - u['5'] + 5 * x['1']['5']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 1 and 5"
+    },
+    {
+      "name": "subtour_elimination_5",
+      "expr_lhs": "u['2'] - u['3'] + 5 * x['2']['3']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 2 and 3"
+    },
+    {
+      "name": "subtour_elimination_6",
+      "expr_lhs": "u['2'] - u['4'] + 5 * x['2']['4']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 2 and 4"
+    },
+    {
+      "name": "subtour_elimination_7",
+      "expr_lhs": "u['2'] - u['5'] + 5 * x['2']['5']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 2 and 5"
+    },
+    {
+      "name": "subtour_elimination_8",
+      "expr_lhs": "u['3'] - u['4'] + 5 * x['3']['4']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 3 and 4"
+    },
+    {
+      "name": "subtour_elimination_9",
+      "expr_lhs": "u['3'] - u['5'] + 5 * x['3']['5']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 3 and 5"
+    },
+    {
+      "name": "subtour_elimination_10",
+      "expr_lhs": "u['4'] - u['5'] + 5 * x['4']['5']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination between city 4 and 5"
+    }
+  ]
+}

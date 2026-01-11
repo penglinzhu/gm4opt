@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_21",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you're trying to put together a meal plan that ticks all the boxes: it meets all your nutritional needs and it doesn't break the bank. You're considering six different food items: Chicken, Rice, Eggs, Broccoli, Lentils, and Apples. Each of these foods provides different amounts of protein, carbohydrates, and calories, and they all come at different prices.\n\nHere's a rundown of what each food offers and how much it costs:\n\n- Chicken: It gives you 18 grams of protein, 5 grams of carbohydrates, and 202 calories for just $1.\n- Rice: With 14 grams of protein, 13 grams of carbs, and 234 calories, Rice is a bit pricier at $7.\n- Eggs: Like Chicken, Eggs also offer 18 grams of protein, along with 4 grams of carbs and 220 calories for $4.\n- Broccoli: A great source of protein at 7 grams, with 15 grams of carbs and 247 calories, this vegetable will cost you $3.\n- Lentils: They provide 15 grams of protein, 17 grams of carbs, and 88 calories for only $1.\n- Apples: They offer 8 grams of protein, 13 grams of carbohydrates, and 77 calories for $2.\n\nYou know that your meal plan needs to give you at least 70 grams of protein, 187 grams of carbohydrates, and 2181 calories. Your challenge is to determine the least expensive way to get all the nutrients you need from this group of six food items.\n\nSo, what is the minimum total cost you would need to spend to meet all your dietary requirements for the day?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Foods",
+      "elements": [
+        "Chicken",
+        "Rice",
+        "Eggs",
+        "Broccoli",
+        "Lentils",
+        "Apples"
+      ],
+      "description": "Different food items available for the meal plan"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 1.0,
+        "Rice": 7.0,
+        "Eggs": 4.0,
+        "Broccoli": 3.0,
+        "Lentils": 1.0,
+        "Apples": 2.0
+      },
+      "description": "Cost of each food item"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 18.0,
+        "Rice": 14.0,
+        "Eggs": 18.0,
+        "Broccoli": 7.0,
+        "Lentils": 15.0,
+        "Apples": 8.0
+      },
+      "description": "Protein content of each food item"
+    },
+    {
+      "name": "carbs",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 5.0,
+        "Rice": 13.0,
+        "Eggs": 4.0,
+        "Broccoli": 15.0,
+        "Lentils": 17.0,
+        "Apples": 13.0
+      },
+      "description": "Carbohydrate content of each food item"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 202.0,
+        "Rice": 234.0,
+        "Eggs": 220.0,
+        "Broccoli": 247.0,
+        "Lentils": 88.0,
+        "Apples": 77.0
+      },
+      "description": "Calorie content of each food item"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Foods"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units of each food item to include in the meal plan"
+    }
+  ],
+  "objective": {
+    "name": "TotalCost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in Foods)",
+    "description": "Minimize the total cost of the meal plan"
+  },
+  "constraints": [
+    {
+      "name": "ProteinRequirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "70.0",
+      "description": "Ensure at least 70 grams of protein"
+    },
+    {
+      "name": "CarbsRequirement",
+      "expr_lhs": "quicksum(carbs[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "187.0",
+      "description": "Ensure at least 187 grams of carbohydrates"
+    },
+    {
+      "name": "CaloriesRequirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "2181.0",
+      "description": "Ensure at least 2181 calories"
+    }
+  ]
+}

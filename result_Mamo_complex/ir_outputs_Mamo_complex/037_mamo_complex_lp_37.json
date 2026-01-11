@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_37",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you are coordinating a logistics effort to redistribute essential supplies among seven regional distribution centers. Each center starts with a specific quantity of supplies but has different needs to ensure smooth operations across the regions.\n\nHere's the initial setup:\n\n- Distribution Center 1 has 97 units but needs 119 units.\n- Distribution Center 2 has 458 units but needs 275 units.\n- Distribution Center 3 has 473 units but needs only 36 units.\n- Distribution Center 4 has 380 units but needs 459 units.\n- Distribution Center 5 has 34 units but needs 17 units.\n- Distribution Center 6 has 399 units but needs 128 units.\n- Distribution Center 7 has 163 units but needs 425 units.\n\nTo move supplies between these centers, there is a cost associated with each transfer, which varies depending on the route. Here's the cost matrix showing the cost to transfer supplies from one center to another:\n\n- From/To Center 1: To 2 costs 41, to 3 costs 42, to 4 costs 31, to 5 costs 39, to 6 costs 2, to 7 costs 18.\n- From/To Center 2: To 1 costs 48, to 3 costs 9, to 4 costs 22, to 5 costs 47, to 6 costs 29, to 7 costs 39.\n- From/To Center 3: To 1 costs 36, to 2 costs 22, to 4 costs 29, to 5 costs 45, to 6 costs 33, to 7 costs 45.\n- From/To Center 4: To 1 costs 19, to 2 costs 5, to 3 costs 10, to 5 costs 3, to 6 costs 42, to 7 costs 20.\n- From/To Center 5: To 1 costs 13, to 2 costs 10, to 3 costs 21, to 4 costs 7, to 6 costs 35, to 7 costs 11.\n- From/To Center 6: To 1 costs 5, to 2 costs 35, to 3 costs 29, to 4 costs 16, to 5 costs 40, to 7 costs 9.\n- From/To Center 7: To 1 costs 7, to 2 costs 24, to 3 costs 26, to 4 costs 38, to 5 costs 33, to 6 costs 13.\n\nYour task is to ensure each distribution center has the supplies it needs while minimizing the total cost of redistribution. What would be the minimum cost to achieve this?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Centers",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "description": "Distribution centers"
+    }
+  ],
+  "params": [
+    {
+      "name": "supply",
+      "indices": [
+        "Centers"
+      ],
+      "values": {
+        "1": 97,
+        "2": 458,
+        "3": 473,
+        "4": 380,
+        "5": 34,
+        "6": 399,
+        "7": 163
+      },
+      "description": "Initial supply at each center"
+    },
+    {
+      "name": "demand",
+      "indices": [
+        "Centers"
+      ],
+      "values": {
+        "1": 119,
+        "2": 275,
+        "3": 36,
+        "4": 459,
+        "5": 17,
+        "6": 128,
+        "7": 425
+      },
+      "description": "Demand at each center"
+    },
+    {
+      "name": "cost",
+      "indices": [
+        "Centers",
+        "Centers"
+      ],
+      "values": {
+        "1": {
+          "2": 41,
+          "3": 42,
+          "4": 31,
+          "5": 39,
+          "6": 2,
+          "7": 18,
+          "1": 0.0
+        },
+        "2": {
+          "1": 48,
+          "3": 9,
+          "4": 22,
+          "5": 47,
+          "6": 29,
+          "7": 39,
+          "2": 0.0
+        },
+        "3": {
+          "1": 36,
+          "2": 22,
+          "4": 29,
+          "5": 45,
+          "6": 33,
+          "7": 45,
+          "3": 0.0
+        },
+        "4": {
+          "1": 19,
+          "2": 5,
+          "3": 10,
+          "5": 3,
+          "6": 42,
+          "7": 20,
+          "4": 0.0
+        },
+        "5": {
+          "1": 13,
+          "2": 10,
+          "3": 21,
+          "4": 7,
+          "6": 35,
+          "7": 11,
+          "5": 0.0
+        },
+        "6": {
+          "1": 5,
+          "2": 35,
+          "3": 29,
+          "4": 16,
+          "5": 40,
+          "7": 9,
+          "6": 0.0
+        },
+        "7": {
+          "1": 7,
+          "2": 24,
+          "3": 26,
+          "4": 38,
+          "5": 33,
+          "6": 13,
+          "7": 0.0
+        }
+      },
+      "description": "Cost to transfer supplies between centers"
+    }
+  ],
+  "vars": [
+    {
+      "name": "transfer",
+      "indices": [
+        "Centers",
+        "Centers"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Units transferred from one center to another"
+    }
+  ],
+  "objective": {
+    "name": "total_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * transfer[i][j] for i in Centers for j in Centers if i != j)",
+    "description": "Minimize total transfer cost"
+  },
+  "constraints": [
+    {
+      "name": "balance_1",
+      "expr_lhs": "supply['1'] + quicksum(transfer[j]['1'] for j in Centers if j != '1') - quicksum(transfer['1'][j] for j in Centers if j != '1')",
+      "sense": "==",
+      "expr_rhs": "demand['1']",
+      "description": "Balance constraint for center 1"
+    },
+    {
+      "name": "balance_2",
+      "expr_lhs": "supply['2'] + quicksum(transfer[j]['2'] for j in Centers if j != '2') - quicksum(transfer['2'][j] for j in Centers if j != '2')",
+      "sense": "==",
+      "expr_rhs": "demand['2']",
+      "description": "Balance constraint for center 2"
+    },
+    {
+      "name": "balance_3",
+      "expr_lhs": "supply['3'] + quicksum(transfer[j]['3'] for j in Centers if j != '3') - quicksum(transfer['3'][j] for j in Centers if j != '3')",
+      "sense": "==",
+      "expr_rhs": "demand['3']",
+      "description": "Balance constraint for center 3"
+    },
+    {
+      "name": "balance_4",
+      "expr_lhs": "supply['4'] + quicksum(transfer[j]['4'] for j in Centers if j != '4') - quicksum(transfer['4'][j] for j in Centers if j != '4')",
+      "sense": "==",
+      "expr_rhs": "demand['4']",
+      "description": "Balance constraint for center 4"
+    },
+    {
+      "name": "balance_5",
+      "expr_lhs": "supply['5'] + quicksum(transfer[j]['5'] for j in Centers if j != '5') - quicksum(transfer['5'][j] for j in Centers if j != '5')",
+      "sense": "==",
+      "expr_rhs": "demand['5']",
+      "description": "Balance constraint for center 5"
+    },
+    {
+      "name": "balance_6",
+      "expr_lhs": "supply['6'] + quicksum(transfer[j]['6'] for j in Centers if j != '6') - quicksum(transfer['6'][j] for j in Centers if j != '6')",
+      "sense": "==",
+      "expr_rhs": "demand['6']",
+      "description": "Balance constraint for center 6"
+    },
+    {
+      "name": "balance_7",
+      "expr_lhs": "supply['7'] + quicksum(transfer[j]['7'] for j in Centers if j != '7') - quicksum(transfer['7'][j] for j in Centers if j != '7')",
+      "sense": "==",
+      "expr_rhs": "demand['7']",
+      "description": "Balance constraint for center 7"
+    }
+  ]
+}

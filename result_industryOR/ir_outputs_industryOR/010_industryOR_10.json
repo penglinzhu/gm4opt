@@ -2,125 +2,124 @@
   "meta": {
     "problem_id": "industryOR_10",
     "source": "IndustryOR",
-    "description": "Determine the company's production plan to maximize profit for manufacturing three types of tabletop golf toys.",
+    "description": "A toy company manufactures three types of tabletop golf toy, each requiring different manufacturing techniques. The advanced type requires 17 hours of processing and assembly labor, 8 hours of inspection, and a profit of 300 yuan per unit. The intermediate type requires 10 hours of labor, 4 hours of inspection, and a profit of 200 yuan. The basic type requires 2 hours of labor, 2 hours of inspection, and a profit of 100 yuan. There are 1000 hours of processing labor and 500 hours of inspection available. Furthermore, market forecasts indicate that the demand for the advanced type does not exceed 50 units, for the intermediate type does not exceed 80 units, and for the basic type does not exceed 150 units. Determine the company's production plan to maximize profit.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "TOY_TYPES",
+      "name": "T",
       "elements": [
         "advanced",
         "intermediate",
         "basic"
       ],
-      "description": "Types of tabletop golf toys."
+      "description": "Types of tabletop golf toys"
     }
   ],
   "params": [
     {
       "name": "labor_hours",
       "indices": [
-        "TOY_TYPES"
+        "T"
       ],
       "values": {
-        "advanced": 17,
-        "intermediate": 10,
-        "basic": 2
+        "advanced": 17.0,
+        "intermediate": 10.0,
+        "basic": 2.0
       },
-      "description": "Labor hours required per unit for each toy type."
+      "description": "Labor hours required per unit for each type"
     },
     {
       "name": "inspection_hours",
       "indices": [
-        "TOY_TYPES"
+        "T"
       ],
       "values": {
-        "advanced": 8,
-        "intermediate": 4,
-        "basic": 2
+        "advanced": 8.0,
+        "intermediate": 4.0,
+        "basic": 2.0
       },
-      "description": "Inspection hours required per unit for each toy type."
+      "description": "Inspection hours required per unit for each type"
     },
     {
       "name": "profit",
       "indices": [
-        "TOY_TYPES"
+        "T"
       ],
       "values": {
-        "advanced": 300,
-        "intermediate": 200,
-        "basic": 100
+        "advanced": 300.0,
+        "intermediate": 200.0,
+        "basic": 100.0
       },
-      "description": "Profit per unit for each toy type."
+      "description": "Profit per unit for each type"
     },
     {
       "name": "max_demand",
       "indices": [
-        "TOY_TYPES"
+        "T"
       ],
       "values": {
-        "advanced": 50,
-        "intermediate": 80,
-        "basic": 150
+        "advanced": 50.0,
+        "intermediate": 80.0,
+        "basic": 150.0
       },
-      "description": "Maximum demand for each toy type."
+      "description": "Maximum demand for each type"
     }
   ],
   "vars": [
     {
-      "name": "production",
+      "name": "x",
       "indices": [
-        "TOY_TYPES"
+        "T"
       ],
       "vartype": "integer",
-      "lb": 0,
+      "lb": 0.0,
       "ub": null,
-      "description": "Number of units to produce for each toy type."
+      "description": "Number of units to produce for each type"
     }
   ],
   "objective": {
-    "name": "max_total_profit",
+    "name": "total_profit",
     "sense": "max",
-    "expr": "sum(profit[t] * production[t] for t in ['advanced', 'intermediate', 'basic'])",
-    "description": "Maximize total profit from producing the toys."
+    "expr": "quicksum(profit[t] * x[t] for t in T)",
+    "description": "Maximize total profit"
   },
   "constraints": [
     {
-      "name": "labor_hours_constraint",
-      "expr_lhs": "sum(labor_hours[t] * production[t] for t in ['advanced', 'intermediate', 'basic'])",
+      "name": "labor_limit",
+      "expr_lhs": "quicksum(labor_hours[t] * x[t] for t in T)",
       "sense": "<=",
-      "expr_rhs": "1000",
-      "description": "Total labor hours used cannot exceed available labor hours."
+      "expr_rhs": "1000.0",
+      "description": "Total labor hours constraint"
     },
     {
-      "name": "inspection_hours_constraint",
-      "expr_lhs": "sum(inspection_hours[t] * production[t] for t in ['advanced', 'intermediate', 'basic'])",
+      "name": "inspection_limit",
+      "expr_lhs": "quicksum(inspection_hours[t] * x[t] for t in T)",
       "sense": "<=",
-      "expr_rhs": "500",
-      "description": "Total inspection hours used cannot exceed available inspection hours."
+      "expr_rhs": "500.0",
+      "description": "Total inspection hours constraint"
     },
     {
-      "name": "demand_constraint_advanced",
-      "expr_lhs": "production['advanced']",
+      "name": "demand_advanced",
+      "expr_lhs": "x['advanced']",
       "sense": "<=",
       "expr_rhs": "max_demand['advanced']",
-      "description": "Production of advanced type cannot exceed its demand."
+      "description": "Demand constraint for advanced type"
     },
     {
-      "name": "demand_constraint_intermediate",
-      "expr_lhs": "production['intermediate']",
+      "name": "demand_intermediate",
+      "expr_lhs": "x['intermediate']",
       "sense": "<=",
       "expr_rhs": "max_demand['intermediate']",
-      "description": "Production of intermediate type cannot exceed its demand."
+      "description": "Demand constraint for intermediate type"
     },
     {
-      "name": "demand_constraint_basic",
-      "expr_lhs": "production['basic']",
+      "name": "demand_basic",
+      "expr_lhs": "x['basic']",
       "sense": "<=",
       "expr_rhs": "max_demand['basic']",
-      "description": "Production of basic type cannot exceed its demand."
+      "description": "Demand constraint for basic type"
     }
-  ],
-  "graph": null
+  ]
 }

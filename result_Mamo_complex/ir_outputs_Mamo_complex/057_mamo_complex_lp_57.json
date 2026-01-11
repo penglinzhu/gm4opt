@@ -1,0 +1,236 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_57",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine a city that has a complex electrical network with 8 power stations (including source and the main receiving stations). The stations are connected with transmission lines, each capable of handling a certain amount of electricity.\n\nHere's the capacity of each transmission line, showing the maximum amount of electricity (in megawatts) that can flow from one station to another:\n\n- From Station 0 (Source): Can send electricity to Station 1 (9 MW), Station 2 (6 MW), Station 3 (1 MW), Station 4 (8 MW), Station 5 (14 MW), Station 6 (1 MW) and Station 7 (17 MW).\n- From Station 1: Can send electricity to Station 0 (1 MW), Station 2 (6 MW), Station 3 (14 MW), Station 4 (16 MW), Station 5 (8 MW), Station 6 (19 MW) and Station 7 (15 MW).\n- From Station 2: Can send electricity to Station 0 (4 MW), Station 1 (7 MW), Station 3 (9 MW), Station 4 (1 MW), Station 5 (2 MW), Station 6 (9 MW) and Station 7 (4 MW).\n- From Station 3: Can send electricity to Station 0 (11 MW), Station 1 (5 MW), Station 2 (14 MW), Station 4 (17 MW), Station 5 (6 MW), Station 6 (20 MW) and Station 7 (13 MW).\n- From Station 4: Can send electricity to Station 0 (8 MW), Station 1 (5 MW), Station 2 (20 MW), Station 3 (0 MW), Station 5 (16 MW), Station 6 (5 MW) and Station 7 (5 MW).\n- From Station 5: Can send electricity to Station 0 (15 MW), Station 1 (18 MW), Station 2 (9 MW), Station 3 (1 MW), Station 4 (19 MW), Station 6 (16 MW) and Station 7 (0 MW).\n- From Station 6: Can send electricity to Station 0 (20 MW), Station 1 (15 MW), Station 2 (1 MW), Station 3 (0 MW), Station 4 (11 MW), Station 5 (6 MW) and Station 7 (19 MW).\n- From Station 7 (Destination): Can send electricity back to Station 0 (4 MW), Station 1 (18 MW), Station 2 (10 MW), Station 3 (2 MW), Station 4 (1 MW), Station 5 (20 MW) and Station 6 (14 MW).\n\nIn this network, a capacity of \"0\" means there is no direct transmission line between those two stations.\n\nThe challenge is to calculate the maximum amount of electricity that can be transmitted from Station 0 (the source) to Station 7 (the main receiving station), ensuring that the flow through each transmission line does not exceed its capacity. What is the maximum amount of electricity that can be transmitted from the source to the destination in megawatts?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Stations",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "description": "Set of power stations"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "Stations",
+        "Stations"
+      ],
+      "values": {
+        "0": {
+          "1": 9.0,
+          "2": 6.0,
+          "3": 1.0,
+          "4": 8.0,
+          "5": 14.0,
+          "6": 1.0,
+          "7": 17.0,
+          "0": 0.0
+        },
+        "1": {
+          "0": 1.0,
+          "2": 6.0,
+          "3": 14.0,
+          "4": 16.0,
+          "5": 8.0,
+          "6": 19.0,
+          "7": 15.0,
+          "1": 0.0
+        },
+        "2": {
+          "0": 4.0,
+          "1": 7.0,
+          "3": 9.0,
+          "4": 1.0,
+          "5": 2.0,
+          "6": 9.0,
+          "7": 4.0,
+          "2": 0.0
+        },
+        "3": {
+          "0": 11.0,
+          "1": 5.0,
+          "2": 14.0,
+          "4": 17.0,
+          "5": 6.0,
+          "6": 20.0,
+          "7": 13.0,
+          "3": 0.0
+        },
+        "4": {
+          "0": 8.0,
+          "1": 5.0,
+          "2": 20.0,
+          "3": 0.0,
+          "5": 16.0,
+          "6": 5.0,
+          "7": 5.0,
+          "4": 0.0
+        },
+        "5": {
+          "0": 15.0,
+          "1": 18.0,
+          "2": 9.0,
+          "3": 1.0,
+          "4": 19.0,
+          "6": 16.0,
+          "7": 0.0,
+          "5": 0.0
+        },
+        "6": {
+          "0": 20.0,
+          "1": 15.0,
+          "2": 1.0,
+          "3": 0.0,
+          "4": 11.0,
+          "5": 6.0,
+          "7": 19.0,
+          "6": 0.0
+        },
+        "7": {
+          "0": 4.0,
+          "1": 18.0,
+          "2": 10.0,
+          "3": 2.0,
+          "4": 1.0,
+          "5": 20.0,
+          "6": 14.0,
+          "7": 0.0
+        }
+      },
+      "description": "Capacity of transmission lines between stations"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "Stations",
+        "Stations"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Flow of electricity between stations"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "quicksum(flow['0'][j] for j in Stations) - quicksum(flow[j]['0'] for j in Stations)",
+    "description": "Maximize flow from source (Station 0) to destination (Station 7)"
+  },
+  "constraints": [
+    {
+      "name": "capacity_constraint_0_1",
+      "expr_lhs": "flow['0']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['1']",
+      "description": "Capacity constraint for flow from Station 0 to Station 1"
+    },
+    {
+      "name": "capacity_constraint_0_2",
+      "expr_lhs": "flow['0']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['2']",
+      "description": "Capacity constraint for flow from Station 0 to Station 2"
+    },
+    {
+      "name": "capacity_constraint_0_3",
+      "expr_lhs": "flow['0']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['3']",
+      "description": "Capacity constraint for flow from Station 0 to Station 3"
+    },
+    {
+      "name": "capacity_constraint_0_4",
+      "expr_lhs": "flow['0']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['4']",
+      "description": "Capacity constraint for flow from Station 0 to Station 4"
+    },
+    {
+      "name": "capacity_constraint_0_5",
+      "expr_lhs": "flow['0']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['5']",
+      "description": "Capacity constraint for flow from Station 0 to Station 5"
+    },
+    {
+      "name": "capacity_constraint_0_6",
+      "expr_lhs": "flow['0']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['6']",
+      "description": "Capacity constraint for flow from Station 0 to Station 6"
+    },
+    {
+      "name": "capacity_constraint_0_7",
+      "expr_lhs": "flow['0']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['7']",
+      "description": "Capacity constraint for flow from Station 0 to Station 7"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow['1'][j] for j in Stations) - quicksum(flow[j]['1'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow['2'][j] for j in Stations) - quicksum(flow[j]['2'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow['3'][j] for j in Stations) - quicksum(flow[j]['3'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow['4'][j] for j in Stations) - quicksum(flow[j]['4'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow['5'][j] for j in Stations) - quicksum(flow[j]['5'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 5"
+    },
+    {
+      "name": "flow_conservation_6",
+      "expr_lhs": "quicksum(flow['6'][j] for j in Stations) - quicksum(flow[j]['6'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 6"
+    },
+    {
+      "name": "flow_conservation_7",
+      "expr_lhs": "quicksum(flow['7'][j] for j in Stations) - quicksum(flow[j]['7'] for j in Stations)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Station 7"
+    }
+  ]
+}

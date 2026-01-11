@@ -1,7 +1,7 @@
 # run_complexlp_benchmark.py
-# 批量跑 Mamo_complex_lp_clean.jsonl：
-# NL -> system prompt -> IR(JSON) -> ModelIR -> GraphIR -> verifier -> Gurobi -> estimation
-# 记录每个问题的求解结果，并保存 IR JSON
+# Mamo_complex_lp_clean.jsonl -> ir2solve_pipeline -> CSV + IR JSON + trace.jsonl
+# Dataset format (per line json):
+#   {"Question": "...", "Answer": "...", ...}
 
 from __future__ import annotations
 
@@ -9,30 +9,42 @@ import os
 import json
 import csv
 import traceback
-from dataclasses import asdict, is_dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 
 from openai import OpenAI
+from ir2solve_pipeline import run_ir2solve_pipeline, PipelineConfig
 
-from gm4opt_pipeline import run_gm4opt_pipeline, PipelineConfig
-
-# ========== 配置区域 ==========
-
+# -------------------------
+# Config
+# -------------------------
 DATASET_PATH = "data/Mamo/Mamo_complex_lp_clean.jsonl"
 
 RESULT_DIR = "result_Mamo_complex"
 IR_OUTPUT_DIR = os.path.join(RESULT_DIR, "ir_outputs_Mamo_complex")
-
 RESULT_CSV_PATH = os.path.join(RESULT_DIR, "Mamo_complex_results.csv")
+TRACE_JSONL_PATH = os.path.join(RESULT_DIR, "Mamo_complex_trace.jsonl")
 SUMMARY_TXT_PATH = os.path.join(RESULT_DIR, "Mamo_complex_summary.txt")
 
 LLM_MODEL_NAME = "gpt-4o"
+TEMPERATURE = 0.0
+TIME_LIMIT_SEC = 60.0
 
-# ========== 工具函数 ==========
+# switches for ablation
+LAYER1_ON = True
+LAYER2_ON = True
+LAYER3_ON = True
+REPAIRS_ON = True
+
+
+# -------------------------
+# Utils
+# -------------------------
+def ensure_dir(path: str) -> None:
+    if path and not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
 
 
 def safe_float(x: Any) -> Optional[float]:
-    """尽量把 Answer 转成 float，失败则返回 None。"""
     if x is None:
         return None
     if isinstance(x, (int, float)):
@@ -49,95 +61,67 @@ def safe_float(x: Any) -> Optional[float]:
 
 
 def is_close(a: float, b: float, atol: float = 1e-4, rtol: float = 1e-6) -> bool:
-    """浮点数比较"""
     return abs(a - b) <= (atol + rtol * max(1.0, abs(b)))
 
 
-def ensure_dir(path: str) -> None:
-    if path and not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
+def _safe_problem_id(name: str) -> str:
+    return "".join(c if c.isalnum() or c in "-_." else "_" for c in name)
 
 
-def _try_asdict(x: Any) -> Any:
-    if is_dataclass(x):
-        try:
-            return asdict(x)
-        except Exception:
-            return str(x)
-    return x
+def _extract_kinds(report: Any, key: str) -> List[str]:
+    out: List[str] = []
+    if not isinstance(report, dict):
+        return out
+    for it in (report.get(key, []) or []):
+        if isinstance(it, dict):
+            k = it.get("kind")
+            if k and k not in out:
+                out.append(str(k))
+        elif isinstance(it, str) and it and it not in out:
+            out.append(it)
+    return out
 
 
-def _build_pipeline_config(**kwargs) -> PipelineConfig:
-    """
-    根据 PipelineConfig 的真实字段自动过滤 kwargs 并构造 config。
-    这样 pipeline config 字段调整时，benchmark 脚本不需要频繁联动。
-    """
-    if not is_dataclass(PipelineConfig):
-        return PipelineConfig(**kwargs)
-    field_names = set(PipelineConfig.__dataclass_fields__.keys())
-    filtered = {k: v for k, v in kwargs.items() if k in field_names}
-    return PipelineConfig(**filtered)
-
-
-def _stage_ok(stages: Any, name: str) -> int:
-    """
-    stages 是 pipeline 的 stages dict（或 None）。
-    返回 0/1，用于 CSV 汇总。
-    """
-    try:
-        if not isinstance(stages, dict):
-            return 0
-        st = stages.get(name, None)
-        if st is None:
-            return 0
-        return int(bool(getattr(st, "ok", False)))
-    except Exception:
-        return 0
-
-
+# -------------------------
+# Per-instance solve
+# -------------------------
 def solve_one_instance(
     idx: int,
     question_text: str,
     gt_answer_raw: Any,
     client: OpenAI,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    返回 (row_csv, ir_dict)
-    """
-    instance_id = f"mamo_complex_{idx}"
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    instance_id = f"mamo_complex_lp_{idx}"
     gt_value = safe_float(gt_answer_raw)
 
-    row_csv: Dict[str, Any] = {
+    row: Dict[str, Any] = {
         "index": idx,
         "problem_id": instance_id,
-        "failure_stage": "",
-        "json_extract_ok": 0,
-        "ir_parse_ok": 0,
-        "graph_build_ok": 0,
-        "verifier_ok": 0,
-        "solver_build_ok": 0,
-        "solver_optimize_ok": 0,
-        "estimation_ok": 0,
-        "gurobi_status": "NONE",
+        "status": "NONE",
         "obj_value": "",
-        "ground_truth": gt_value if gt_value is not None else "",
+        "ground_truth": "" if gt_value is None else float(gt_value),
         "correct": 0,
-        "prompt_tokens": "",
-        "completion_tokens": "",
-        "total_tokens": "",
+        "issues": "",
+        "repairs": "",
+        "failure_stage": "",
         "error": "",
     }
+
     ir_dict: Dict[str, Any] = {}
+    trace: Dict[str, Any] = {}
 
     try:
-        cfg = _build_pipeline_config(
+        cfg = PipelineConfig(
             model_name=LLM_MODEL_NAME,
-            temperature=0.0,
-            enable_graph=True,
-            timelimit_sec=60.0,
+            temperature=float(TEMPERATURE),
+            timelimit_sec=float(TIME_LIMIT_SEC),
+            layer1_on=bool(LAYER1_ON),
+            layer2_on=bool(LAYER2_ON),
+            layer3_on=bool(LAYER3_ON),
+            repairs_on=bool(REPAIRS_ON),
         )
 
-        res = run_gm4opt_pipeline(
+        res = run_ir2solve_pipeline(
             question_text=question_text,
             client=client,
             config=cfg,
@@ -146,85 +130,78 @@ def solve_one_instance(
         )
 
         ir_dict = getattr(res, "ir_dict", None) or {}
+        trace = getattr(res, "trace", None) or {}
 
-        stages = getattr(res, "stages", None)
-        row_csv["failure_stage"] = getattr(res, "failure_stage", "") or ""
+        row["failure_stage"] = getattr(res, "failure_stage", "") or ""
+        row["error"] = getattr(res, "error", "") or ""
 
-        row_csv["json_extract_ok"] = _stage_ok(stages, "json_extract")
-        row_csv["ir_parse_ok"] = _stage_ok(stages, "ir_parse")
-        row_csv["graph_build_ok"] = _stage_ok(stages, "graph_build")
-        row_csv["verifier_ok"] = _stage_ok(stages, "verifier")
-        row_csv["solver_build_ok"] = _stage_ok(stages, "solver_build")
-        row_csv["solver_optimize_ok"] = _stage_ok(stages, "solver_optimize")
-        row_csv["estimation_ok"] = _stage_ok(stages, "estimation")
+        status = getattr(res, "gurobi_status_name", None) or "NONE"
+        row["status"] = status
 
-        # gurobi status / obj
-        status_name = getattr(res, "gurobi_status_name", None)
-        status_code = getattr(res, "gurobi_status", None)
-        if status_name:
-            row_csv["gurobi_status"] = status_name
-        elif status_code is not None:
-            row_csv["gurobi_status"] = str(status_code)
+        obj = getattr(res, "gurobi_obj_value", None)
+        if obj is not None:
+            row["obj_value"] = float(obj)
 
-        obj_val = getattr(res, "gurobi_obj_value", None)
-        if obj_val is not None:
-            row_csv["obj_value"] = float(obj_val)
+        vrep = getattr(res, "verifier_report", None) or {}
+        row["issues"] = ";".join(_extract_kinds(vrep, "issues"))
+        row["repairs"] = ";".join(_extract_kinds(vrep, "repairs"))
 
-        # correctness
-        correct = False
-        if obj_val is not None and gt_value is not None:
-            correct = is_close(float(obj_val), float(gt_value))
-        row_csv["correct"] = int(correct)
+        if obj is not None and gt_value is not None:
+            row["correct"] = int(is_close(float(obj), float(gt_value)))
 
-        # tokens（如果 pipeline 仍保留 usage 字段就写；如果移除了就留空）
-        u = getattr(res, "llm_usage", None) or {}
-        if isinstance(u, dict):
-            for k in ("prompt_tokens", "completion_tokens", "total_tokens"):
-                v = u.get(k, None)
-                row_csv[k] = v if v is not None else ""
+        if isinstance(trace, dict):
+            trace.setdefault("eval", {})
+            trace["eval"].update(
+                {
+                    "ground_truth_raw": gt_answer_raw,
+                    "ground_truth_value": gt_value,
+                    "obj_value": obj,
+                    "status": status,
+                    "correct": row["correct"],
+                }
+            )
 
     except Exception as e:
-        row_csv["error"] = f"{type(e).__name__}: {e}"
-        traceback.print_exc(limit=40)
+        row["failure_stage"] = row["failure_stage"] or "benchmark_exception"
+        row["error"] = f"{type(e).__name__}: {e}"
+        trace = {
+            "meta": {"problem_id": instance_id, "source": "Mamo_complex_lp"},
+            "failure_stage": row["failure_stage"],
+            "error": row["error"],
+            "traceback": traceback.format_exc(limit=30),
+        }
 
-    return row_csv, ir_dict
+    return row, ir_dict, trace
 
 
-# ========== 主函数 ==========
-
-
-def main():
+# -------------------------
+# Main
+# -------------------------
+def main() -> None:
     ensure_dir(RESULT_DIR)
     ensure_dir(IR_OUTPUT_DIR)
 
     client = OpenAI()
 
-    total = 0
-    solved = 0
-    correct_cnt = 0
+    fieldnames = [
+        "index",
+        "problem_id",
+        "status",
+        "obj_value",
+        "ground_truth",
+        "correct",
+        "issues",
+        "repairs",
+        "failure_stage",
+        "error",
+    ]
 
-    with open(RESULT_CSV_PATH, "w", newline="", encoding="utf-8") as f_out:
-        fieldnames = [
-            "index",
-            "problem_id",
-            "failure_stage",
-            "json_extract_ok",
-            "ir_parse_ok",
-            "graph_build_ok",
-            "verifier_ok",
-            "solver_build_ok",
-            "solver_optimize_ok",
-            "estimation_ok",
-            "gurobi_status",
-            "obj_value",
-            "ground_truth",
-            "correct",
-            "prompt_tokens",
-            "completion_tokens",
-            "total_tokens",
-            "error",
-        ]
-        writer = csv.DictWriter(f_out, fieldnames=fieldnames)
+    total = solved = correct_cnt = 0
+
+    with open(RESULT_CSV_PATH, "w", newline="", encoding="utf-8") as f_csv, open(
+        TRACE_JSONL_PATH, "w", encoding="utf-8"
+    ) as f_trace:
+        writer = csv.DictWriter(f_csv, fieldnames=fieldnames)
         writer.writeheader()
 
         with open(DATASET_PATH, "r", encoding="utf-8") as f_in:
@@ -232,53 +209,41 @@ def main():
                 line = line.strip()
                 if not line:
                     continue
-
                 total += 1
-                print(f"\n==== Solving instance #{idx} (line {idx+1}) ====")
 
                 try:
                     record = json.loads(line)
-                except json.JSONDecodeError as e:
+                    question_text = record.get("Question", "") or ""
+                    gt_answer_raw = record.get("Answer", "")
+                except Exception as e:
                     row = {
                         "index": idx,
-                        "problem_id": f"mamo_complex_{idx}",
-                        "failure_stage": "input_json_decode",
-                        "json_extract_ok": 0,
-                        "ir_parse_ok": 0,
-                        "graph_build_ok": 0,
-                        "verifier_ok": 0,
-                        "solver_build_ok": 0,
-                        "solver_optimize_ok": 0,
-                        "estimation_ok": 0,
-                        "gurobi_status": "ERROR",
+                        "problem_id": f"mamo_complex_lp_{idx}",
+                        "status": "ERROR",
                         "obj_value": "",
                         "ground_truth": "",
                         "correct": 0,
-                        "prompt_tokens": "",
-                        "completion_tokens": "",
-                        "total_tokens": "",
-                        "error": f"JSONDecodeError: {e}",
+                        "issues": "",
+                        "repairs": "",
+                        "failure_stage": "input_json_decode",
+                        "error": f"{type(e).__name__}: {e}",
                     }
                     writer.writerow(row)
+                    f_trace.write(
+                        json.dumps(
+                            {"meta": {"problem_id": row["problem_id"], "source": "Mamo_complex_lp"}, "error": row["error"]},
+                            ensure_ascii=False,
+                        )
+                        + "\n"
+                    )
                     continue
 
-                # === 数据集字段：Question / Answer ===
-                question_text = record.get("Question", "")
-                gt_answer_raw = record.get("Answer", "")
-
-                row, ir_dict = solve_one_instance(
-                    idx=idx,
-                    question_text=question_text,
-                    gt_answer_raw=gt_answer_raw,
-                    client=client,
-                )
-
+                row, ir_dict, trace = solve_one_instance(idx, question_text, gt_answer_raw, client)
                 writer.writerow(row)
+                f_trace.write(json.dumps(trace, ensure_ascii=False) + "\n")
 
-                # 保存 IR JSON
-                safe_problem_id = "".join(c if c.isalnum() or c in "-_." else "_" for c in row["problem_id"])
-                json_path = os.path.join(IR_OUTPUT_DIR, f"{idx:03d}_{safe_problem_id}.json")
-                with open(json_path, "w", encoding="utf-8") as f_json:
+                safe_id = _safe_problem_id(row["problem_id"])
+                with open(os.path.join(IR_OUTPUT_DIR, f"{idx:03d}_{safe_id}.json"), "w", encoding="utf-8") as f_json:
                     json.dump(ir_dict, f_json, indent=2, ensure_ascii=False)
 
                 if row["obj_value"] != "":
@@ -287,25 +252,24 @@ def main():
                     correct_cnt += 1
 
                 print(
-                    f"[RESULT] status={row['gurobi_status']}, "
-                    f"obj={row['obj_value']}, gt={row['ground_truth']}, "
-                    f"correct={row['correct']}, failure_stage={row['failure_stage']}, error={row['error']}"
+                    f"[{idx}] status={row['status']} obj={row['obj_value']} gt={row['ground_truth']} "
+                    f"correct={row['correct']} issues={row['issues']} repairs={row['repairs']} "
+                    f"stage={row['failure_stage']} err={row['error']}"
                 )
 
-    # ====== SUMMARY（同时写入 txt）======
-    summary_lines = []
-    summary_lines.append("====== SUMMARY ======")
-    summary_lines.append(f"Total instances: {total}")
-    summary_lines.append(f"Solved (got ObjVal): {solved}")
-    summary_lines.append(f"Correct (ObjVal ≈ Answer): {correct_cnt}")
+    summary = [
+        "====== SUMMARY ======",
+        f"Total instances: {total}",
+        f"Solved (got ObjVal): {solved}",
+        f"Correct (ObjVal ≈ GT): {correct_cnt}",
+    ]
     if total > 0:
-        summary_lines.append(f"Accuracy over all instances: {correct_cnt}/{total} = {correct_cnt / total:.3f}")
-        summary_lines.append(f"Solved ratio: {solved}/{total} = {solved / total:.3f}")
+        summary.append(f"Accuracy: {correct_cnt}/{total} = {correct_cnt/total:.3f}")
+        summary.append(f"Solved ratio: {solved}/{total} = {solved/total:.3f}")
 
-    print("\n" + "\n".join(summary_lines))
-
-    with open(SUMMARY_TXT_PATH, "w", encoding="utf-8") as f_sum:
-        f_sum.write("\n".join(summary_lines) + "\n")
+    print("\n" + "\n".join(summary))
+    with open(SUMMARY_TXT_PATH, "w", encoding="utf-8") as f:
+        f.write("\n".join(summary) + "\n")
 
 
 if __name__ == "__main__":

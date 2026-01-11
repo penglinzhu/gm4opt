@@ -2,90 +2,83 @@
   "meta": {
     "problem_id": "industryOR_4",
     "source": "IndustryOR",
-    "description": "Maximize profit from planting crops on a farm with constraints on land usage.",
+    "description": "Tom and Jerry have just bought a farm in Sunshine Valley and are considering using it to grow corn, wheat, soybeans, and sorghum. The profit from planting one acre of corn is $1500, one acre of wheat is $1200, one acre of soybeans is $1800, and one acre of sorghum is $1600. To maximize profit, how many acres of land should Tom and Jerry use to plant each crop?\n\nThe total area of Tom and Jerry's farm is 100 acres.\n\nThe area of land used for planting corn should be at least twice the area of land used for planting wheat.\n\nThe area of land used for planting soybeans should be at least half the area of land used for planting sorghum.\n\nThe area of land used for planting wheat must be three times the area of land used for planting sorghum.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "CROPS",
+      "name": "Crops",
       "elements": [
         "corn",
         "wheat",
         "soybeans",
         "sorghum"
       ],
-      "description": "Types of crops that can be planted on the farm."
+      "description": "Types of crops"
     }
   ],
   "params": [
     {
       "name": "profit",
       "indices": [
-        "CROPS"
+        "Crops"
       ],
       "values": {
-        "corn": 1500,
-        "wheat": 1200,
-        "soybeans": 1800,
-        "sorghum": 1600
+        "corn": 1500.0,
+        "wheat": 1200.0,
+        "soybeans": 1800.0,
+        "sorghum": 1600.0
       },
-      "description": "Profit per acre for each crop."
-    },
-    {
-      "name": "total_area",
-      "indices": [],
-      "values": 100,
-      "description": "Total area of the farm in acres."
+      "description": "Profit per acre for each crop"
     }
   ],
   "vars": [
     {
       "name": "area",
       "indices": [
-        "CROPS"
+        "Crops"
       ],
-      "vartype": "integer",
+      "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
-      "description": "Area of land in acres used for each crop."
+      "description": "Area of land used for each crop"
     }
   ],
   "objective": {
-    "name": "max_total_profit",
+    "name": "max_profit",
     "sense": "max",
-    "expr": "sum(profit[crop] * area[crop] for crop in ['corn', 'wheat', 'soybeans', 'sorghum'])",
-    "description": "Maximize the total profit from planting crops."
+    "expr": "quicksum(profit[crop] * area[crop] for crop in Crops)",
+    "description": "Maximize total profit from all crops"
   },
   "constraints": [
     {
-      "name": "total_area_constraint",
-      "expr_lhs": "sum(area[crop] for crop in ['corn', 'wheat', 'soybeans', 'sorghum'])",
+      "name": "total_area",
+      "expr_lhs": "quicksum(area[crop] for crop in Crops)",
       "sense": "<=",
-      "expr_rhs": "total_area",
-      "description": "The total area used for planting cannot exceed the total farm area."
+      "expr_rhs": "100.0",
+      "description": "Total area of the farm"
     },
     {
-      "name": "corn_wheat_constraint",
+      "name": "corn_wheat_ratio",
       "expr_lhs": "area['corn']",
       "sense": ">=",
       "expr_rhs": "2 * area['wheat']",
-      "description": "The area for corn should be at least twice the area for wheat."
+      "description": "Corn area at least twice the wheat area"
     },
     {
-      "name": "soybeans_sorghum_constraint",
+      "name": "soybeans_sorghum_ratio",
       "expr_lhs": "area['soybeans']",
       "sense": ">=",
       "expr_rhs": "0.5 * area['sorghum']",
-      "description": "The area for soybeans should be at least half the area for sorghum."
+      "description": "Soybeans area at least half the sorghum area"
     },
     {
-      "name": "wheat_sorghum_constraint",
+      "name": "wheat_sorghum_ratio",
       "expr_lhs": "area['wheat']",
       "sense": "==",
       "expr_rhs": "3 * area['sorghum']",
-      "description": "The area for wheat must be three times the area for sorghum."
+      "description": "Wheat area must be three times the sorghum area"
     }
-  ],
-  "graph": null
+  ]
 }

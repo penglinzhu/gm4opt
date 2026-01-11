@@ -1,0 +1,326 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_51",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine we're managing a telecommunications network that spans 6 key points, from a primary data center (Point 0) to a major user hub (Point 5). These points are interconnected by data lines, each with a specific capacity for data transfer.\n\nHere are the capacities of each data line, indicating the maximum amount of data (in Gigabytes per second) that can flow from one point to another:\n\n- From Point 0 (Data Center): Can send data to Point 1 (14 GB/s), Point 2 (9 GB/s), Point 3 (8 GB/s), Point 4 (7 GB/s), and Point 5 (8 GB/s).\n- From Point 1: Can send data to Point 0 (4 GB/s), Point 2 (9 GB/s), Point 3 (10 GB/s), and Point 5 (12 GB/s).\n- From Point 2: Can send data to Point 0 (4 GB/s), Point 1 (12 GB/s), Point 3 (13 GB/s), Point 4 (20 GB/s), and Point 5 (16 GB/s).\n- From Point 3: Can send data to Point 0 (10 GB/s), Point 1 (8 GB/s), Point 2 (12 GB/s), and Point 5 (18 GB/s).\n- From Point 4: Can send data to Point 0 (3 GB/s), Point 1 (13 GB/s), Point 2 (11 GB/s), Point 3 (20 GB/s), and Point 5 (2 GB/s).\n- From Point 5 (User Hub): Can send data back to Point 0 (17 GB/s), Point 1 (4 GB/s), Point 2 (8 GB/s), Point 3 (2 GB/s), and Point 4 (12 GB/s).\n\nIn this network, a capacity of \"0\" means there is no direct data line between those two points.\n\nThe objective is to find out the maximum amount of data that can be transferred from Point 0 (Data Center) to Point 5 (User Hub) per second, while making sure that the data transfer through each line does not exceed its capacity. What is the maximum amount of data that can be sent from the data center to the user hub per second in Gigabytes?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Points",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "description": "Key points in the network"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "Points",
+        "Points"
+      ],
+      "values": {
+        "0": {
+          "1": 14.0,
+          "2": 9.0,
+          "3": 8.0,
+          "4": 7.0,
+          "5": 8.0,
+          "0": 0.0
+        },
+        "1": {
+          "0": 4.0,
+          "2": 9.0,
+          "3": 10.0,
+          "5": 12.0,
+          "1": 0.0
+        },
+        "2": {
+          "0": 4.0,
+          "1": 12.0,
+          "3": 13.0,
+          "4": 20.0,
+          "5": 16.0,
+          "2": 0.0
+        },
+        "3": {
+          "0": 10.0,
+          "1": 8.0,
+          "2": 12.0,
+          "5": 18.0,
+          "3": 0.0
+        },
+        "4": {
+          "0": 3.0,
+          "1": 13.0,
+          "2": 11.0,
+          "3": 20.0,
+          "5": 2.0,
+          "4": 0.0
+        },
+        "5": {
+          "0": 17.0,
+          "1": 4.0,
+          "2": 8.0,
+          "3": 2.0,
+          "4": 12.0,
+          "5": 0.0
+        }
+      },
+      "description": "Capacity of data lines between points in GB/s"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "Points",
+        "Points"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Data flow between points in GB/s"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "quicksum(flow['0'][j] for j in Points) - quicksum(flow[i]['0'] for i in Points)",
+    "description": "Maximize data flow from Point 0 to Point 5"
+  },
+  "constraints": [
+    {
+      "name": "capacity_0_1",
+      "expr_lhs": "flow['0']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['1']",
+      "description": "Capacity constraint from Point 0 to Point 1"
+    },
+    {
+      "name": "capacity_0_2",
+      "expr_lhs": "flow['0']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['2']",
+      "description": "Capacity constraint from Point 0 to Point 2"
+    },
+    {
+      "name": "capacity_0_3",
+      "expr_lhs": "flow['0']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['3']",
+      "description": "Capacity constraint from Point 0 to Point 3"
+    },
+    {
+      "name": "capacity_0_4",
+      "expr_lhs": "flow['0']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['4']",
+      "description": "Capacity constraint from Point 0 to Point 4"
+    },
+    {
+      "name": "capacity_0_5",
+      "expr_lhs": "flow['0']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['5']",
+      "description": "Capacity constraint from Point 0 to Point 5"
+    },
+    {
+      "name": "capacity_1_0",
+      "expr_lhs": "flow['1']['0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['0']",
+      "description": "Capacity constraint from Point 1 to Point 0"
+    },
+    {
+      "name": "capacity_1_2",
+      "expr_lhs": "flow['1']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['2']",
+      "description": "Capacity constraint from Point 1 to Point 2"
+    },
+    {
+      "name": "capacity_1_3",
+      "expr_lhs": "flow['1']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['3']",
+      "description": "Capacity constraint from Point 1 to Point 3"
+    },
+    {
+      "name": "capacity_1_5",
+      "expr_lhs": "flow['1']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['5']",
+      "description": "Capacity constraint from Point 1 to Point 5"
+    },
+    {
+      "name": "capacity_2_0",
+      "expr_lhs": "flow['2']['0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['0']",
+      "description": "Capacity constraint from Point 2 to Point 0"
+    },
+    {
+      "name": "capacity_2_1",
+      "expr_lhs": "flow['2']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['1']",
+      "description": "Capacity constraint from Point 2 to Point 1"
+    },
+    {
+      "name": "capacity_2_3",
+      "expr_lhs": "flow['2']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['3']",
+      "description": "Capacity constraint from Point 2 to Point 3"
+    },
+    {
+      "name": "capacity_2_4",
+      "expr_lhs": "flow['2']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['4']",
+      "description": "Capacity constraint from Point 2 to Point 4"
+    },
+    {
+      "name": "capacity_2_5",
+      "expr_lhs": "flow['2']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['5']",
+      "description": "Capacity constraint from Point 2 to Point 5"
+    },
+    {
+      "name": "capacity_3_0",
+      "expr_lhs": "flow['3']['0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['0']",
+      "description": "Capacity constraint from Point 3 to Point 0"
+    },
+    {
+      "name": "capacity_3_1",
+      "expr_lhs": "flow['3']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['1']",
+      "description": "Capacity constraint from Point 3 to Point 1"
+    },
+    {
+      "name": "capacity_3_2",
+      "expr_lhs": "flow['3']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['2']",
+      "description": "Capacity constraint from Point 3 to Point 2"
+    },
+    {
+      "name": "capacity_3_5",
+      "expr_lhs": "flow['3']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['5']",
+      "description": "Capacity constraint from Point 3 to Point 5"
+    },
+    {
+      "name": "capacity_4_0",
+      "expr_lhs": "flow['4']['0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['0']",
+      "description": "Capacity constraint from Point 4 to Point 0"
+    },
+    {
+      "name": "capacity_4_1",
+      "expr_lhs": "flow['4']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['1']",
+      "description": "Capacity constraint from Point 4 to Point 1"
+    },
+    {
+      "name": "capacity_4_2",
+      "expr_lhs": "flow['4']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['2']",
+      "description": "Capacity constraint from Point 4 to Point 2"
+    },
+    {
+      "name": "capacity_4_3",
+      "expr_lhs": "flow['4']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['3']",
+      "description": "Capacity constraint from Point 4 to Point 3"
+    },
+    {
+      "name": "capacity_4_5",
+      "expr_lhs": "flow['4']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['5']",
+      "description": "Capacity constraint from Point 4 to Point 5"
+    },
+    {
+      "name": "capacity_5_0",
+      "expr_lhs": "flow['5']['0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['0']",
+      "description": "Capacity constraint from Point 5 to Point 0"
+    },
+    {
+      "name": "capacity_5_1",
+      "expr_lhs": "flow['5']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['1']",
+      "description": "Capacity constraint from Point 5 to Point 1"
+    },
+    {
+      "name": "capacity_5_2",
+      "expr_lhs": "flow['5']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['2']",
+      "description": "Capacity constraint from Point 5 to Point 2"
+    },
+    {
+      "name": "capacity_5_3",
+      "expr_lhs": "flow['5']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['3']",
+      "description": "Capacity constraint from Point 5 to Point 3"
+    },
+    {
+      "name": "capacity_5_4",
+      "expr_lhs": "flow['5']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['4']",
+      "description": "Capacity constraint from Point 5 to Point 4"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow['0']['1'] for j in Points) + quicksum(flow[i]['1'] for i in Points)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Point 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow['0']['2'] for j in Points) + quicksum(flow[i]['2'] for i in Points)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Point 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow['0']['3'] for j in Points) + quicksum(flow[i]['3'] for i in Points)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Point 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow['0']['4'] for j in Points) + quicksum(flow[i]['4'] for i in Points)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at Point 4"
+    }
+  ]
+}

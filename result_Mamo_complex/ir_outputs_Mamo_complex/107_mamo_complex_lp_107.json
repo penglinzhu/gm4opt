@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_107",
+    "source": "Mamo_complex_lp",
+    "description": "The China Railroad Ministry is in the process of planning relocations of freight cars among 5 regions of the country to get ready for the fall harvest. The following presents the costs of moving a car between each pair of regions. The costs are as follows: moving a car from region 1 to region 2 costs 10 units, to region 3 costs 12 units, to region 4 costs 17 units, and to region 5 costs 34 units. From region 2 to region 1 costs 10 units, to region 3 costs 18 units, to region 4 costs 8 units, and to region 5 costs 46 units. From region 3, moving a car to region 1 costs 12 units, to region 2 costs 18 units, to region 4 costs 9 units, and to region 5 costs 27 units. From region 4, the cost to move a car to region 1 is 17 units, to region 2 is 8 units, to region 3 is 9 units, and to region 5 is 20 units. Lastly, from region 5 to region 1 the cost is 34 units, to region 2 is 46 units, to region 3 is 27 units, and to region 4 is 20 units. The following displays the current number of cars and the number needed for harvest shipping in each region. Region 1 currently has 115 cars but needs 300. Region 2 has 385 cars available but requires 400. Region 3 has 410 cars against a need of 800. Region 4 is currently equipped with 480 cars, yet the need is only for 200. Finally, region 5 has 610 cars available, with a need for 300 cars. Minimize the cost to move the cars such as the need is met. Provide your answer rounded to the nearest dollar.",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Regions",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "description": "Regions in the country"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Regions",
+        "Regions"
+      ],
+      "values": {
+        "1": {
+          "2": 10.0,
+          "3": 12.0,
+          "4": 17.0,
+          "5": 34.0,
+          "1": 0.0
+        },
+        "2": {
+          "1": 10.0,
+          "3": 18.0,
+          "4": 8.0,
+          "5": 46.0,
+          "2": 0.0
+        },
+        "3": {
+          "1": 12.0,
+          "2": 18.0,
+          "4": 9.0,
+          "5": 27.0,
+          "3": 0.0
+        },
+        "4": {
+          "1": 17.0,
+          "2": 8.0,
+          "3": 9.0,
+          "5": 20.0,
+          "4": 0.0
+        },
+        "5": {
+          "1": 34.0,
+          "2": 46.0,
+          "3": 27.0,
+          "4": 20.0,
+          "5": 0.0
+        }
+      },
+      "description": "Cost of moving a car from one region to another"
+    },
+    {
+      "name": "supply",
+      "indices": [
+        "Regions"
+      ],
+      "values": {
+        "1": 115.0,
+        "2": 385.0,
+        "3": 410.0,
+        "4": 480.0,
+        "5": 610.0
+      },
+      "description": "Current number of cars in each region"
+    },
+    {
+      "name": "demand",
+      "indices": [
+        "Regions"
+      ],
+      "values": {
+        "1": 300.0,
+        "2": 400.0,
+        "3": 800.0,
+        "4": 200.0,
+        "5": 300.0
+      },
+      "description": "Number of cars needed in each region"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Regions",
+        "Regions"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of cars moved from one region to another"
+    }
+  ],
+  "objective": {
+    "name": "total_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * x[i][j] for i in Regions for j in Regions)",
+    "description": "Minimize the total cost of moving cars"
+  },
+  "constraints": [
+    {
+      "name": "supply_constraint_1",
+      "expr_lhs": "quicksum(x['1'][j] for j in Regions)",
+      "sense": "<=",
+      "expr_rhs": "supply['1']",
+      "description": "Supply constraint for region 1"
+    },
+    {
+      "name": "supply_constraint_2",
+      "expr_lhs": "quicksum(x['2'][j] for j in Regions)",
+      "sense": "<=",
+      "expr_rhs": "supply['2']",
+      "description": "Supply constraint for region 2"
+    },
+    {
+      "name": "supply_constraint_3",
+      "expr_lhs": "quicksum(x['3'][j] for j in Regions)",
+      "sense": "<=",
+      "expr_rhs": "supply['3']",
+      "description": "Supply constraint for region 3"
+    },
+    {
+      "name": "supply_constraint_4",
+      "expr_lhs": "quicksum(x['4'][j] for j in Regions)",
+      "sense": "<=",
+      "expr_rhs": "supply['4']",
+      "description": "Supply constraint for region 4"
+    },
+    {
+      "name": "supply_constraint_5",
+      "expr_lhs": "quicksum(x['5'][j] for j in Regions)",
+      "sense": "<=",
+      "expr_rhs": "supply['5']",
+      "description": "Supply constraint for region 5"
+    },
+    {
+      "name": "demand_constraint_1",
+      "expr_lhs": "quicksum(x[i]['1'] for i in Regions)",
+      "sense": ">=",
+      "expr_rhs": "demand['1']",
+      "description": "Demand constraint for region 1"
+    },
+    {
+      "name": "demand_constraint_2",
+      "expr_lhs": "quicksum(x[i]['2'] for i in Regions)",
+      "sense": ">=",
+      "expr_rhs": "demand['2']",
+      "description": "Demand constraint for region 2"
+    },
+    {
+      "name": "demand_constraint_3",
+      "expr_lhs": "quicksum(x[i]['3'] for i in Regions)",
+      "sense": ">=",
+      "expr_rhs": "demand['3']",
+      "description": "Demand constraint for region 3"
+    },
+    {
+      "name": "demand_constraint_4",
+      "expr_lhs": "quicksum(x[i]['4'] for i in Regions)",
+      "sense": ">=",
+      "expr_rhs": "demand['4']",
+      "description": "Demand constraint for region 4"
+    },
+    {
+      "name": "demand_constraint_5",
+      "expr_lhs": "quicksum(x[i]['5'] for i in Regions)",
+      "sense": ">=",
+      "expr_rhs": "demand['5']",
+      "description": "Demand constraint for region 5"
+    }
+  ]
+}

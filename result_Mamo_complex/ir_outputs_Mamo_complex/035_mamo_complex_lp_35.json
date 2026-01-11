@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_35",
+    "source": "Mamo_complex_lp",
+    "description": "Welcome to the world of international logistics! You are a resource manager at a global company, responsible for the allocation of a valuable product among your six international warehouses.\n\nHere's what each warehouse currently has and what they need:\n\n- Warehouse 1 currently has 497 units but needs 161 units.\n- Warehouse 2 currently has 39 units but needs 257 units.\n- Warehouse 3 currently has 416 units but needs 252 units.\n- Warehouse 4 currently has 71 units but needs 251 units.\n- Warehouse 5 currently has 445 units but needs 372 units.\n- Warehouse 6 currently has 471 units but needs 370 units.\n\nYou need to orchestrate the movement of these resources to ensure every warehouse meets its required quantity. However, transportation between warehouses carries costs, and these costs vary depending on the pair of warehouses involved. Here's the cost matrix that shows the cost of moving a unit from one warehouse to another:\n\n- Moving product from/to Warehouse 1: To Warehouse 2 costs 5, to Warehouse 3 costs 7, to Warehouse 4 costs 5, to Warehouse 5 costs 27, and to Warehouse 6 costs 49.\n- Moving product from/to Warehouse 2: To Warehouse 1 costs 31, to Warehouse 3 costs 14, to Warehouse 4 costs 31, to Warehouse 5 costs 3, and to Warehouse 6 costs 4.\n- Moving product from/to Warehouse 3: To Warehouse 1 costs 9, to Warehouse 2 costs 13, to Warehouse 4 costs 23, to Warehouse 5 costs 38, and to Warehouse 6 costs 19.\n- Moving product from/to Warehouse 4: To Warehouse 1 costs 47, to Warehouse 2 costs 34, to Warehouse 3 costs 7, to Warehouse 5 costs 34, and to Warehouse 6 costs 35.\n- Moving product from/to Warehouse 5: To Warehouse 1 costs 21, to Warehouse 2 costs 11, to Warehouse 3 costs 6, to Warehouse 4 costs 7, and to Warehouse 6 costs 50.\n- Moving product from/to Warehouse 6: To Warehouse 1 costs 28, to Warehouse 2 costs 41, to Warehouse 3 costs 34, to Warehouse 4 costs 17, to Warehouse 5 costs 32.\n\nYour objective is to relocate the products such that all warehouse needs are met, but with the lowest possible total transportation cost. What is the minimum cost to ensure all warehouses have the quantities they need?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Warehouses",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "description": "Set of warehouses"
+    }
+  ],
+  "params": [
+    {
+      "name": "supply",
+      "indices": [
+        "Warehouses"
+      ],
+      "values": {
+        "1": 497,
+        "2": 39,
+        "3": 416,
+        "4": 71,
+        "5": 445,
+        "6": 471
+      },
+      "description": "Current supply at each warehouse"
+    },
+    {
+      "name": "demand",
+      "indices": [
+        "Warehouses"
+      ],
+      "values": {
+        "1": 161,
+        "2": 257,
+        "3": 252,
+        "4": 251,
+        "5": 372,
+        "6": 370
+      },
+      "description": "Demand at each warehouse"
+    },
+    {
+      "name": "cost",
+      "indices": [
+        "Warehouses",
+        "Warehouses"
+      ],
+      "values": {
+        "1": {
+          "2": 5,
+          "3": 7,
+          "4": 5,
+          "5": 27,
+          "6": 49,
+          "1": 0.0
+        },
+        "2": {
+          "1": 31,
+          "3": 14,
+          "4": 31,
+          "5": 3,
+          "6": 4,
+          "2": 0.0
+        },
+        "3": {
+          "1": 9,
+          "2": 13,
+          "4": 23,
+          "5": 38,
+          "6": 19,
+          "3": 0.0
+        },
+        "4": {
+          "1": 47,
+          "2": 34,
+          "3": 7,
+          "5": 34,
+          "6": 35,
+          "4": 0.0
+        },
+        "5": {
+          "1": 21,
+          "2": 11,
+          "3": 6,
+          "4": 7,
+          "6": 50,
+          "5": 0.0
+        },
+        "6": {
+          "1": 28,
+          "2": 41,
+          "3": 34,
+          "4": 17,
+          "5": 32,
+          "6": 0.0
+        }
+      },
+      "description": "Cost of transporting a unit between warehouses"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Warehouses",
+        "Warehouses"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Units transported from warehouse i to warehouse j"
+    }
+  ],
+  "objective": {
+    "name": "minimize_transportation_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * x[i][j] for i in Warehouses for j in Warehouses if i != j)",
+    "description": "Minimize the total transportation cost"
+  },
+  "constraints": [
+    {
+      "name": "supply_constraint_1",
+      "expr_lhs": "quicksum(x['1'][j] for j in Warehouses if j != '1')",
+      "sense": "<=",
+      "expr_rhs": "supply['1']",
+      "description": "Supply constraint for warehouse 1"
+    },
+    {
+      "name": "supply_constraint_2",
+      "expr_lhs": "quicksum(x['2'][j] for j in Warehouses if j != '2')",
+      "sense": "<=",
+      "expr_rhs": "supply['2']",
+      "description": "Supply constraint for warehouse 2"
+    },
+    {
+      "name": "supply_constraint_3",
+      "expr_lhs": "quicksum(x['3'][j] for j in Warehouses if j != '3')",
+      "sense": "<=",
+      "expr_rhs": "supply['3']",
+      "description": "Supply constraint for warehouse 3"
+    },
+    {
+      "name": "supply_constraint_4",
+      "expr_lhs": "quicksum(x['4'][j] for j in Warehouses if j != '4')",
+      "sense": "<=",
+      "expr_rhs": "supply['4']",
+      "description": "Supply constraint for warehouse 4"
+    },
+    {
+      "name": "supply_constraint_5",
+      "expr_lhs": "quicksum(x['5'][j] for j in Warehouses if j != '5')",
+      "sense": "<=",
+      "expr_rhs": "supply['5']",
+      "description": "Supply constraint for warehouse 5"
+    },
+    {
+      "name": "supply_constraint_6",
+      "expr_lhs": "quicksum(x['6'][j] for j in Warehouses if j != '6')",
+      "sense": "<=",
+      "expr_rhs": "supply['6']",
+      "description": "Supply constraint for warehouse 6"
+    },
+    {
+      "name": "demand_constraint_1",
+      "expr_lhs": "quicksum(x[i]['1'] for i in Warehouses if i != '1')",
+      "sense": ">=",
+      "expr_rhs": "demand['1']",
+      "description": "Demand constraint for warehouse 1"
+    },
+    {
+      "name": "demand_constraint_2",
+      "expr_lhs": "quicksum(x[i]['2'] for i in Warehouses if i != '2')",
+      "sense": ">=",
+      "expr_rhs": "demand['2']",
+      "description": "Demand constraint for warehouse 2"
+    },
+    {
+      "name": "demand_constraint_3",
+      "expr_lhs": "quicksum(x[i]['3'] for i in Warehouses if i != '3')",
+      "sense": ">=",
+      "expr_rhs": "demand['3']",
+      "description": "Demand constraint for warehouse 3"
+    },
+    {
+      "name": "demand_constraint_4",
+      "expr_lhs": "quicksum(x[i]['4'] for i in Warehouses if i != '4')",
+      "sense": ">=",
+      "expr_rhs": "demand['4']",
+      "description": "Demand constraint for warehouse 4"
+    },
+    {
+      "name": "demand_constraint_5",
+      "expr_lhs": "quicksum(x[i]['5'] for i in Warehouses if i != '5')",
+      "sense": ">=",
+      "expr_rhs": "demand['5']",
+      "description": "Demand constraint for warehouse 5"
+    },
+    {
+      "name": "demand_constraint_6",
+      "expr_lhs": "quicksum(x[i]['6'] for i in Warehouses if i != '6')",
+      "sense": ">=",
+      "expr_rhs": "demand['6']",
+      "description": "Demand constraint for warehouse 6"
+    }
+  ]
+}

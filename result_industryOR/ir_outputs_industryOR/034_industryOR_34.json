@@ -2,101 +2,138 @@
   "meta": {
     "problem_id": "industryOR_34",
     "source": "IndustryOR",
-    "description": "Optimize the ordering of tables from suppliers A, B, and C to minimize cost while satisfying constraints.",
+    "description": "A restaurant needs to order tables from three different suppliers, A, B, and C. The cost of ordering each table from supplier A is $120, from supplier B is $110, and from supplier C is $100. The restaurant wants to minimize the total cost of the orders.\n\nIn addition, each order from supplier A will include 20 tables, while orders from suppliers B and C will include 15 tables each. The quantity of orders can only be whole numbers. The restaurant needs to order at least 150 tables.\n\nEach order from supplier A will include 20 tables, while orders from suppliers B and C will include 15 tables each. The restaurant needs to order a maximum of 600 tables.\n\nIf the restaurant decides to order tables from supplier A, it must also order at least 30 tables from supplier B.\n\nFurthermore, if the restaurant decides to order tables from supplier B, it must also order tables from supplier C.",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "SUPPLIERS",
+      "name": "Suppliers",
       "elements": [
         "A",
         "B",
         "C"
       ],
-      "description": "The suppliers from which tables can be ordered."
+      "description": null
     }
   ],
   "params": [
     {
       "name": "cost",
       "indices": [
-        "SUPPLIERS"
+        "Suppliers"
       ],
       "values": {
-        "A": 120,
-        "B": 110,
-        "C": 100
+        "A": 120.0,
+        "B": 110.0,
+        "C": 100.0
       },
-      "description": "Cost per table from each supplier."
+      "description": null
     },
     {
       "name": "tables_per_order",
       "indices": [
-        "SUPPLIERS"
+        "Suppliers"
       ],
       "values": {
-        "A": 20,
-        "B": 15,
-        "C": 15
+        "A": 20.0,
+        "B": 15.0,
+        "C": 15.0
       },
-      "description": "Number of tables included in each order from each supplier."
+      "description": null
     }
   ],
   "vars": [
     {
       "name": "orders",
       "indices": [
-        "SUPPLIERS"
+        "Suppliers"
       ],
       "vartype": "integer",
-      "lb": 0,
+      "lb": 0.0,
       "ub": null,
-      "description": "Number of orders placed with each supplier."
+      "description": null
+    },
+    {
+      "name": "y_A",
+      "indices": [],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if ordering from A, 0 otherwise"
+    },
+    {
+      "name": "y_B",
+      "indices": [],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if ordering from B, 0 otherwise"
+    },
+    {
+      "name": "y_C",
+      "indices": [],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if ordering from C, 0 otherwise"
     }
   ],
   "objective": {
-    "name": "min_total_cost",
+    "name": "total_cost",
     "sense": "min",
-    "expr": "sum(cost[s] * orders[s] for s in ['A', 'B', 'C'])",
-    "description": "Minimize the total cost of ordering tables."
+    "expr": "quicksum(cost[s] * orders[s] for s in Suppliers)",
+    "description": null
   },
   "constraints": [
     {
       "name": "min_tables",
-      "expr_lhs": "sum(tables_per_order[s] * orders[s] for s in ['A', 'B', 'C'])",
+      "expr_lhs": "quicksum(tables_per_order[s] * orders[s] for s in Suppliers)",
       "sense": ">=",
-      "expr_rhs": "150",
-      "description": "The restaurant needs to order at least 150 tables."
+      "expr_rhs": "150.0",
+      "description": "Minimum number of tables required"
     },
     {
       "name": "max_tables",
-      "expr_lhs": "sum(tables_per_order[s] * orders[s] for s in ['A', 'B', 'C'])",
+      "expr_lhs": "quicksum(tables_per_order[s] * orders[s] for s in Suppliers)",
       "sense": "<=",
-      "expr_rhs": "600",
-      "description": "The restaurant can order a maximum of 600 tables."
+      "expr_rhs": "600.0",
+      "description": "Maximum number of tables allowed"
     },
     {
-      "name": "order_B_if_A",
+      "name": "order_from_A_implication",
       "expr_lhs": "orders['B']",
       "sense": ">=",
-      "expr_rhs": "1",
-      "description": "If the restaurant orders from supplier A, it must also order from supplier B."
+      "expr_rhs": "1.5 * y_A",
+      "description": "If ordering from A, must order at least 30 tables from B"
     },
     {
-      "name": "min_30_tables_B_if_A",
-      "expr_lhs": "tables_per_order['B'] * orders['B']",
+      "name": "order_from_B_implication",
+      "expr_lhs": "y_C",
       "sense": ">=",
-      "expr_rhs": "30",
-      "description": "If the restaurant orders from supplier A, it must order at least 30 tables from supplier B."
+      "expr_rhs": "y_B",
+      "description": "If ordering from B, must order from C"
     },
     {
-      "name": "order_C_if_B",
+      "name": "y_A_definition",
+      "expr_lhs": "orders['A']",
+      "sense": "<=",
+      "expr_rhs": "1000.0 * y_A",
+      "description": "Define y_A"
+    },
+    {
+      "name": "y_B_definition",
+      "expr_lhs": "orders['B']",
+      "sense": "<=",
+      "expr_rhs": "1000.0 * y_B",
+      "description": "Define y_B"
+    },
+    {
+      "name": "y_C_definition",
       "expr_lhs": "orders['C']",
-      "sense": ">=",
-      "expr_rhs": "1",
-      "description": "If the restaurant orders from supplier B, it must also order from supplier C."
+      "sense": "<=",
+      "expr_rhs": "1000.0 * y_C",
+      "description": "Define y_C"
     }
-  ],
-  "graph": null
+  ]
 }

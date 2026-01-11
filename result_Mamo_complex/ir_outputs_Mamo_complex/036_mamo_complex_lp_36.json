@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_36",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you're coordinating the distribution of medical supplies to four different clinics to prepare for an upcoming health drive. Each clinic starts with a certain stock of supplies, but each has a specific requirement to ensure they are adequately prepared.\n\nHere’s the initial stock and the required quantities for each clinic:\n- Clinic 1 has 330 units but needs 476 units.\n- Clinic 2 has 294 units but needs 92 units.\n- Clinic 3 has 474 units but needs 385 units.\n- Clinic 4 has 86 units but needs 203 units.\n\nTo transport medical supplies from one clinic to another, there are associated costs which vary depending on the route between clinics. Here are the costs for transferring supplies between clinics:\n- From Clinic 1: To Clinic 2 costs 2, to Clinic 3 costs 12, to Clinic 4 costs 19.\n- From Clinic 2: To Clinic 1 costs 28, to Clinic 3 costs 9, to Clinic 4 costs 10.\n- From Clinic 3: To Clinic 1 costs 23, to Clinic 2 costs 46, to Clinic 4 costs 7.\n- From Clinic 4: To Clinic 1 costs 19, to Clinic 2 costs 16, to Clinic 3 costs 23.\n\nThe challenge is to fulfill the needs of all clinics by redistributing the supplies among them at the lowest possible transportation cost. What is the minimum cost required to ensure all clinics have the necessary supplies?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Clinics",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "description": "Set of clinics"
+    }
+  ],
+  "params": [
+    {
+      "name": "initial_stock",
+      "indices": [
+        "Clinics"
+      ],
+      "values": {
+        "1": 330,
+        "2": 294,
+        "3": 474,
+        "4": 86
+      },
+      "description": "Initial stock of supplies at each clinic"
+    },
+    {
+      "name": "required",
+      "indices": [
+        "Clinics"
+      ],
+      "values": {
+        "1": 476,
+        "2": 92,
+        "3": 385,
+        "4": 203
+      },
+      "description": "Required supplies at each clinic"
+    },
+    {
+      "name": "cost",
+      "indices": [
+        "Clinics",
+        "Clinics"
+      ],
+      "values": {
+        "1": {
+          "2": 2,
+          "3": 12,
+          "4": 19,
+          "1": 0.0
+        },
+        "2": {
+          "1": 28,
+          "3": 9,
+          "4": 10,
+          "2": 0.0
+        },
+        "3": {
+          "1": 23,
+          "2": 46,
+          "4": 7,
+          "3": 0.0
+        },
+        "4": {
+          "1": 19,
+          "2": 16,
+          "3": 23,
+          "4": 0.0
+        }
+      },
+      "description": "Cost of transporting supplies between clinics"
+    }
+  ],
+  "vars": [
+    {
+      "name": "transfer",
+      "indices": [
+        "Clinics",
+        "Clinics"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Amount of supplies transferred from one clinic to another"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * transfer[i][j] for i in Clinics for j in Clinics if i != j)",
+    "description": "Minimize the total transportation cost"
+  },
+  "constraints": [
+    {
+      "name": "supply_balance_1",
+      "expr_lhs": "initial_stock['1'] + quicksum(transfer[j]['1'] for j in Clinics if j != '1') - quicksum(transfer['1'][j] for j in Clinics if j != '1')",
+      "sense": "==",
+      "expr_rhs": "required['1']",
+      "description": "Ensure Clinic 1 meets its supply requirement"
+    },
+    {
+      "name": "supply_balance_2",
+      "expr_lhs": "initial_stock['2'] + quicksum(transfer[j]['2'] for j in Clinics if j != '2') - quicksum(transfer['2'][j] for j in Clinics if j != '2')",
+      "sense": "==",
+      "expr_rhs": "required['2']",
+      "description": "Ensure Clinic 2 meets its supply requirement"
+    },
+    {
+      "name": "supply_balance_3",
+      "expr_lhs": "initial_stock['3'] + quicksum(transfer[j]['3'] for j in Clinics if j != '3') - quicksum(transfer['3'][j] for j in Clinics if j != '3')",
+      "sense": "==",
+      "expr_rhs": "required['3']",
+      "description": "Ensure Clinic 3 meets its supply requirement"
+    },
+    {
+      "name": "supply_balance_4",
+      "expr_lhs": "initial_stock['4'] + quicksum(transfer[j]['4'] for j in Clinics if j != '4') - quicksum(transfer['4'][j] for j in Clinics if j != '4')",
+      "sense": "==",
+      "expr_rhs": "required['4']",
+      "description": "Ensure Clinic 4 meets its supply requirement"
+    }
+  ]
+}

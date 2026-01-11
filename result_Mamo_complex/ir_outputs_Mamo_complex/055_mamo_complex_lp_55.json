@@ -1,0 +1,263 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_55",
+    "source": "Mamo_complex_lp",
+    "description": "Welcome to the challenge of optimizing the digital traffic flow in CyberCity, a bustling metropolis of the future. In this city, data packets travel through a sophisticated network of 8 digital relay stations, from the primary source node to a key destination node, facilitating seamless communication across the city.\n\nThe network is structured as follows, with each connection representing the maximum data capacity (measured in terabits per second, Tbps) that can flow from one relay station to another:\n\n- From Relay Station 0 (Source): Data can flow to Station 1 (3 Tbps), Station 2 (3 Tbps), Station 3 (5 Tbps), Station 4 (13 Tbps), Station 5 (7 Tbps), Station 6 (14 Tbps), and Station 7 (17 Tbps).\n- From Relay Station 1: Data can flow to Station 0 (5 Tbps), Station 3 (2 Tbps), Station 4 (18 Tbps), Station 5 (20 Tbps), Station 6 (1 Tbps), and Station 7 (17 Tbps).\n- From Relay Station 2: Data can flow to Station 0 (2 Tbps), Station 1 (18 Tbps), Station 3 (10 Tbps), Station 4 (14 Tbps), Station 5 (15 Tbps), Station 6 (8 Tbps), and Station 7 (18 Tbps).\n- From Relay Station 3: Data can flow to Station 0 (20 Tbps), Station 1 (7 Tbps), Station 2 (11 Tbps), Station 4 (13 Tbps), Station 5 (2 Tbps), Station 6 (8 Tbps), and Station 7 (12 Tbps).\n- From Relay Station 4: Data can flow to Station 0 (20 Tbps), Station 1 (20 Tbps), Station 2 (12 Tbps), Station 3 (7 Tbps), Station 5 (11 Tbps), Station 6 (2 Tbps), and Station 7 (14 Tbps).\n- From Relay Station 5: Data can flow to Station 0 (5 Tbps), Station 1 (16 Tbps), Station 2 (15 Tbps), Station 3 (19 Tbps), Station 4 (11 Tbps), Station 6 (1 Tbps), and Station 7 (8 Tbps).\n- From Relay Station 6: Data can flow to Station 0 (10 Tbps), Station 1 (3 Tbps), Station 2 (14 Tbps), Station 3 (18 Tbps), Station 4 (13 Tbps), Station 5 (6 Tbps), and Station 7 (7 Tbps).\n- From Relay Station 7 (Destination): Data can loop back to Station 0 (9 Tbps), Station 1 (3 Tbps), Station 2 (14 Tbps), Station 3 (13 Tbps), Station 4 (6 Tbps), Station 5 (5 Tbps), and Station 6 (9 Tbps).\n\nIn this system, a capacity of \"0\" means there is no direct data link between those two stations. The objective of this problem is to find the maximum amount of data that can be transmitted from Station 0 (the source) to Station 7 (the destination) per second, while ensuring the data flow through each connection doesn't exceed its maximum capacity.\n\nWhat is the maximum data flow, in terabits per second, that can be achieved from the source to the destination in this network?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "N",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "description": "Relay stations in the network"
+    },
+    {
+      "name": "A",
+      "elements": [
+        "('0', '1')",
+        "('0', '2')",
+        "('0', '3')",
+        "('0', '4')",
+        "('0', '5')",
+        "('0', '6')",
+        "('0', '7')",
+        "('1', '0')",
+        "('1', '3')",
+        "('1', '4')",
+        "('1', '5')",
+        "('1', '6')",
+        "('1', '7')",
+        "('2', '0')",
+        "('2', '1')",
+        "('2', '3')",
+        "('2', '4')",
+        "('2', '5')",
+        "('2', '6')",
+        "('2', '7')",
+        "('3', '0')",
+        "('3', '1')",
+        "('3', '2')",
+        "('3', '4')",
+        "('3', '5')",
+        "('3', '6')",
+        "('3', '7')",
+        "('4', '0')",
+        "('4', '1')",
+        "('4', '2')",
+        "('4', '3')",
+        "('4', '5')",
+        "('4', '6')",
+        "('4', '7')",
+        "('5', '0')",
+        "('5', '1')",
+        "('5', '2')",
+        "('5', '3')",
+        "('5', '4')",
+        "('5', '6')",
+        "('5', '7')",
+        "('6', '0')",
+        "('6', '1')",
+        "('6', '2')",
+        "('6', '3')",
+        "('6', '4')",
+        "('6', '5')",
+        "('6', '7')",
+        "('7', '0')",
+        "('7', '1')",
+        "('7', '2')",
+        "('7', '3')",
+        "('7', '4')",
+        "('7', '5')",
+        "('7', '6')"
+      ],
+      "description": "Arcs representing possible data flows between stations"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "A"
+      ],
+      "values": {
+        "('0', '1')": 3.0,
+        "('0', '2')": 3.0,
+        "('0', '3')": 5.0,
+        "('0', '4')": 13.0,
+        "('0', '5')": 7.0,
+        "('0', '6')": 14.0,
+        "('0', '7')": 17.0,
+        "('1', '0')": 5.0,
+        "('1', '3')": 2.0,
+        "('1', '4')": 18.0,
+        "('1', '5')": 20.0,
+        "('1', '6')": 1.0,
+        "('1', '7')": 17.0,
+        "('2', '0')": 2.0,
+        "('2', '1')": 18.0,
+        "('2', '3')": 10.0,
+        "('2', '4')": 14.0,
+        "('2', '5')": 15.0,
+        "('2', '6')": 8.0,
+        "('2', '7')": 18.0,
+        "('3', '0')": 20.0,
+        "('3', '1')": 7.0,
+        "('3', '2')": 11.0,
+        "('3', '4')": 13.0,
+        "('3', '5')": 2.0,
+        "('3', '6')": 8.0,
+        "('3', '7')": 12.0,
+        "('4', '0')": 20.0,
+        "('4', '1')": 20.0,
+        "('4', '2')": 12.0,
+        "('4', '3')": 7.0,
+        "('4', '5')": 11.0,
+        "('4', '6')": 2.0,
+        "('4', '7')": 14.0,
+        "('5', '0')": 5.0,
+        "('5', '1')": 16.0,
+        "('5', '2')": 15.0,
+        "('5', '3')": 19.0,
+        "('5', '4')": 11.0,
+        "('5', '6')": 1.0,
+        "('5', '7')": 8.0,
+        "('6', '0')": 10.0,
+        "('6', '1')": 3.0,
+        "('6', '2')": 14.0,
+        "('6', '3')": 18.0,
+        "('6', '4')": 13.0,
+        "('6', '5')": 6.0,
+        "('6', '7')": 7.0,
+        "('7', '0')": 9.0,
+        "('7', '1')": 3.0,
+        "('7', '2')": 14.0,
+        "('7', '3')": 13.0,
+        "('7', '4')": 6.0,
+        "('7', '5')": 5.0,
+        "('7', '6')": 9.0
+      },
+      "description": "Maximum data capacity for each arc"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "A"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Data flow through each arc"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "quicksum(flow['0', j] for j in N if ('0', j) in A)",
+    "description": "Maximize the flow from source to destination"
+  },
+  "constraints": [
+    {
+      "name": "capacity_constraint_0_1",
+      "expr_lhs": "flow['0', '1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '1']",
+      "description": "Capacity constraint for arc 0 to 1"
+    },
+    {
+      "name": "capacity_constraint_0_2",
+      "expr_lhs": "flow['0', '2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '2']",
+      "description": "Capacity constraint for arc 0 to 2"
+    },
+    {
+      "name": "capacity_constraint_0_3",
+      "expr_lhs": "flow['0', '3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '3']",
+      "description": "Capacity constraint for arc 0 to 3"
+    },
+    {
+      "name": "capacity_constraint_0_4",
+      "expr_lhs": "flow['0', '4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '4']",
+      "description": "Capacity constraint for arc 0 to 4"
+    },
+    {
+      "name": "capacity_constraint_0_5",
+      "expr_lhs": "flow['0', '5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '5']",
+      "description": "Capacity constraint for arc 0 to 5"
+    },
+    {
+      "name": "capacity_constraint_0_6",
+      "expr_lhs": "flow['0', '6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '6']",
+      "description": "Capacity constraint for arc 0 to 6"
+    },
+    {
+      "name": "capacity_constraint_0_7",
+      "expr_lhs": "flow['0', '7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0', '7']",
+      "description": "Capacity constraint for arc 0 to 7"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow[i, '1'] for i in N if (i, '1') in A) - quicksum(flow['1', j] for j in N if ('1', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow[i, '2'] for i in N if (i, '2') in A) - quicksum(flow['2', j] for j in N if ('2', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow[i, '3'] for i in N if (i, '3') in A) - quicksum(flow['3', j] for j in N if ('3', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow[i, '4'] for i in N if (i, '4') in A) - quicksum(flow['4', j] for j in N if ('4', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow[i, '5'] for i in N if (i, '5') in A) - quicksum(flow['5', j] for j in N if ('5', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 5"
+    },
+    {
+      "name": "flow_conservation_6",
+      "expr_lhs": "quicksum(flow[i, '6'] for i in N if (i, '6') in A) - quicksum(flow['6', j] for j in N if ('6', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 6"
+    }
+  ]
+}

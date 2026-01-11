@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_42",
+    "source": "Mamo_complex_lp",
+    "description": "Consider a scenario where a logistics company needs to organize a delivery route across five warehouses. These warehouses are located in different cities labeled as A, B, C, D, and E. A delivery truck has to start from any one of these warehouses, deliver goods at each of the remaining four exactly once, and finally return to the starting warehouse. The challenge here is to plan the route in a way that minimizes the total travel cost. The cost could be based on various factors like distance, fuel usage, or time spent.\n\nHere are the details of the travel costs between the warehouses:\n\nThe cost to travel from Warehouse A to B is 15 units, to C is 88 units, to D is 54 units, and to E is 92 units.\n\nFrom Warehouse B, the cost to reach A is 15 units, to C is 29 units, to D is 98 units, and to E is 33 units.\n\nFor Warehouse C, the cost to get to A is 88 units, to B is 29 units, to D is 96 units, and to E is 96 units.\n\nMoving from Warehouse D, it costs 54 units to reach A, 98 units to get to B, 96 units to C, and 63 units to E.\n\nLastly, from Warehouse E, the cost to go to A is 92 units, to B is 33 units, to C is 96 units, and to D is 63 units.\n\nHow can the logistics company plan the route so that the total travel cost is minimized for the delivery truck to visit each warehouse exactly once and return to the starting warehouse?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Warehouses",
+      "elements": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "description": "Set of warehouses"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Warehouses",
+        "Warehouses"
+      ],
+      "values": {
+        "A": {
+          "B": 15.0,
+          "C": 88.0,
+          "D": 54.0,
+          "E": 92.0,
+          "A": 0.0
+        },
+        "B": {
+          "A": 15.0,
+          "C": 29.0,
+          "D": 98.0,
+          "E": 33.0,
+          "B": 0.0
+        },
+        "C": {
+          "A": 88.0,
+          "B": 29.0,
+          "D": 96.0,
+          "E": 96.0,
+          "C": 0.0
+        },
+        "D": {
+          "A": 54.0,
+          "B": 98.0,
+          "C": 96.0,
+          "E": 63.0,
+          "D": 0.0
+        },
+        "E": {
+          "A": 92.0,
+          "B": 33.0,
+          "C": 96.0,
+          "D": 63.0,
+          "E": 0.0
+        }
+      },
+      "description": "Travel cost between warehouses"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Warehouses",
+        "Warehouses"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if the route goes from warehouse i to j, 0 otherwise"
+    }
+  ],
+  "objective": {
+    "name": "total_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * x[i][j] for i in Warehouses for j in Warehouses)",
+    "description": "Minimize total travel cost"
+  },
+  "constraints": [
+    {
+      "name": "visit_each_warehouse_once_A",
+      "expr_lhs": "quicksum(x['A'][j] for j in Warehouses if j != 'A')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave warehouse A exactly once"
+    },
+    {
+      "name": "visit_each_warehouse_once_B",
+      "expr_lhs": "quicksum(x['B'][j] for j in Warehouses if j != 'B')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave warehouse B exactly once"
+    },
+    {
+      "name": "visit_each_warehouse_once_C",
+      "expr_lhs": "quicksum(x['C'][j] for j in Warehouses if j != 'C')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave warehouse C exactly once"
+    },
+    {
+      "name": "visit_each_warehouse_once_D",
+      "expr_lhs": "quicksum(x['D'][j] for j in Warehouses if j != 'D')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave warehouse D exactly once"
+    },
+    {
+      "name": "visit_each_warehouse_once_E",
+      "expr_lhs": "quicksum(x['E'][j] for j in Warehouses if j != 'E')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Leave warehouse E exactly once"
+    },
+    {
+      "name": "enter_each_warehouse_once_A",
+      "expr_lhs": "quicksum(x[i]['A'] for i in Warehouses if i != 'A')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter warehouse A exactly once"
+    },
+    {
+      "name": "enter_each_warehouse_once_B",
+      "expr_lhs": "quicksum(x[i]['B'] for i in Warehouses if i != 'B')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter warehouse B exactly once"
+    },
+    {
+      "name": "enter_each_warehouse_once_C",
+      "expr_lhs": "quicksum(x[i]['C'] for i in Warehouses if i != 'C')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter warehouse C exactly once"
+    },
+    {
+      "name": "enter_each_warehouse_once_D",
+      "expr_lhs": "quicksum(x[i]['D'] for i in Warehouses if i != 'D')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter warehouse D exactly once"
+    },
+    {
+      "name": "enter_each_warehouse_once_E",
+      "expr_lhs": "quicksum(x[i]['E'] for i in Warehouses if i != 'E')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Enter warehouse E exactly once"
+    }
+  ]
+}

@@ -2,22 +2,13 @@
   "meta": {
     "problem_id": "industryOR_31",
     "source": "IndustryOR",
-    "description": "Optimize the allocation of subway crew drivers to minimize the number of drivers needed while considering constraints such as maximum continuous driving time, mileage limits, and attendance location.",
+    "description": "As one of the main arteries of urban transportation, the city subway carries a huge passenger flow and its operation and management are very complex. Among them, crew scheduling is one of the key links in subway operation management and also the starting point and difficulty of crew management. The subway transportation volume is large, with complex and changing routes, and frequent operation intervals. Crew drivers face huge, continuous, and high-intensity transportation tasks. It is important to arrange the driver's shift and duty mode reasonably and achieve the optimal allocation of personnel to ensure the efficient and stable operation of the subway. Due to the increasing complexity of the subway operation network, traditional manual scheduling methods can no longer meet the high standard operation requirements. Automated and intelligent crew scheduling has become an inevitable trend.\n\nThe general process of crew scheduling for subway operating companies is as follows: export train operation section and time information tables based on the current operation chart, manually divide the crew duty roster based on these information tables, compile the crew scheduling master table based on the duty roster, and finally allocate the crew groups based on the scheduling master table to form the final scheduling table. The entire process relies on manual compilation and mainly has the following three major problems:\n\n1. Low scheduling efficiency: Crew scheduling business rules are complex, and the workload is large. The efficiency of manual compilation is very low, requiring at least one week. The manpower and time costs are high.\n\n2. Difficulty in adjustment: When encountering unexpected situations such as train failures and temporary leave of crew members, it is difficult to quickly adjust the scheduling plan based on manual methods, affecting the efficiency of operation management.\n\n3. Uneven task assignment: Manual scheduling has subjective limitations and strong dependence on human experience. If the scheduling is unreasonable, it may lead to uneven task assignment, unfair scheduling, and low crew satisfaction.\n\nThis subway line includes 40 platforms, among which A, M, and Z platforms are available for driver transfers and handovers. Please consider 200 driving tasks and their attributes such as time, location, and mileage, and consider classic constraints in crew scheduling scenarios, such as maximum continuous driving time constraint, mileage limit constraint, attendance location constraint, etc. Compare different mixed integer modeling methods to minimize the number of drivers as the goal and output the optimal task chain combination (i.e. the allocation and connection relationship of all tasks) for all tasks.\n\n### Example\nMileage Information Table.csv = \\\"\"\"\nDeparture Station,Arrival Station,Mileage\nA,M,17.1\nZ,M,26.4\n\\\"\"\"\n\nTask Information Table.csv = \\\"\"\"\nTrain Number,Train ID,Pickup Time,Pickup Location,Drop-off Time,Drop-off Location\n331,M16,10:03:11,M,10:57:43,Z\n1,L06,10:03:43,Z,10:58:32,M\n163,N23,10:04:10,A,10:39:11,M\n332,N27,10:04:32,M,10:40:10,A\n333,N20,10:09:11,M,11:03:43,Z\n2,L07,10:09:43,Z,11:04:32,M\n164,L11,10:10:10,A,10:45:11,M\n334,L01,10:10:32,M,10:46:10,A\n335,M17,10:15:11,M,11:09:43,Z\n3,M13,10:15:43,Z,11:10:32,M\n165,N24,10:16:10,A,10:51:11,M\n336,N28,10:16:32,M,10:52:10,A\n337,N21,10:21:11,M,11:15:43,Z\n4,L08,10:21:43,Z,11:16:32,M\n166,N25,10:22:10,A,10:57:11,M\n338,L02,10:22:32,M,10:58:10,A\n339,M18,10:27:11,M,11:21:43,Z\n5,M14,10:27:43,Z,11:22:32,M\n167,N26,10:28:10,A,11:03:11,M\n340,L03,10:28:32,M,11:04:10,A\n341,N22,10:33:11,M,11:27:43,Z\n6,L09,10:33:43,Z,11:28:32,M\n168,L12,10:34:10,A,11:09:11,M\n342,N29,10:34:32,M,11:10:10,A\n343,N23,10:39:11,M,11:33:43,Z\n7,M15,10:39:43,Z,11:34:32,M\n169,N27,10:40:10,A,11:15:11,M\n344,L04,10:40:32,M,11:16:10,A\n345,L11,10:45:11,M,11:39:43,Z\n8,N19,10:45:43,Z,11:40:32,M\n170,L01,10:46:10,A,11:21:11,M\n346,L05,10:46:32,M,11:22:10,A\n347,N24,10:51:11,M,11:45:43,Z\n9,L10,10:51:43,Z,11:46:32,M\n171,N",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "PLATFORMS",
-      "elements": [
-        "A",
-        "M",
-        "Z"
-      ],
-      "description": "Platforms available for driver transfers and handovers."
-    },
-    {
-      "name": "TASKS",
+      "name": "Tasks",
       "elements": [
         "1",
         "2",
@@ -220,320 +211,245 @@
         "199",
         "200"
       ],
-      "description": "Driving tasks to be assigned to drivers."
+      "description": "Set of all driving tasks."
     }
   ],
   "params": [
     {
       "name": "mileage",
       "indices": [
-        "PLATFORMS",
-        "PLATFORMS"
+        "Tasks"
       ],
       "values": {
-        "A": {
-          "M": 17.1
-        },
-        "Z": {
-          "M": 26.4
-        }
+        "1": 17.1,
+        "2": 26.4,
+        "3": 17.1,
+        "4": 26.4,
+        "5": 17.1,
+        "6": 26.4,
+        "7": 17.1,
+        "8": 26.4,
+        "9": 17.1,
+        "10": 26.4,
+        "11": 17.1,
+        "12": 26.4,
+        "13": 17.1,
+        "14": 26.4,
+        "15": 17.1,
+        "16": 26.4,
+        "17": 17.1,
+        "18": 26.4,
+        "19": 17.1,
+        "20": 26.4,
+        "21": 17.1,
+        "22": 26.4,
+        "23": 17.1,
+        "24": 26.4,
+        "25": 17.1,
+        "26": 26.4,
+        "27": 17.1,
+        "28": 26.4,
+        "29": 17.1,
+        "30": 26.4,
+        "31": 17.1,
+        "32": 26.4,
+        "33": 17.1,
+        "34": 26.4,
+        "35": 17.1,
+        "36": 26.4,
+        "37": 17.1,
+        "38": 26.4,
+        "39": 17.1,
+        "40": 26.4,
+        "41": 17.1,
+        "42": 26.4,
+        "43": 17.1,
+        "44": 26.4,
+        "45": 17.1,
+        "46": 26.4,
+        "47": 17.1,
+        "48": 26.4,
+        "49": 17.1,
+        "50": 26.4,
+        "51": 17.1,
+        "52": 26.4,
+        "53": 17.1,
+        "54": 26.4,
+        "55": 17.1,
+        "56": 26.4,
+        "57": 17.1,
+        "58": 26.4,
+        "59": 17.1,
+        "60": 26.4,
+        "61": 17.1,
+        "62": 26.4,
+        "63": 17.1,
+        "64": 26.4,
+        "65": 17.1,
+        "66": 26.4,
+        "67": 17.1,
+        "68": 26.4,
+        "69": 17.1,
+        "70": 26.4,
+        "71": 17.1,
+        "72": 26.4,
+        "73": 17.1,
+        "74": 26.4,
+        "75": 17.1,
+        "76": 26.4,
+        "77": 17.1,
+        "78": 26.4,
+        "79": 17.1,
+        "80": 26.4,
+        "81": 17.1,
+        "82": 26.4,
+        "83": 17.1,
+        "84": 26.4,
+        "85": 17.1,
+        "86": 26.4,
+        "87": 17.1,
+        "88": 26.4,
+        "89": 17.1,
+        "90": 26.4,
+        "91": 17.1,
+        "92": 26.4,
+        "93": 17.1,
+        "94": 26.4,
+        "95": 17.1,
+        "96": 26.4,
+        "97": 17.1,
+        "98": 26.4,
+        "99": 17.1,
+        "100": 26.4,
+        "101": 17.1,
+        "102": 26.4,
+        "103": 17.1,
+        "104": 26.4,
+        "105": 17.1,
+        "106": 26.4,
+        "107": 17.1,
+        "108": 26.4,
+        "109": 17.1,
+        "110": 26.4,
+        "111": 17.1,
+        "112": 26.4,
+        "113": 17.1,
+        "114": 26.4,
+        "115": 17.1,
+        "116": 26.4,
+        "117": 17.1,
+        "118": 26.4,
+        "119": 17.1,
+        "120": 26.4,
+        "121": 17.1,
+        "122": 26.4,
+        "123": 17.1,
+        "124": 26.4,
+        "125": 17.1,
+        "126": 26.4,
+        "127": 17.1,
+        "128": 26.4,
+        "129": 17.1,
+        "130": 26.4,
+        "131": 17.1,
+        "132": 26.4,
+        "133": 17.1,
+        "134": 26.4,
+        "135": 17.1,
+        "136": 26.4,
+        "137": 17.1,
+        "138": 26.4,
+        "139": 17.1,
+        "140": 26.4,
+        "141": 17.1,
+        "142": 26.4,
+        "143": 17.1,
+        "144": 26.4,
+        "145": 17.1,
+        "146": 26.4,
+        "147": 17.1,
+        "148": 26.4,
+        "149": 17.1,
+        "150": 26.4,
+        "151": 17.1,
+        "152": 26.4,
+        "153": 17.1,
+        "154": 26.4,
+        "155": 17.1,
+        "156": 26.4,
+        "157": 17.1,
+        "158": 26.4,
+        "159": 17.1,
+        "160": 26.4,
+        "161": 17.1,
+        "162": 26.4,
+        "163": 17.1,
+        "164": 26.4,
+        "165": 17.1,
+        "166": 26.4,
+        "167": 17.1,
+        "168": 26.4,
+        "169": 17.1,
+        "170": 26.4,
+        "171": 17.1,
+        "172": 26.4,
+        "173": 17.1,
+        "174": 26.4,
+        "175": 17.1,
+        "176": 26.4,
+        "177": 17.1,
+        "178": 26.4,
+        "179": 17.1,
+        "180": 26.4,
+        "181": 17.1,
+        "182": 26.4,
+        "183": 17.1,
+        "184": 26.4,
+        "185": 17.1,
+        "186": 26.4,
+        "187": 17.1,
+        "188": 26.4,
+        "189": 17.1,
+        "190": 26.4,
+        "191": 17.1,
+        "192": 26.4,
+        "193": 17.1,
+        "194": 26.4,
+        "195": 17.1,
+        "196": 26.4,
+        "197": 17.1,
+        "198": 26.4,
+        "199": 17.1,
+        "200": 26.4
       },
-      "description": "Mileage between platforms."
-    },
-    {
-      "name": "task_info",
-      "indices": [
-        "TASKS"
-      ],
-      "values": {
-        "1": {
-          "pickup_time": "10:03:43",
-          "pickup_location": "Z",
-          "dropoff_time": "10:58:32",
-          "dropoff_location": "M"
-        },
-        "2": {
-          "pickup_time": "10:09:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:04:32",
-          "dropoff_location": "M"
-        },
-        "3": {
-          "pickup_time": "10:15:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:10:32",
-          "dropoff_location": "M"
-        },
-        "4": {
-          "pickup_time": "10:21:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:16:32",
-          "dropoff_location": "M"
-        },
-        "5": {
-          "pickup_time": "10:27:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:22:32",
-          "dropoff_location": "M"
-        },
-        "6": {
-          "pickup_time": "10:33:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:28:32",
-          "dropoff_location": "M"
-        },
-        "7": {
-          "pickup_time": "10:39:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:34:32",
-          "dropoff_location": "M"
-        },
-        "8": {
-          "pickup_time": "10:45:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:40:32",
-          "dropoff_location": "M"
-        },
-        "9": {
-          "pickup_time": "10:51:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:46:32",
-          "dropoff_location": "M"
-        },
-        "10": {
-          "pickup_time": "10:57:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:52:32",
-          "dropoff_location": "M"
-        },
-        "11": {
-          "pickup_time": "11:03:43",
-          "pickup_location": "Z",
-          "dropoff_time": "11:58:32",
-          "dropoff_location": "M"
-        },
-        "12": {
-          "pickup_time": "11:09:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:04:32",
-          "dropoff_location": "M"
-        },
-        "13": {
-          "pickup_time": "11:15:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:10:32",
-          "dropoff_location": "M"
-        },
-        "14": {
-          "pickup_time": "11:21:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:16:32",
-          "dropoff_location": "M"
-        },
-        "15": {
-          "pickup_time": "11:27:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:22:32",
-          "dropoff_location": "M"
-        },
-        "16": {
-          "pickup_time": "11:33:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:28:32",
-          "dropoff_location": "M"
-        },
-        "17": {
-          "pickup_time": "11:39:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:34:32",
-          "dropoff_location": "M"
-        },
-        "18": {
-          "pickup_time": "11:45:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:40:32",
-          "dropoff_location": "M"
-        },
-        "19": {
-          "pickup_time": "11:51:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:46:32",
-          "dropoff_location": "M"
-        },
-        "20": {
-          "pickup_time": "11:57:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:52:32",
-          "dropoff_location": "M"
-        },
-        "21": {
-          "pickup_time": "12:03:43",
-          "pickup_location": "Z",
-          "dropoff_time": "12:58:32",
-          "dropoff_location": "M"
-        },
-        "22": {
-          "pickup_time": "12:09:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:04:32",
-          "dropoff_location": "M"
-        },
-        "23": {
-          "pickup_time": "12:15:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:10:32",
-          "dropoff_location": "M"
-        },
-        "24": {
-          "pickup_time": "12:21:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:16:32",
-          "dropoff_location": "M"
-        },
-        "25": {
-          "pickup_time": "12:27:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:22:32",
-          "dropoff_location": "M"
-        },
-        "26": {
-          "pickup_time": "12:33:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:28:32",
-          "dropoff_location": "M"
-        },
-        "27": {
-          "pickup_time": "12:39:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:34:32",
-          "dropoff_location": "M"
-        },
-        "28": {
-          "pickup_time": "12:45:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:40:32",
-          "dropoff_location": "M"
-        },
-        "29": {
-          "pickup_time": "12:51:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:46:32",
-          "dropoff_location": "M"
-        },
-        "30": {
-          "pickup_time": "12:57:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:52:32",
-          "dropoff_location": "M"
-        },
-        "31": {
-          "pickup_time": "13:03:43",
-          "pickup_location": "Z",
-          "dropoff_time": "13:58:32",
-          "dropoff_location": "M"
-        },
-        "32": {
-          "pickup_time": "13:09:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:04:32",
-          "dropoff_location": "M"
-        },
-        "33": {
-          "pickup_time": "13:15:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:10:32",
-          "dropoff_location": "M"
-        },
-        "34": {
-          "pickup_time": "13:21:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:16:32",
-          "dropoff_location": "M"
-        },
-        "35": {
-          "pickup_time": "13:27:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:22:32",
-          "dropoff_location": "M"
-        },
-        "36": {
-          "pickup_time": "13:33:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:28:32",
-          "dropoff_location": "M"
-        },
-        "37": {
-          "pickup_time": "13:39:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:34:32",
-          "dropoff_location": "M"
-        },
-        "38": {
-          "pickup_time": "13:45:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:40:32",
-          "dropoff_location": "M"
-        },
-        "39": {
-          "pickup_time": "13:51:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:46:32",
-          "dropoff_location": "M"
-        },
-        "40": {
-          "pickup_time": "13:57:43",
-          "pickup_location": "Z",
-          "dropoff_time": "14:52:32",
-          "dropoff_location": "M"
-        }
-      },
-      "description": "Information about each driving task including pickup and dropoff times and locations."
+      "description": "Mileage for each task."
     }
   ],
   "vars": [
     {
-      "name": "x",
+      "name": "driver",
       "indices": [
-        "TASKS",
-        "TASKS"
+        "Tasks"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary variable indicating if task i is followed by task j."
-    },
-    {
-      "name": "y",
-      "indices": [
-        "TASKS"
-      ],
-      "vartype": "binary",
-      "lb": 0.0,
-      "ub": 1.0,
-      "description": "Binary variable indicating if a driver is assigned to task i."
+      "description": "Binary variable indicating if a driver is assigned to a task."
     }
   ],
   "objective": {
-    "name": "min_total_drivers",
+    "name": "min_drivers",
     "sense": "min",
-    "expr": "sum(y[t] for t in TASKS)",
-    "description": "Minimize the total number of drivers needed."
+    "expr": "quicksum(driver[t] for t in Tasks)",
+    "description": "Minimize the number of drivers."
   },
   "constraints": [
     {
-      "name": "task_assignment",
-      "expr_lhs": "sum(x[t][j] for j in TASKS if j != t)",
-      "sense": "==",
-      "expr_rhs": "y[t]",
-      "description": "Each task must be assigned to exactly one driver."
-    },
-    {
-      "name": "driver_continuity",
-      "expr_lhs": "sum(x[i][t] for i in TASKS if i != t)",
-      "sense": "==",
-      "expr_rhs": "y[t]",
-      "description": "Ensure continuity of driver assignments."
+      "name": "max_continuous_driving_time",
+      "expr_lhs": "quicksum(mileage[t] * driver[t] for t in Tasks)",
+      "sense": "<=",
+      "expr_rhs": "8.0",
+      "description": "Maximum continuous driving time constraint."
     }
-  ],
-  "graph": null
+  ]
 }

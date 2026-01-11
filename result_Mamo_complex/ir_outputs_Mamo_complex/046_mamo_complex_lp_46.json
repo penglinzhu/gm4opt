@@ -1,0 +1,240 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_46",
+    "source": "Mamo_complex_lp",
+    "description": "Consider a scenario where a delivery company needs to deliver packages to five different cities. These cities are labeled as E, F, G, H and I. The delivery van can start its route from any of these cities but must follow one rule: it must visit each city exactly once and then return to the starting city. The aim is to find the route that minimizes the total travel cost, which could be a function of fuel costs, labor costs, or road tolls.\n\nHere's a rundown of the travel costs between these cities:\n\nFrom City E (1), the cost to reach City F (2) is 35 units, to G (3) is 90 units, to H (4) is 23 units, and to I (5) is 62 units.\n\nFrom City F (2), the cost to City E (1) is 35 units, to G (3) is 53 units, to H (4) is 58 units, and to I (5) is 46 units.\n\nIf we start from City G (3), the cost to reach City E (1) is 90 units, to F (2) is 53 units, to H (4) is 28 units, and to I (5) is 91 units.\n\nFrom City H (4), the cost to City E (1) is 23 units, to F (2) is 58 units, to G (3) is 28 units, and to I (5) is 77 units.\n\nLastly, from City I (5), it costs 62 units to reach City E (1), 46 units to get to F (2), 91 units to reach G (3), and 77 units to reach H (4).\n\nWhat is the minimum total travel cost for the delivery van to visit each city exactly once and return to the starting city?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Cities",
+      "elements": [
+        "E",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "description": "Set of cities to be visited."
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "values": {
+        "E": {
+          "F": 35.0,
+          "G": 90.0,
+          "H": 23.0,
+          "I": 62.0,
+          "E": 0.0
+        },
+        "F": {
+          "E": 35.0,
+          "G": 53.0,
+          "H": 58.0,
+          "I": 46.0,
+          "F": 0.0
+        },
+        "G": {
+          "E": 90.0,
+          "F": 53.0,
+          "H": 28.0,
+          "I": 91.0,
+          "G": 0.0
+        },
+        "H": {
+          "E": 23.0,
+          "F": 58.0,
+          "G": 28.0,
+          "I": 77.0,
+          "H": 0.0
+        },
+        "I": {
+          "E": 62.0,
+          "F": 46.0,
+          "G": 91.0,
+          "H": 77.0,
+          "I": 0.0
+        }
+      },
+      "description": "Travel costs between cities."
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "Binary variable indicating if a route is taken between two cities."
+    },
+    {
+      "name": "u",
+      "indices": [
+        "Cities"
+      ],
+      "vartype": "integer",
+      "lb": 1.0,
+      "ub": 5.0,
+      "description": "Helper variable for subtour elimination."
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * x[i][j] for i in Cities for j in Cities if i != j)",
+    "description": "Minimize the total travel cost."
+  },
+  "constraints": [
+    {
+      "name": "visit_each_city_once_E",
+      "expr_lhs": "quicksum(x['E'][j] for j in Cities if j != 'E')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city E is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_F",
+      "expr_lhs": "quicksum(x['F'][j] for j in Cities if j != 'F')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city F is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_G",
+      "expr_lhs": "quicksum(x['G'][j] for j in Cities if j != 'G')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city G is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_H",
+      "expr_lhs": "quicksum(x['H'][j] for j in Cities if j != 'H')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city H is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_I",
+      "expr_lhs": "quicksum(x['I'][j] for j in Cities if j != 'I')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city I is visited exactly once."
+    },
+    {
+      "name": "leave_each_city_once_E",
+      "expr_lhs": "quicksum(x[i]['E'] for i in Cities if i != 'E')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city E is left exactly once."
+    },
+    {
+      "name": "leave_each_city_once_F",
+      "expr_lhs": "quicksum(x[i]['F'] for i in Cities if i != 'F')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city F is left exactly once."
+    },
+    {
+      "name": "leave_each_city_once_G",
+      "expr_lhs": "quicksum(x[i]['G'] for i in Cities if i != 'G')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city G is left exactly once."
+    },
+    {
+      "name": "leave_each_city_once_H",
+      "expr_lhs": "quicksum(x[i]['H'] for i in Cities if i != 'H')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city H is left exactly once."
+    },
+    {
+      "name": "leave_each_city_once_I",
+      "expr_lhs": "quicksum(x[i]['I'] for i in Cities if i != 'I')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure city I is left exactly once."
+    },
+    {
+      "name": "subtour_elimination_F",
+      "expr_lhs": "u['E'] - u['F'] + 5 * x['E']['F']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities E and F."
+    },
+    {
+      "name": "subtour_elimination_G",
+      "expr_lhs": "u['E'] - u['G'] + 5 * x['E']['G']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities E and G."
+    },
+    {
+      "name": "subtour_elimination_H",
+      "expr_lhs": "u['E'] - u['H'] + 5 * x['E']['H']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities E and H."
+    },
+    {
+      "name": "subtour_elimination_I",
+      "expr_lhs": "u['E'] - u['I'] + 5 * x['E']['I']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities E and I."
+    },
+    {
+      "name": "subtour_elimination_G_F",
+      "expr_lhs": "u['F'] - u['G'] + 5 * x['F']['G']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities F and G."
+    },
+    {
+      "name": "subtour_elimination_H_F",
+      "expr_lhs": "u['F'] - u['H'] + 5 * x['F']['H']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities F and H."
+    },
+    {
+      "name": "subtour_elimination_I_F",
+      "expr_lhs": "u['F'] - u['I'] + 5 * x['F']['I']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities F and I."
+    },
+    {
+      "name": "subtour_elimination_H_G",
+      "expr_lhs": "u['G'] - u['H'] + 5 * x['G']['H']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities G and H."
+    },
+    {
+      "name": "subtour_elimination_I_G",
+      "expr_lhs": "u['G'] - u['I'] + 5 * x['G']['I']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities G and I."
+    },
+    {
+      "name": "subtour_elimination_I_H",
+      "expr_lhs": "u['H'] - u['I'] + 5 * x['H']['I']",
+      "sense": "<=",
+      "expr_rhs": "4.0",
+      "description": "Subtour elimination constraint for cities H and I."
+    }
+  ]
+}

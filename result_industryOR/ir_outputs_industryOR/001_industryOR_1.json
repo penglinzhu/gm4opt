@@ -2,40 +2,40 @@
   "meta": {
     "problem_id": "industryOR_1",
     "source": "IndustryOR",
-    "description": "Maximize the annual income from purchasing properties within a budget constraint and a mutual exclusivity condition.",
+    "description": "The Li family plans to invest their retirement fund in commercial real estate. Property 1 has an annual income of $12,500, Property 2 has an annual income of $35,000, Property 3 has an annual income of $23,000, and Property 4 has an annual income of $100,000. The decision to be made is whether to buy or not buy each property, not the quantity, as there is only one property per property. Help them decide which properties to purchase to maximize their annual income.\nProperty 1 costs $1.5 million, Property 2 costs $2.1 million, Property 3 costs $2.3 million, and Property 4 costs $4.2 million. The Li family's budget is $7 million.\n\nIf they purchase Property 4, then they cannot purchase Property 3.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "PROPERTIES",
+      "name": "P",
       "elements": [
         "1",
         "2",
         "3",
         "4"
       ],
-      "description": "Set of properties available for purchase."
+      "description": "Properties available for investment"
     }
   ],
   "params": [
     {
-      "name": "annual_income",
+      "name": "income",
       "indices": [
-        "PROPERTIES"
+        "P"
       ],
       "values": {
-        "1": 12500,
-        "2": 35000,
-        "3": 23000,
-        "4": 100000
+        "1": 12500.0,
+        "2": 35000.0,
+        "3": 23000.0,
+        "4": 100000.0
       },
-      "description": "Annual income from each property."
+      "description": "Annual income from each property"
     },
     {
       "name": "cost",
       "indices": [
-        "PROPERTIES"
+        "P"
       ],
       "values": {
         "1": 1.5,
@@ -43,48 +43,41 @@
         "3": 2.3,
         "4": 4.2
       },
-      "description": "Cost in millions to purchase each property."
-    },
-    {
-      "name": "budget",
-      "indices": [],
-      "values": 7,
-      "description": "Total budget available in millions."
+      "description": "Cost of each property in millions"
     }
   ],
   "vars": [
     {
       "name": "buy",
       "indices": [
-        "PROPERTIES"
+        "P"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary decision variable indicating whether to buy each property."
+      "description": "Decision to buy (1) or not buy (0) each property"
     }
   ],
   "objective": {
-    "name": "max_total_income",
+    "name": "max_income",
     "sense": "max",
-    "expr": "sum(annual_income[p] * buy[p] for p in ['1', '2', '3', '4'])",
-    "description": "Maximize the total annual income from purchased properties."
+    "expr": "quicksum(income[p] * buy[p] for p in P)",
+    "description": "Maximize total annual income from purchased properties"
   },
   "constraints": [
     {
       "name": "budget_constraint",
-      "expr_lhs": "sum(cost[p] * buy[p] for p in ['1', '2', '3', '4'])",
+      "expr_lhs": "quicksum(cost[p] * buy[p] for p in P)",
       "sense": "<=",
-      "expr_rhs": "budget",
-      "description": "Total cost of purchased properties must not exceed the budget."
+      "expr_rhs": "7.0",
+      "description": "Total cost of purchased properties must not exceed $7 million"
     },
     {
       "name": "mutual_exclusivity_3_4",
       "expr_lhs": "buy['3'] + buy['4']",
       "sense": "<=",
-      "expr_rhs": "1",
-      "description": "Cannot purchase both Property 3 and Property 4."
+      "expr_rhs": "1.0",
+      "description": "Cannot purchase both Property 3 and Property 4"
     }
-  ],
-  "graph": null
+  ]
 }

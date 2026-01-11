@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_32",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you're creating a meal plan for yourself and want to ensure you're getting the right amount of nutrients, but you also want to keep your budget in check. You're considering four different food items: Steak, Eggs, Pasta, and Chicken. Each of these food items has a different nutritional content and cost.\n\nHere's a brief overview of what each food item provides and how much it costs:\n\n- Steak: Provides you with 20 grams of protein, 2 grams of carbohydrates, and 68 calories for $4.\n- Eggs: Offer 7 grams of protein, 3 grams of carbohydrates, and 143 calories for just $1.\n- Pasta: Gives you 1 gram of protein, a large 26 grams of carbohydrates, and 52 calories for $9.\n- Chicken: Packs 10 grams of protein, 1 gram of carbohydrate, and 69 calories for $4.\n\nYou need to ensure that you consume at least 71 grams of protein, 141 grams of carbohydrates, and 1839 calories from the food combination you choose. The challenge is to determine the least expensive way to meet these nutritional requirements using these four food options. What is the least amount of money you can spend to meet your nutritional needs? Note that your response should only include the optimal cost value.",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "F",
+      "elements": [
+        "Steak",
+        "Eggs",
+        "Pasta",
+        "Chicken"
+      ],
+      "description": "Set of food items"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Steak": 4.0,
+        "Eggs": 1.0,
+        "Pasta": 9.0,
+        "Chicken": 4.0
+      },
+      "description": "Cost of each food item"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Steak": 20.0,
+        "Eggs": 7.0,
+        "Pasta": 1.0,
+        "Chicken": 10.0
+      },
+      "description": "Protein content of each food item"
+    },
+    {
+      "name": "carbs",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Steak": 2.0,
+        "Eggs": 3.0,
+        "Pasta": 26.0,
+        "Chicken": 1.0
+      },
+      "description": "Carbohydrate content of each food item"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Steak": 68.0,
+        "Eggs": 143.0,
+        "Pasta": 52.0,
+        "Chicken": 69.0
+      },
+      "description": "Caloric content of each food item"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "F"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Amount of each food item to consume"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in F)",
+    "description": "Minimize the total cost of the food items"
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "71.0",
+      "description": "Ensure at least 71 grams of protein"
+    },
+    {
+      "name": "carbs_requirement",
+      "expr_lhs": "quicksum(carbs[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "141.0",
+      "description": "Ensure at least 141 grams of carbohydrates"
+    },
+    {
+      "name": "calories_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "1839.0",
+      "description": "Ensure at least 1839 calories"
+    }
+  ]
+}

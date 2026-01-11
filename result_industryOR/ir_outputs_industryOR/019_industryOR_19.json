@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_19",
     "source": "IndustryOR",
-    "description": "Optimize coal distribution from two mines to three residential areas to minimize transportation ton-kilometers.",
+    "description": "There are two coal mines, A and B, with monthly coal supplies of at least 80 tons and 100 tons, respectively. They are responsible for supplying coal to three residential areas, which require 55 tons, 75 tons, and 50 tons of coal per month, respectively. The distances between mine A and these three residential areas are 10 kilometers, 5 kilometers, and 6 kilometers. The distances between mine B and these three residential areas are 4 kilometers, 8 kilometers, and 15 kilometers. How should these two coal mines distribute the coal to the three residential areas to minimize the ton-kilometers of transportation?",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "MINES",
+      "name": "M",
       "elements": [
         "A",
         "B"
@@ -16,11 +16,11 @@
       "description": "Coal mines"
     },
     {
-      "name": "AREAS",
+      "name": "R",
       "elements": [
-        "1",
-        "2",
-        "3"
+        "R1",
+        "R2",
+        "R3"
       ],
       "description": "Residential areas"
     }
@@ -29,102 +29,101 @@
     {
       "name": "supply",
       "indices": [
-        "MINES"
+        "M"
       ],
       "values": {
-        "A": 80,
-        "B": 100
+        "A": 80.0,
+        "B": 100.0
       },
-      "description": "Monthly coal supply from each mine in tons"
+      "description": "Monthly coal supply from each mine"
     },
     {
       "name": "demand",
       "indices": [
-        "AREAS"
+        "R"
       ],
       "values": {
-        "1": 55,
-        "2": 75,
-        "3": 50
+        "R1": 55.0,
+        "R2": 75.0,
+        "R3": 50.0
       },
-      "description": "Monthly coal demand for each residential area in tons"
+      "description": "Monthly coal demand for each residential area"
     },
     {
       "name": "distance",
       "indices": [
-        "MINES",
-        "AREAS"
+        "M",
+        "R"
       ],
       "values": {
         "A": {
-          "1": 10,
-          "2": 5,
-          "3": 6
+          "R1": 10.0,
+          "R2": 5.0,
+          "R3": 6.0
         },
         "B": {
-          "1": 4,
-          "2": 8,
-          "3": 15
+          "R1": 4.0,
+          "R2": 8.0,
+          "R3": 15.0
         }
       },
-      "description": "Distance in kilometers from each mine to each residential area"
+      "description": "Distances from mines to residential areas"
     }
   ],
   "vars": [
     {
       "name": "x",
       "indices": [
-        "MINES",
-        "AREAS"
+        "M",
+        "R"
       ],
       "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
-      "description": "Tons of coal transported from each mine to each residential area"
+      "description": "Amount of coal transported from mine to residential area"
     }
   ],
   "objective": {
-    "name": "min_total_ton_kilometers",
+    "name": "min_transport_cost",
     "sense": "min",
-    "expr": "sum(x[m][a] * distance[m][a] for m in ['A', 'B'] for a in ['1', '2', '3'])",
-    "description": "Minimize the total transportation ton-kilometers"
+    "expr": "quicksum(distance[m][r] * x[m][r] for m in M for r in R)",
+    "description": "Minimize the total transportation cost in ton-kilometers"
   },
   "constraints": [
     {
-      "name": "supply_constraint_A",
-      "expr_lhs": "sum(x['A'][a] for a in ['1', '2', '3'])",
+      "name": "supply_A",
+      "expr_lhs": "quicksum(x['A'][r] for r in R)",
       "sense": "<=",
       "expr_rhs": "supply['A']",
       "description": "Supply constraint for mine A"
     },
     {
-      "name": "supply_constraint_B",
-      "expr_lhs": "sum(x['B'][a] for a in ['1', '2', '3'])",
+      "name": "supply_B",
+      "expr_lhs": "quicksum(x['B'][r] for r in R)",
       "sense": "<=",
       "expr_rhs": "supply['B']",
       "description": "Supply constraint for mine B"
     },
     {
-      "name": "demand_constraint_1",
-      "expr_lhs": "sum(x[m]['1'] for m in ['A', 'B'])",
-      "sense": ">=",
-      "expr_rhs": "demand['1']",
-      "description": "Demand constraint for residential area 1"
+      "name": "demand_R1",
+      "expr_lhs": "x['A']['R1'] + x['B']['R1']",
+      "sense": "==",
+      "expr_rhs": "demand['R1']",
+      "description": "Demand constraint for residential area R1"
     },
     {
-      "name": "demand_constraint_2",
-      "expr_lhs": "sum(x[m]['2'] for m in ['A', 'B'])",
-      "sense": ">=",
-      "expr_rhs": "demand['2']",
-      "description": "Demand constraint for residential area 2"
+      "name": "demand_R2",
+      "expr_lhs": "x['A']['R2'] + x['B']['R2']",
+      "sense": "==",
+      "expr_rhs": "demand['R2']",
+      "description": "Demand constraint for residential area R2"
     },
     {
-      "name": "demand_constraint_3",
-      "expr_lhs": "sum(x[m]['3'] for m in ['A', 'B'])",
-      "sense": ">=",
-      "expr_rhs": "demand['3']",
-      "description": "Demand constraint for residential area 3"
+      "name": "demand_R3",
+      "expr_lhs": "x['A']['R3'] + x['B']['R3']",
+      "sense": "==",
+      "expr_rhs": "demand['R3']",
+      "description": "Demand constraint for residential area R3"
     }
-  ],
-  "graph": null
+  ]
 }

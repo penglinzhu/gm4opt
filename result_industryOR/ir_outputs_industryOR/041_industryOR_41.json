@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_41",
     "source": "IndustryOR",
-    "description": "Determine the minimum number of waitstaff required to meet the minimum staffing requirements for each time period in a 24-hour restaurant operation.",
+    "description": "A certain restaurant operates 24 hours a day and requires a minimum number of waitstaff as shown in Table 1.1.\n\nTable 1.1\n\n| Time | Minimum Number of Waitstaff |\n| :---: | :---: |\n| 2am-6am | 4 |\n| 6am-10am | 8 |\n| 10am-2pm | 10 |\n| 2pm-6pm | 4 |\n| 6pm-10pm | 8 |\n| 10pm-2am | 4 |\n\nEach waitstaff works continuously for 8 hours a day. The goal is to find the minimum number of waitstaff that satisfies the above conditions and represent this problem as a linear programming model.",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "TIME_PERIODS",
+      "name": "T",
       "elements": [
         "2am-6am",
         "6am-10am",
@@ -17,14 +17,14 @@
         "6pm-10pm",
         "10pm-2am"
       ],
-      "description": "Time periods during which the restaurant operates."
+      "description": "Time periods in the restaurant's schedule"
     }
   ],
   "params": [
     {
       "name": "min_waitstaff",
       "indices": [
-        "TIME_PERIODS"
+        "T"
       ],
       "values": {
         "2am-6am": 4,
@@ -34,70 +34,69 @@
         "6pm-10pm": 8,
         "10pm-2am": 4
       },
-      "description": "Minimum number of waitstaff required for each time period."
+      "description": "Minimum number of waitstaff required for each time period"
     }
   ],
   "vars": [
     {
-      "name": "x",
+      "name": "w",
       "indices": [
-        "TIME_PERIODS"
+        "T"
       ],
       "vartype": "integer",
       "lb": 0.0,
       "ub": null,
-      "description": "Number of waitstaff starting their shift at the beginning of each time period."
+      "description": "Number of waitstaff starting their shift at each time period"
     }
   ],
   "objective": {
-    "name": "min_total_waitstaff",
+    "name": "total_waitstaff",
     "sense": "min",
-    "expr": "sum(x[t] for t in TIME_PERIODS)",
-    "description": "Minimize the total number of waitstaff scheduled."
+    "expr": "quicksum(w[t] for t in T)",
+    "description": "Minimize the total number of waitstaff"
   },
   "constraints": [
     {
-      "name": "min_staff_2am_6am",
-      "expr_lhs": "x['2am-6am'] + x['10pm-2am']",
+      "name": "coverage_2am_6am",
+      "expr_lhs": "w['10pm-2am'] + w['2am-6am']",
       "sense": ">=",
       "expr_rhs": "min_waitstaff['2am-6am']",
-      "description": "Ensure minimum waitstaff requirement for 2am-6am is met."
+      "description": "Ensure enough waitstaff from 2am to 6am"
     },
     {
-      "name": "min_staff_6am_10am",
-      "expr_lhs": "x['6am-10am'] + x['2am-6am']",
+      "name": "coverage_6am_10am",
+      "expr_lhs": "w['2am-6am'] + w['6am-10am']",
       "sense": ">=",
       "expr_rhs": "min_waitstaff['6am-10am']",
-      "description": "Ensure minimum waitstaff requirement for 6am-10am is met."
+      "description": "Ensure enough waitstaff from 6am to 10am"
     },
     {
-      "name": "min_staff_10am_2pm",
-      "expr_lhs": "x['10am-2pm'] + x['6am-10am']",
+      "name": "coverage_10am_2pm",
+      "expr_lhs": "w['6am-10am'] + w['10am-2pm']",
       "sense": ">=",
       "expr_rhs": "min_waitstaff['10am-2pm']",
-      "description": "Ensure minimum waitstaff requirement for 10am-2pm is met."
+      "description": "Ensure enough waitstaff from 10am to 2pm"
     },
     {
-      "name": "min_staff_2pm_6pm",
-      "expr_lhs": "x['2pm-6pm'] + x['10am-2pm']",
+      "name": "coverage_2pm_6pm",
+      "expr_lhs": "w['10am-2pm'] + w['2pm-6pm']",
       "sense": ">=",
       "expr_rhs": "min_waitstaff['2pm-6pm']",
-      "description": "Ensure minimum waitstaff requirement for 2pm-6pm is met."
+      "description": "Ensure enough waitstaff from 2pm to 6pm"
     },
     {
-      "name": "min_staff_6pm_10pm",
-      "expr_lhs": "x['6pm-10pm'] + x['2pm-6pm']",
+      "name": "coverage_6pm_10pm",
+      "expr_lhs": "w['2pm-6pm'] + w['6pm-10pm']",
       "sense": ">=",
       "expr_rhs": "min_waitstaff['6pm-10pm']",
-      "description": "Ensure minimum waitstaff requirement for 6pm-10pm is met."
+      "description": "Ensure enough waitstaff from 6pm to 10pm"
     },
     {
-      "name": "min_staff_10pm_2am",
-      "expr_lhs": "x['10pm-2am'] + x['6pm-10pm']",
+      "name": "coverage_10pm_2am",
+      "expr_lhs": "w['6pm-10pm'] + w['10pm-2am']",
       "sense": ">=",
       "expr_rhs": "min_waitstaff['10pm-2am']",
-      "description": "Ensure minimum waitstaff requirement for 10pm-2am is met."
+      "description": "Ensure enough waitstaff from 10pm to 2am"
     }
-  ],
-  "graph": null
+  ]
 }

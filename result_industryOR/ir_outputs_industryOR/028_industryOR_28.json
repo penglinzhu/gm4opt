@@ -2,124 +2,123 @@
   "meta": {
     "problem_id": "industryOR_28",
     "source": "IndustryOR",
-    "description": "Determine how many hours should be allocated to each component in each workshop to maximize the number of completed products.",
+    "description": "A product consists of three components, which are produced by four workshops. The total number of production hours available for each workshop is limited. Table 1.4 shows the productivity of the three components. The objective is to determine how many hours should be allocated to each component in each workshop in order to maximize the number of completed products. Represent this problem as a linear programming problem.\n\nTable 1.4\n\n| Workshop | Production Capacity <br> (hours) | Productivity (units/hour) |  |  |\n| :---: | :---: | :---: | :---: | :---: |\n|  |  | Component 1 | Component 2 | Component 3 |\n| A | 100 | 10 | 15 | 5 |\n| B | 150 | 15 | 10 | 5 |\n| C | 80 | 20 | 5 | 10 |\n| D | 200 | 10 | 15 | 20 |",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "WORKSHOPS",
+      "name": "Workshops",
       "elements": [
         "A",
         "B",
         "C",
         "D"
       ],
-      "description": "The workshops where components are produced."
+      "description": "Set of workshops"
     },
     {
-      "name": "COMPONENTS",
+      "name": "Components",
       "elements": [
         "1",
         "2",
         "3"
       ],
-      "description": "The components that make up the product."
+      "description": "Set of components"
     }
   ],
   "params": [
     {
-      "name": "production_capacity",
+      "name": "capacity",
       "indices": [
-        "WORKSHOPS"
+        "Workshops"
       ],
       "values": {
-        "A": 100,
-        "B": 150,
-        "C": 80,
-        "D": 200
+        "A": 100.0,
+        "B": 150.0,
+        "C": 80.0,
+        "D": 200.0
       },
-      "description": "The total number of production hours available for each workshop."
+      "description": "Production capacity in hours for each workshop"
     },
     {
       "name": "productivity",
       "indices": [
-        "WORKSHOPS",
-        "COMPONENTS"
+        "Workshops",
+        "Components"
       ],
       "values": {
         "A": {
-          "1": 10,
-          "2": 15,
-          "3": 5
+          "1": 10.0,
+          "2": 15.0,
+          "3": 5.0
         },
         "B": {
-          "1": 15,
-          "2": 10,
-          "3": 5
+          "1": 15.0,
+          "2": 10.0,
+          "3": 5.0
         },
         "C": {
-          "1": 20,
-          "2": 5,
-          "3": 10
+          "1": 20.0,
+          "2": 5.0,
+          "3": 10.0
         },
         "D": {
-          "1": 10,
-          "2": 15,
-          "3": 20
+          "1": 10.0,
+          "2": 15.0,
+          "3": 20.0
         }
       },
-      "description": "The productivity in units per hour for each component in each workshop."
+      "description": "Productivity in units per hour for each component in each workshop"
     }
   ],
   "vars": [
     {
-      "name": "hours_allocated",
+      "name": "hours",
       "indices": [
-        "WORKSHOPS",
-        "COMPONENTS"
+        "Workshops",
+        "Components"
       ],
       "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
-      "description": "The number of hours allocated to each component in each workshop."
+      "description": "Hours allocated to each component in each workshop"
     }
   ],
   "objective": {
-    "name": "max_completed_products",
+    "name": "maximize_products",
     "sense": "max",
-    "expr": "sum(hours_allocated[w][c] * productivity[w][c] for w in WORKSHOPS for c in COMPONENTS)",
-    "description": "Maximize the number of completed products."
+    "expr": "quicksum(productivity[w][c] * hours[w][c] for w in Workshops for c in Components)",
+    "description": "Maximize the total number of completed products"
   },
   "constraints": [
     {
       "name": "capacity_constraint_A",
-      "expr_lhs": "sum(hours_allocated['A'][c] for c in COMPONENTS)",
+      "expr_lhs": "quicksum(hours['A'][c] for c in Components)",
       "sense": "<=",
-      "expr_rhs": "production_capacity['A']",
-      "description": "The total hours allocated in workshop A must not exceed its capacity."
+      "expr_rhs": "capacity['A']",
+      "description": "Capacity constraint for workshop A"
     },
     {
       "name": "capacity_constraint_B",
-      "expr_lhs": "sum(hours_allocated['B'][c] for c in COMPONENTS)",
+      "expr_lhs": "quicksum(hours['B'][c] for c in Components)",
       "sense": "<=",
-      "expr_rhs": "production_capacity['B']",
-      "description": "The total hours allocated in workshop B must not exceed its capacity."
+      "expr_rhs": "capacity['B']",
+      "description": "Capacity constraint for workshop B"
     },
     {
       "name": "capacity_constraint_C",
-      "expr_lhs": "sum(hours_allocated['C'][c] for c in COMPONENTS)",
+      "expr_lhs": "quicksum(hours['C'][c] for c in Components)",
       "sense": "<=",
-      "expr_rhs": "production_capacity['C']",
-      "description": "The total hours allocated in workshop C must not exceed its capacity."
+      "expr_rhs": "capacity['C']",
+      "description": "Capacity constraint for workshop C"
     },
     {
       "name": "capacity_constraint_D",
-      "expr_lhs": "sum(hours_allocated['D'][c] for c in COMPONENTS)",
+      "expr_lhs": "quicksum(hours['D'][c] for c in Components)",
       "sense": "<=",
-      "expr_rhs": "production_capacity['D']",
-      "description": "The total hours allocated in workshop D must not exceed its capacity."
+      "expr_rhs": "capacity['D']",
+      "description": "Capacity constraint for workshop D"
     }
-  ],
-  "graph": null
+  ]
 }

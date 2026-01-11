@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_12",
     "source": "IndustryOR",
-    "description": "Maximize the annual profit of a wood storage and transportation company considering buying, selling, and storage costs.",
+    "description": "A wood storage and transportation company has a large warehouse for storing and selling wood. Due to the fluctuation in wood prices each quarter, the company purchases wood at the beginning of each quarter, sells a portion within the same quarter, and stores the remaining amount for future sales. It is known that the maximum wood storage capacity of the company's warehouse is 200,000 $\\mathrm{m}^3$, and the storage cost is $(a+b u)$ yuan per $\\mathrm{m}^3$, where $a=70$, $b=100$, and $u$ is the storage time in quarters. The buying and selling prices for each quarter and the projected maximum sales volume are shown in Table 1-18.\nTable 1-18\n\\begin{tabular}{c|c|c|c}\n\\hline Quarter & Buying Price (10,000 yuan/$10,000 \\mathrm{m}^2$) & Selling Price (10,000 yuan/$10,000 \\mathrm{m}^2$) & Projected Maximum Sales Volume ($10,000 \\mathrm{m}^3$) \\\\\n\\hline Winter & 410 & 425 & 100 \\\\\nSpring & 430 & 440 & 140 \\\\\nSummer & 460 & 465 & 200 \\\\\nAutumn & 450 & 455 & 160 \\\\\n\\hline\n\\end{tabular}\n\nDue to the unsuitability of long-term wood storage, all inventory wood should be sold by the end of each autumn. Establish a linear programming model for this problem to maximize the company's annual profit.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "QUARTERS",
+      "name": "Quarters",
       "elements": [
         "Winter",
         "Spring",
@@ -22,97 +22,97 @@
     {
       "name": "buying_price",
       "indices": [
-        "QUARTERS"
+        "Quarters"
       ],
       "values": {
-        "Winter": 410,
-        "Spring": 430,
-        "Summer": 460,
-        "Autumn": 450
+        "Winter": 410.0,
+        "Spring": 430.0,
+        "Summer": 460.0,
+        "Autumn": 450.0
       },
-      "description": "Buying price in 10,000 yuan per 10,000 m^3 for each quarter."
+      "description": "Buying price per 10,000 m^3 in each quarter."
     },
     {
       "name": "selling_price",
       "indices": [
-        "QUARTERS"
+        "Quarters"
       ],
       "values": {
-        "Winter": 425,
-        "Spring": 440,
-        "Summer": 465,
-        "Autumn": 455
+        "Winter": 425.0,
+        "Spring": 440.0,
+        "Summer": 465.0,
+        "Autumn": 455.0
       },
-      "description": "Selling price in 10,000 yuan per 10,000 m^3 for each quarter."
+      "description": "Selling price per 10,000 m^3 in each quarter."
     },
     {
-      "name": "max_sales_volume",
+      "name": "max_sales",
       "indices": [
-        "QUARTERS"
+        "Quarters"
       ],
       "values": {
-        "Winter": 100,
-        "Spring": 140,
-        "Summer": 200,
-        "Autumn": 160
+        "Winter": 100.0,
+        "Spring": 140.0,
+        "Summer": 200.0,
+        "Autumn": 160.0
       },
       "description": "Projected maximum sales volume in 10,000 m^3 for each quarter."
     },
     {
       "name": "storage_cost_a",
       "indices": [],
-      "values": 70,
-      "description": "Fixed part of the storage cost per m^3."
+      "values": 70.0,
+      "description": "Fixed storage cost per m^3."
     },
     {
       "name": "storage_cost_b",
       "indices": [],
-      "values": 100,
-      "description": "Variable part of the storage cost per m^3 per quarter."
+      "values": 100.0,
+      "description": "Variable storage cost per m^3 per quarter."
     },
     {
-      "name": "max_storage_capacity",
+      "name": "max_storage",
       "indices": [],
-      "values": 200000,
-      "description": "Maximum storage capacity in m^3."
+      "values": 200.0,
+      "description": "Maximum storage capacity in 10,000 m^3."
     }
   ],
   "vars": [
     {
       "name": "purchase",
       "indices": [
-        "QUARTERS"
+        "Quarters"
       ],
-      "vartype": "integer",
+      "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
-      "description": "Amount of wood purchased in 10,000 m^3 for each quarter."
+      "description": "Amount of wood purchased in 10,000 m^3 in each quarter."
     },
     {
       "name": "sell",
       "indices": [
-        "QUARTERS"
+        "Quarters"
       ],
-      "vartype": "integer",
+      "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
-      "description": "Amount of wood sold in 10,000 m^3 for each quarter."
+      "description": "Amount of wood sold in 10,000 m^3 in each quarter."
     },
     {
       "name": "inventory",
       "indices": [
-        "QUARTERS"
+        "Quarters"
       ],
-      "vartype": "integer",
+      "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
       "description": "Amount of wood in inventory in 10,000 m^3 at the end of each quarter."
     }
   ],
   "objective": {
-    "name": "max_annual_profit",
+    "name": "profit",
     "sense": "max",
-    "expr": "sum((selling_price[q] * sell[q] - buying_price[q] * purchase[q] - (storage_cost_a + storage_cost_b * (i+1)) * inventory[q]) for i, q in enumerate(['Winter', 'Spring', 'Summer', 'Autumn']))",
+    "expr": "quicksum((selling_price[q] * sell[q] - buying_price[q] * purchase[q] - (storage_cost_a + storage_cost_b * (i+1)) * inventory[q]) for i, q in enumerate(Quarters))",
     "description": "Maximize the annual profit considering buying, selling, and storage costs."
   },
   "constraints": [
@@ -148,65 +148,64 @@
       "name": "max_sales_Winter",
       "expr_lhs": "sell['Winter']",
       "sense": "<=",
-      "expr_rhs": "max_sales_volume['Winter']",
+      "expr_rhs": "max_sales['Winter']",
       "description": "Sales limit for Winter."
     },
     {
       "name": "max_sales_Spring",
       "expr_lhs": "sell['Spring']",
       "sense": "<=",
-      "expr_rhs": "max_sales_volume['Spring']",
+      "expr_rhs": "max_sales['Spring']",
       "description": "Sales limit for Spring."
     },
     {
       "name": "max_sales_Summer",
       "expr_lhs": "sell['Summer']",
       "sense": "<=",
-      "expr_rhs": "max_sales_volume['Summer']",
+      "expr_rhs": "max_sales['Summer']",
       "description": "Sales limit for Summer."
     },
     {
       "name": "max_sales_Autumn",
       "expr_lhs": "sell['Autumn']",
       "sense": "<=",
-      "expr_rhs": "max_sales_volume['Autumn']",
+      "expr_rhs": "max_sales['Autumn']",
       "description": "Sales limit for Autumn."
     },
     {
       "name": "max_storage_Winter",
       "expr_lhs": "inventory['Winter']",
       "sense": "<=",
-      "expr_rhs": "max_storage_capacity / 10000",
+      "expr_rhs": "max_storage",
       "description": "Storage capacity limit for Winter."
     },
     {
       "name": "max_storage_Spring",
       "expr_lhs": "inventory['Spring']",
       "sense": "<=",
-      "expr_rhs": "max_storage_capacity / 10000",
+      "expr_rhs": "max_storage",
       "description": "Storage capacity limit for Spring."
     },
     {
       "name": "max_storage_Summer",
       "expr_lhs": "inventory['Summer']",
       "sense": "<=",
-      "expr_rhs": "max_storage_capacity / 10000",
+      "expr_rhs": "max_storage",
       "description": "Storage capacity limit for Summer."
     },
     {
       "name": "max_storage_Autumn",
       "expr_lhs": "inventory['Autumn']",
       "sense": "<=",
-      "expr_rhs": "max_storage_capacity / 10000",
+      "expr_rhs": "max_storage",
       "description": "Storage capacity limit for Autumn."
     },
     {
-      "name": "end_of_year_inventory",
+      "name": "end_inventory_Autumn",
       "expr_lhs": "inventory['Autumn']",
       "sense": "==",
-      "expr_rhs": "0",
+      "expr_rhs": "0.0",
       "description": "All inventory must be sold by the end of Autumn."
     }
-  ],
-  "graph": null
+  ]
 }

@@ -1,0 +1,354 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_72",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine a network of highways that connect six major cities in a country. These highways are designed to facilitate the transportation of goods from a central warehouse (City 0) to a main retail hub (City 5). Each highway has a specific transportation capacity, indicating the maximum number of trucks it can accommodate per hour.\n\nHere is the transportation capacity of each highway connecting the cities:\n\n- From City 0 (Warehouse): Can send goods to City 1 (14 trucks), City 2 (15 trucks), City 3 (13 trucks), and City 5 (4 trucks).\n- From City 1: Can send goods to City 0 (10 trucks), City 2 (7 trucks), City 3 (18 trucks), City 4 (9 trucks), and City 5 (5 trucks).\n- From City 2: Can send goods to City 0 (11 trucks), City 3 (7 trucks), City 4 (13 trucks), and City 5 (6 trucks).\n- From City 3: Can send goods to City 0 (7 trucks), City 1 (11 trucks), City 2 (18 trucks), City 4 (17 trucks), and City 5 (2 trucks).\n- From City 4: Can send goods to City 0 (19 trucks), City 1 (8 trucks), City 2 (15 trucks), City 3 (15 trucks), and City 5 (5 trucks).\n- From City 5 (Retail Hub): Can send goods back to City 0 (10 trucks), City 1 (19 trucks), City 2 (17 trucks), City 3 (2 trucks), and City 4 (3 trucks).\n\nA capacity of \"0\" indicates that there is no direct highway link between those two cities.\n\nNow, consider a situation where you're tasked with finding the maximum number of trucks that can be dispatched from the warehouse in City 0 to the retail hub in City 5 per hour, without exceeding the transportation capacity of any highway. \n\nWhat is the maximum number of trucks that can be dispatched from the warehouse to the retail hub per hour, while maintaining the transportation capacity of each highway?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Cities",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "description": "Set of cities in the network"
+    },
+    {
+      "name": "Arcs",
+      "elements": [
+        "0_1",
+        "0_2",
+        "0_3",
+        "0_5",
+        "1_0",
+        "1_2",
+        "1_3",
+        "1_4",
+        "1_5",
+        "2_0",
+        "2_3",
+        "2_4",
+        "2_5",
+        "3_0",
+        "3_1",
+        "3_2",
+        "3_4",
+        "3_5",
+        "4_0",
+        "4_1",
+        "4_2",
+        "4_3",
+        "4_5",
+        "5_0",
+        "5_1",
+        "5_2",
+        "5_3",
+        "5_4"
+      ],
+      "description": "Set of directed arcs representing highways between cities"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "Arcs"
+      ],
+      "values": {
+        "0_1": 14,
+        "0_2": 15,
+        "0_3": 13,
+        "0_5": 4,
+        "1_0": 10,
+        "1_2": 7,
+        "1_3": 18,
+        "1_4": 9,
+        "1_5": 5,
+        "2_0": 11,
+        "2_3": 7,
+        "2_4": 13,
+        "2_5": 6,
+        "3_0": 7,
+        "3_1": 11,
+        "3_2": 18,
+        "3_4": 17,
+        "3_5": 2,
+        "4_0": 19,
+        "4_1": 8,
+        "4_2": 15,
+        "4_3": 15,
+        "4_5": 5,
+        "5_0": 10,
+        "5_1": 19,
+        "5_2": 17,
+        "5_3": 2,
+        "5_4": 3
+      },
+      "description": "Transportation capacity of each highway"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "Arcs"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Number of trucks on each highway arc"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "flow['0_5']",
+    "description": "Maximize the flow from City 0 to City 5"
+  },
+  "constraints": [
+    {
+      "name": "capacity_0_1",
+      "expr_lhs": "flow['0_1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0_1']",
+      "description": "Capacity constraint for arc 0_1"
+    },
+    {
+      "name": "capacity_0_2",
+      "expr_lhs": "flow['0_2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0_2']",
+      "description": "Capacity constraint for arc 0_2"
+    },
+    {
+      "name": "capacity_0_3",
+      "expr_lhs": "flow['0_3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0_3']",
+      "description": "Capacity constraint for arc 0_3"
+    },
+    {
+      "name": "capacity_0_5",
+      "expr_lhs": "flow['0_5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0_5']",
+      "description": "Capacity constraint for arc 0_5"
+    },
+    {
+      "name": "capacity_1_0",
+      "expr_lhs": "flow['1_0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1_0']",
+      "description": "Capacity constraint for arc 1_0"
+    },
+    {
+      "name": "capacity_1_2",
+      "expr_lhs": "flow['1_2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1_2']",
+      "description": "Capacity constraint for arc 1_2"
+    },
+    {
+      "name": "capacity_1_3",
+      "expr_lhs": "flow['1_3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1_3']",
+      "description": "Capacity constraint for arc 1_3"
+    },
+    {
+      "name": "capacity_1_4",
+      "expr_lhs": "flow['1_4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1_4']",
+      "description": "Capacity constraint for arc 1_4"
+    },
+    {
+      "name": "capacity_1_5",
+      "expr_lhs": "flow['1_5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1_5']",
+      "description": "Capacity constraint for arc 1_5"
+    },
+    {
+      "name": "capacity_2_0",
+      "expr_lhs": "flow['2_0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2_0']",
+      "description": "Capacity constraint for arc 2_0"
+    },
+    {
+      "name": "capacity_2_3",
+      "expr_lhs": "flow['2_3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2_3']",
+      "description": "Capacity constraint for arc 2_3"
+    },
+    {
+      "name": "capacity_2_4",
+      "expr_lhs": "flow['2_4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2_4']",
+      "description": "Capacity constraint for arc 2_4"
+    },
+    {
+      "name": "capacity_2_5",
+      "expr_lhs": "flow['2_5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2_5']",
+      "description": "Capacity constraint for arc 2_5"
+    },
+    {
+      "name": "capacity_3_0",
+      "expr_lhs": "flow['3_0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3_0']",
+      "description": "Capacity constraint for arc 3_0"
+    },
+    {
+      "name": "capacity_3_1",
+      "expr_lhs": "flow['3_1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3_1']",
+      "description": "Capacity constraint for arc 3_1"
+    },
+    {
+      "name": "capacity_3_2",
+      "expr_lhs": "flow['3_2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3_2']",
+      "description": "Capacity constraint for arc 3_2"
+    },
+    {
+      "name": "capacity_3_4",
+      "expr_lhs": "flow['3_4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3_4']",
+      "description": "Capacity constraint for arc 3_4"
+    },
+    {
+      "name": "capacity_3_5",
+      "expr_lhs": "flow['3_5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3_5']",
+      "description": "Capacity constraint for arc 3_5"
+    },
+    {
+      "name": "capacity_4_0",
+      "expr_lhs": "flow['4_0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4_0']",
+      "description": "Capacity constraint for arc 4_0"
+    },
+    {
+      "name": "capacity_4_1",
+      "expr_lhs": "flow['4_1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4_1']",
+      "description": "Capacity constraint for arc 4_1"
+    },
+    {
+      "name": "capacity_4_2",
+      "expr_lhs": "flow['4_2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4_2']",
+      "description": "Capacity constraint for arc 4_2"
+    },
+    {
+      "name": "capacity_4_3",
+      "expr_lhs": "flow['4_3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4_3']",
+      "description": "Capacity constraint for arc 4_3"
+    },
+    {
+      "name": "capacity_4_5",
+      "expr_lhs": "flow['4_5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4_5']",
+      "description": "Capacity constraint for arc 4_5"
+    },
+    {
+      "name": "capacity_5_0",
+      "expr_lhs": "flow['5_0']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5_0']",
+      "description": "Capacity constraint for arc 5_0"
+    },
+    {
+      "name": "capacity_5_1",
+      "expr_lhs": "flow['5_1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5_1']",
+      "description": "Capacity constraint for arc 5_1"
+    },
+    {
+      "name": "capacity_5_2",
+      "expr_lhs": "flow['5_2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5_2']",
+      "description": "Capacity constraint for arc 5_2"
+    },
+    {
+      "name": "capacity_5_3",
+      "expr_lhs": "flow['5_3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5_3']",
+      "description": "Capacity constraint for arc 5_3"
+    },
+    {
+      "name": "capacity_5_4",
+      "expr_lhs": "flow['5_4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5_4']",
+      "description": "Capacity constraint for arc 5_4"
+    },
+    {
+      "name": "flow_conservation_0",
+      "expr_lhs": "quicksum(flow['0_' + j] for j in ['1', '2', '3', '5'])",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[j + '_0'] for j in ['1', '2', '3', '4', '5'])",
+      "description": "Flow conservation at City 0"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow['1_' + j] for j in ['0', '2', '3', '4', '5'])",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[j + '_1'] for j in ['0', '2', '3', '4', '5'])",
+      "description": "Flow conservation at City 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow['2_' + j] for j in ['0', '3', '4', '5'])",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[j + '_2'] for j in ['0', '1', '3', '4', '5'])",
+      "description": "Flow conservation at City 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow['3_' + j] for j in ['0', '1', '2', '4', '5'])",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[j + '_3'] for j in ['0', '1', '2', '4', '5'])",
+      "description": "Flow conservation at City 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow['4_' + j] for j in ['0', '1', '2', '3', '5'])",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[j + '_4'] for j in ['0', '1', '2', '3', '5'])",
+      "description": "Flow conservation at City 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow['5_' + j] for j in ['0', '1', '2', '3', '4'])",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[j + '_5'] for j in ['0', '1', '2', '3', '4'])",
+      "description": "Flow conservation at City 5"
+    }
+  ]
+}

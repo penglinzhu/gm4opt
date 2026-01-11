@@ -1,0 +1,245 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_96",
+    "source": "Mamo_complex_lp",
+    "description": "In the bustling world of retail, SupplyChain Solutions is faced with the challenge of efficiently distributing products to eight eager retail stores. With four potential distribution centers to choose from, each with its own unique costs and capacities, the company aims to devise a strategic plan to minimize overall expenses. This plan must account for the initial cost of opening distribution centers and the ongoing expenses of transporting goods to stores. The objective is clear: to fulfill the demand of each retail store at the lowest possible total cost.\n\nGiven Data:\n- Number of Potential Distribution Centers: 4\n- Number of Retail Stores Needing Supply: 8\n\nOpening Costs for Each Distribution Center (in dollars):\n- Center 1: $151,000\n- Center 2: $192,000\n- Center 3: $114,000\n- Center 4: $171,000\n\nTransportation Cost Per Unit from Each Distribution Center to Retail Stores (in dollars):\n- From Center 1: $5 to Store 1, $5 to Store 2, $2 to Store 3, $3 to Store 4, $3 to Store 5, $3 to Store 6, $5 to Store 7, $4 to Store 8\n- From Center 2: $3 to Store 1, $5 to Store 2, $2 to Store 3, $4 to Store 4, $2 to Store 5, $4 to Store 6, $5 to Store 7, $1 to Store 8\n- From Center 3: $4 to Store 1, $2 to Store 2, $5 to Store 3, $4 to Store 4, $1 to Store 5, $1 to Store 6, $3 to Store 7, $3 to Store 8\n- From Center 4: $2 to Store 1, $4 to Store 2, $4 to Store 3, $3 to Store 4, $4 to Store 5, $4 to Store 6, $1 to Store 7, $3 to Store 8\n\nDemand of Each Retail Store (in units):\n- Store 1: 884 units\n- Store 2: 420 units\n- Store 3: 566 units\n- Store 4: 673 units\n- Store 5: 787 units\n- Store 6: 1000 units\n- Store 7: 715 units\n- Store 8: 413 units\n\nSupply Capacity of Each Distribution Center (in units):\n- Center 1: 1041 units\n- Center 2: 1576 units\n- Center 3: 1364 units\n- Center 4: 1697 units\n\nQuestion:\nWhat is the optimal total cost for SupplyChain Solutions to open distribution centers and transport goods to meet all retail stores' demands? This cost includes both the opening costs of the centers and the transportation costs of supplying the stores.",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Centers",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "description": "Potential distribution centers"
+    },
+    {
+      "name": "Stores",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "description": "Retail stores needing supply"
+    }
+  ],
+  "params": [
+    {
+      "name": "opening_cost",
+      "indices": [
+        "Centers"
+      ],
+      "values": {
+        "1": 151000,
+        "2": 192000,
+        "3": 114000,
+        "4": 171000
+      },
+      "description": "Opening costs for each distribution center"
+    },
+    {
+      "name": "transport_cost",
+      "indices": [
+        "Centers",
+        "Stores"
+      ],
+      "values": {
+        "1": {
+          "1": 5,
+          "2": 5,
+          "3": 2,
+          "4": 3,
+          "5": 3,
+          "6": 3,
+          "7": 5,
+          "8": 4
+        },
+        "2": {
+          "1": 3,
+          "2": 5,
+          "3": 2,
+          "4": 4,
+          "5": 2,
+          "6": 4,
+          "7": 5,
+          "8": 1
+        },
+        "3": {
+          "1": 4,
+          "2": 2,
+          "3": 5,
+          "4": 4,
+          "5": 1,
+          "6": 1,
+          "7": 3,
+          "8": 3
+        },
+        "4": {
+          "1": 2,
+          "2": 4,
+          "3": 4,
+          "4": 3,
+          "5": 4,
+          "6": 4,
+          "7": 1,
+          "8": 3
+        }
+      },
+      "description": "Transportation cost per unit from each center to each store"
+    },
+    {
+      "name": "demand",
+      "indices": [
+        "Stores"
+      ],
+      "values": {
+        "1": 884,
+        "2": 420,
+        "3": 566,
+        "4": 673,
+        "5": 787,
+        "6": 1000,
+        "7": 715,
+        "8": 413
+      },
+      "description": "Demand of each retail store"
+    },
+    {
+      "name": "capacity",
+      "indices": [
+        "Centers"
+      ],
+      "values": {
+        "1": 1041,
+        "2": 1576,
+        "3": 1364,
+        "4": 1697
+      },
+      "description": "Supply capacity of each distribution center"
+    }
+  ],
+  "vars": [
+    {
+      "name": "y",
+      "indices": [
+        "Centers"
+      ],
+      "vartype": "binary",
+      "lb": 0,
+      "ub": 1,
+      "description": "Binary variable indicating if a center is opened"
+    },
+    {
+      "name": "x",
+      "indices": [
+        "Centers",
+        "Stores"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Units transported from center to store"
+    }
+  ],
+  "objective": {
+    "name": "total_cost",
+    "sense": "min",
+    "expr": "quicksum(opening_cost[c] * y[c] for c in Centers) + quicksum(transport_cost[c][s] * x[c][s] for c in Centers for s in Stores)",
+    "description": "Minimize total cost including opening and transportation"
+  },
+  "constraints": [
+    {
+      "name": "demand_s1",
+      "expr_lhs": "quicksum(x[c]['1'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['1']",
+      "description": "Meet demand for store 1"
+    },
+    {
+      "name": "demand_s2",
+      "expr_lhs": "quicksum(x[c]['2'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['2']",
+      "description": "Meet demand for store 2"
+    },
+    {
+      "name": "demand_s3",
+      "expr_lhs": "quicksum(x[c]['3'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['3']",
+      "description": "Meet demand for store 3"
+    },
+    {
+      "name": "demand_s4",
+      "expr_lhs": "quicksum(x[c]['4'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['4']",
+      "description": "Meet demand for store 4"
+    },
+    {
+      "name": "demand_s5",
+      "expr_lhs": "quicksum(x[c]['5'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['5']",
+      "description": "Meet demand for store 5"
+    },
+    {
+      "name": "demand_s6",
+      "expr_lhs": "quicksum(x[c]['6'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['6']",
+      "description": "Meet demand for store 6"
+    },
+    {
+      "name": "demand_s7",
+      "expr_lhs": "quicksum(x[c]['7'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['7']",
+      "description": "Meet demand for store 7"
+    },
+    {
+      "name": "demand_s8",
+      "expr_lhs": "quicksum(x[c]['8'] for c in Centers)",
+      "sense": "==",
+      "expr_rhs": "demand['8']",
+      "description": "Meet demand for store 8"
+    },
+    {
+      "name": "capacity_c1",
+      "expr_lhs": "quicksum(x['1'][s] for s in Stores)",
+      "sense": "<=",
+      "expr_rhs": "capacity['1'] * y['1']",
+      "description": "Capacity constraint for center 1"
+    },
+    {
+      "name": "capacity_c2",
+      "expr_lhs": "quicksum(x['2'][s] for s in Stores)",
+      "sense": "<=",
+      "expr_rhs": "capacity['2'] * y['2']",
+      "description": "Capacity constraint for center 2"
+    },
+    {
+      "name": "capacity_c3",
+      "expr_lhs": "quicksum(x['3'][s] for s in Stores)",
+      "sense": "<=",
+      "expr_rhs": "capacity['3'] * y['3']",
+      "description": "Capacity constraint for center 3"
+    },
+    {
+      "name": "capacity_c4",
+      "expr_lhs": "quicksum(x['4'][s] for s in Stores)",
+      "sense": "<=",
+      "expr_rhs": "capacity['4'] * y['4']",
+      "description": "Capacity constraint for center 4"
+    }
+  ]
+}

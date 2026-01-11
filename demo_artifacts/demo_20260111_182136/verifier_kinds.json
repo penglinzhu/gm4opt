@@ -1,0 +1,10 @@
+{
+  "issues": [
+    "constraint_direction_sanity",
+    "type_template_rescue"
+  ],
+  "repairs": [
+    "constraint_direction_sanity",
+    "type_template_rescue"
+  ]
+}

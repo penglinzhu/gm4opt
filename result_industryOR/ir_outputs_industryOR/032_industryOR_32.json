@@ -2,167 +2,176 @@
   "meta": {
     "problem_id": "industryOR_32",
     "source": "IndustryOR",
-    "description": "Optimize the number of toy types to manufacture to maximize profit given resource constraints and logical conditions.",
+    "description": "Haus Toys can manufacture and sell toy trucks, toy planes, toy boats, and toy trains. The profit from selling one truck is $5, from one plane is $10, from one boat is $8, and from one train is $7. How many types of toys should Haus Toys manufacture to maximize profit?\n\nThere are 890 units of wood available. Manufacturing one truck requires 12 units of wood, one plane requires 20 units of wood, one boat requires 15 units of wood, and one train requires 10 units of wood.\n\nThere are 500 units of steel available. Manufacturing one plane requires 3 units of steel, one boat requires 5 units of steel, one train requires 4 units of steel, and one truck requires 6 units of steel.\n\nIf Haus Toys manufactures trucks, then they will not manufacture trains.\n\nHowever, if they manufacture boats, they will also manufacture planes.\n\nThe number of toy boats manufactured cannot exceed the number of toy trains manufactured.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "TOYS",
+      "name": "Toys",
       "elements": [
         "truck",
         "plane",
         "boat",
         "train"
       ],
-      "description": "Types of toys that can be manufactured."
+      "description": "Types of toys"
     }
   ],
   "params": [
     {
       "name": "profit",
       "indices": [
-        "TOYS"
+        "Toys"
       ],
       "values": {
-        "truck": 5,
-        "plane": 10,
-        "boat": 8,
-        "train": 7
+        "truck": 5.0,
+        "plane": 10.0,
+        "boat": 8.0,
+        "train": 7.0
       },
-      "description": "Profit from selling one unit of each toy type."
+      "description": "Profit per toy"
     },
     {
-      "name": "wood_required",
+      "name": "wood_req",
       "indices": [
-        "TOYS"
+        "Toys"
       ],
       "values": {
-        "truck": 12,
-        "plane": 20,
-        "boat": 15,
-        "train": 10
+        "truck": 12.0,
+        "plane": 20.0,
+        "boat": 15.0,
+        "train": 10.0
       },
-      "description": "Wood required to manufacture one unit of each toy type."
+      "description": "Wood required per toy"
     },
     {
-      "name": "steel_required",
+      "name": "steel_req",
       "indices": [
-        "TOYS"
+        "Toys"
       ],
       "values": {
-        "truck": 6,
-        "plane": 3,
-        "boat": 5,
-        "train": 4
+        "truck": 6.0,
+        "plane": 3.0,
+        "boat": 5.0,
+        "train": 4.0
       },
-      "description": "Steel required to manufacture one unit of each toy type."
-    },
-    {
-      "name": "wood_available",
-      "indices": [],
-      "values": 890,
-      "description": "Total units of wood available."
-    },
-    {
-      "name": "steel_available",
-      "indices": [],
-      "values": 500,
-      "description": "Total units of steel available."
+      "description": "Steel required per toy"
     }
   ],
   "vars": [
     {
       "name": "x",
       "indices": [
-        "TOYS"
+        "Toys"
       ],
       "vartype": "integer",
-      "lb": 0,
+      "lb": 0.0,
       "ub": null,
-      "description": "Number of each type of toy to manufacture."
+      "description": "Number of each type of toy to manufacture"
     },
     {
-      "name": "y",
-      "indices": [
-        "TOYS"
-      ],
+      "name": "y_truck",
+      "indices": [],
       "vartype": "binary",
-      "lb": 0,
-      "ub": 1,
-      "description": "Binary variable indicating whether a type of toy is manufactured."
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if trucks are manufactured, 0 otherwise"
+    },
+    {
+      "name": "y_train",
+      "indices": [],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if trains are manufactured, 0 otherwise"
+    },
+    {
+      "name": "y_boat",
+      "indices": [],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if boats are manufactured, 0 otherwise"
+    },
+    {
+      "name": "y_plane",
+      "indices": [],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "1 if planes are manufactured, 0 otherwise"
     }
   ],
   "objective": {
-    "name": "max_total_profit",
+    "name": "max_profit",
     "sense": "max",
-    "expr": "sum(profit[t] * x[t] for t in ['truck', 'plane', 'boat', 'train'])",
-    "description": "Maximize total profit from manufacturing toys."
+    "expr": "quicksum(profit[toy] * x[toy] for toy in Toys)",
+    "description": "Maximize total profit"
   },
   "constraints": [
     {
       "name": "wood_constraint",
-      "expr_lhs": "sum(wood_required[t] * x[t] for t in ['truck', 'plane', 'boat', 'train'])",
+      "expr_lhs": "quicksum(wood_req[toy] * x[toy] for toy in Toys)",
       "sense": "<=",
-      "expr_rhs": "wood_available",
-      "description": "Total wood used cannot exceed available wood."
+      "expr_rhs": "890.0",
+      "description": "Wood availability constraint"
     },
     {
       "name": "steel_constraint",
-      "expr_lhs": "sum(steel_required[t] * x[t] for t in ['truck', 'plane', 'boat', 'train'])",
+      "expr_lhs": "quicksum(steel_req[toy] * x[toy] for toy in Toys)",
       "sense": "<=",
-      "expr_rhs": "steel_available",
-      "description": "Total steel used cannot exceed available steel."
+      "expr_rhs": "500.0",
+      "description": "Steel availability constraint"
     },
     {
       "name": "truck_train_exclusion",
-      "expr_lhs": "y['truck'] + y['train']",
+      "expr_lhs": "y_truck + y_train",
       "sense": "<=",
-      "expr_rhs": "1",
-      "description": "If trucks are manufactured, trains cannot be manufactured and vice versa."
+      "expr_rhs": "1.0",
+      "description": "Cannot manufacture both trucks and trains"
     },
     {
       "name": "boat_plane_dependency",
-      "expr_lhs": "y['boat']",
+      "expr_lhs": "y_boat",
       "sense": "<=",
-      "expr_rhs": "y['plane']",
-      "description": "If boats are manufactured, planes must also be manufactured."
+      "expr_rhs": "y_plane",
+      "description": "If boats are manufactured, planes must also be manufactured"
     },
     {
       "name": "boat_train_limit",
       "expr_lhs": "x['boat']",
       "sense": "<=",
       "expr_rhs": "x['train']",
-      "description": "The number of toy boats manufactured cannot exceed the number of toy trains manufactured."
+      "description": "Number of boats cannot exceed number of trains"
     },
     {
       "name": "truck_binary_link",
       "expr_lhs": "x['truck']",
       "sense": "<=",
-      "expr_rhs": "1000 * y['truck']",
-      "description": "Link binary and integer variables for trucks."
-    },
-    {
-      "name": "plane_binary_link",
-      "expr_lhs": "x['plane']",
-      "sense": "<=",
-      "expr_rhs": "1000 * y['plane']",
-      "description": "Link binary and integer variables for planes."
-    },
-    {
-      "name": "boat_binary_link",
-      "expr_lhs": "x['boat']",
-      "sense": "<=",
-      "expr_rhs": "1000 * y['boat']",
-      "description": "Link binary and integer variables for boats."
+      "expr_rhs": "1000 * y_truck",
+      "description": "Link truck production to binary variable"
     },
     {
       "name": "train_binary_link",
       "expr_lhs": "x['train']",
       "sense": "<=",
-      "expr_rhs": "1000 * y['train']",
-      "description": "Link binary and integer variables for trains."
+      "expr_rhs": "1000 * y_train",
+      "description": "Link train production to binary variable"
+    },
+    {
+      "name": "boat_binary_link",
+      "expr_lhs": "x['boat']",
+      "sense": "<=",
+      "expr_rhs": "1000 * y_boat",
+      "description": "Link boat production to binary variable"
+    },
+    {
+      "name": "plane_binary_link",
+      "expr_lhs": "x['plane']",
+      "sense": "<=",
+      "expr_rhs": "1000 * y_plane",
+      "description": "Link plane production to binary variable"
     }
-  ],
-  "graph": null
+  ]
 }

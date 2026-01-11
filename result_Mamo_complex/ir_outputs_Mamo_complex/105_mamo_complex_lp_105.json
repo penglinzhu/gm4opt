@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_105",
+    "source": "Mamo_complex_lp",
+    "description": "A company produces two kinds of products. A product of the first type requires 1/4 hours of assembly labor, 1/8 hours of testing, and $1.2 worth of raw materials. A product of the second type requires 1/3 hours of assembly, 1/3 hours of testing, and $0.9 worth of raw materials. Given the current personnel of the company, there can be at most 90 hours of assembly labor and 80 hours of testing each day. Suppose that up to 50 hours of overtime assembly labor can be scheduled, at a cost of $9 per hour. Products of the first and second type have a market value of $9 and $8 respectively. Try to maximize the daily profit of the company. Provide your answer rounded to the nearest dollar.",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "P",
+      "elements": [
+        "1",
+        "2"
+      ],
+      "description": "Types of products"
+    }
+  ],
+  "params": [
+    {
+      "name": "assembly_time",
+      "indices": [
+        "P"
+      ],
+      "values": {
+        "1": 0.25,
+        "2": 0.3333333333333333
+      },
+      "description": "Assembly time required for each product type"
+    },
+    {
+      "name": "testing_time",
+      "indices": [
+        "P"
+      ],
+      "values": {
+        "1": 0.125,
+        "2": 0.3333333333333333
+      },
+      "description": "Testing time required for each product type"
+    },
+    {
+      "name": "raw_material_cost",
+      "indices": [
+        "P"
+      ],
+      "values": {
+        "1": 1.2,
+        "2": 0.9
+      },
+      "description": "Raw material cost for each product type"
+    },
+    {
+      "name": "market_value",
+      "indices": [
+        "P"
+      ],
+      "values": {
+        "1": 9.0,
+        "2": 8.0
+      },
+      "description": "Market value of each product type"
+    },
+    {
+      "name": "max_assembly_hours",
+      "indices": [],
+      "values": 90.0,
+      "description": "Maximum available assembly hours per day"
+    },
+    {
+      "name": "max_testing_hours",
+      "indices": [],
+      "values": 80.0,
+      "description": "Maximum available testing hours per day"
+    },
+    {
+      "name": "overtime_cost",
+      "indices": [],
+      "values": 9.0,
+      "description": "Cost per hour of overtime assembly labor"
+    },
+    {
+      "name": "max_overtime_hours",
+      "indices": [],
+      "values": 50.0,
+      "description": "Maximum overtime assembly hours available"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "P"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of products to produce"
+    },
+    {
+      "name": "overtime_hours",
+      "indices": [],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": 50.0,
+      "description": "Overtime assembly hours used"
+    }
+  ],
+  "objective": {
+    "name": "profit",
+    "sense": "max",
+    "expr": "quicksum((market_value[p] - raw_material_cost[p]) * x[p] for p in P) - overtime_cost * overtime_hours",
+    "description": "Maximize daily profit"
+  },
+  "constraints": [
+    {
+      "name": "assembly_constraint",
+      "expr_lhs": "quicksum(assembly_time[p] * x[p] for p in P) - overtime_hours",
+      "sense": "<=",
+      "expr_rhs": "max_assembly_hours",
+      "description": "Total assembly time including overtime"
+    },
+    {
+      "name": "testing_constraint",
+      "expr_lhs": "quicksum(testing_time[p] * x[p] for p in P)",
+      "sense": "<=",
+      "expr_rhs": "max_testing_hours",
+      "description": "Total testing time"
+    }
+  ]
+}

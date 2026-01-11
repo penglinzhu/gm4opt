@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_18",
+    "source": "Mamo_complex_lp",
+    "description": "Picture this: you're trying to plan your meals for the day and you're aiming to get the right amount of nutrients, but also want to keep your expenses low. You have four different food options to choose from: Chicken, Cheese, Rice, and Beans. Each of these foods has a certain amount of protein, carbs, and calories, and each comes with its own price.\n\nHere's a brief overview of what each food provides and its cost:\n\n- Chicken: Gives you 16 grams of protein, 22 grams of carbohydrates, and 292 calories for $5.\n- Cheese: Offers 10 grams of protein, 4 grams of carbohydrates, and 82 calories for $9.\n- Rice: Provides 12 grams of protein, 21 grams of carbohydrates, and 207 calories for just $2.\n- Beans: Packs 13 grams of protein, 14 grams of carbohydrates, and 81 calories for a single dollar.\n\nYou need to ensure you consume at least 94 grams of protein, 191 grams of carbohydrates, and 2271 calories from the combination of these foods you choose. Your goal is to determine the most cost-effective way to reach these nutritional targets with these four food options. What is the minimum cost to meet your nutritional requirements?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Foods",
+      "elements": [
+        "Chicken",
+        "Cheese",
+        "Rice",
+        "Beans"
+      ],
+      "description": "Different food options available"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 5.0,
+        "Cheese": 9.0,
+        "Rice": 2.0,
+        "Beans": 1.0
+      },
+      "description": "Cost of each food option"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 16.0,
+        "Cheese": 10.0,
+        "Rice": 12.0,
+        "Beans": 13.0
+      },
+      "description": "Protein content in grams for each food option"
+    },
+    {
+      "name": "carbs",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 22.0,
+        "Cheese": 4.0,
+        "Rice": 21.0,
+        "Beans": 14.0
+      },
+      "description": "Carbohydrates content in grams for each food option"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken": 292.0,
+        "Cheese": 82.0,
+        "Rice": 207.0,
+        "Beans": 81.0
+      },
+      "description": "Calories provided by each food option"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Foods"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units of each food to consume"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in Foods)",
+    "description": "Minimize the total cost of food"
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "94.0",
+      "description": "Ensure at least 94 grams of protein"
+    },
+    {
+      "name": "carbs_requirement",
+      "expr_lhs": "quicksum(carbs[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "191.0",
+      "description": "Ensure at least 191 grams of carbohydrates"
+    },
+    {
+      "name": "calories_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "2271.0",
+      "description": "Ensure at least 2271 calories"
+    }
+  ]
+}

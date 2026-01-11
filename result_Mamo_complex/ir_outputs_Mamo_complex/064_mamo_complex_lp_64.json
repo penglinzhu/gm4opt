@@ -1,0 +1,562 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_64",
+    "source": "Mamo_complex_lp",
+    "description": "In the heart of a bustling metropolis, there lies an intricate network of digital information pipelines connecting 8 crucial data centers. These centers, from the main server hub to the final relay station, are vital for processing and distributing vast amounts of data across the city. The connections between these data centers have specific bandwidth capacities that dictate the maximum flow of data (measured in terabytes per hour) that can be transmitted from one center to another.\n\nHere's a breakdown of the network's layout and its capacities:\n\n- From Data Center 0 (Source): Data can be sent to Center 1 (6 TB/h), Center 2 (16 TB/h), Center 3 (5 TB/h), Center 4 (6 TB/h), Center 5 (11 TB/h), Center 6 (6 TB/h), and Center 7 (4 TB/h).\n- From Data Center 1: Data can be transmitted to Center 2 (8 TB/h), Center 3 (10 TB/h), Center 4 (6 TB/h), Center 5 (3 TB/h), Center 6 (6 TB/h), and Center 7 (14 TB/h).\n- From Data Center 2: Can send data to Center 1 (6 TB/h), Center 3 (20 TB/h), Center 4 (7 TB/h), Center 5 (16 TB/h), Center 6 (13 TB/h), and Center 7 (14 TB/h).\n- From Data Center 3: Has capacities to Center 1 (11 TB/h), Center 2 (19 TB/h), Center 4 (18 TB/h), Center 5 (5 TB/h), and Center 7 (8 TB/h).\n- From Data Center 4: Can route data to Center 1 (1 TB/h), Center 2 (14 TB/h), Center 3 (18 TB/h), Center 5 (12 TB/h), Center 6 (4 TB/h), and Center 7 (7 TB/h).\n- From Data Center 5: Can dispatch data to Center 1 (16 TB/h), Center 2 (3 TB/h), Center 3 (20 TB/h), Center 4 (7 TB/h), Center 6 (15 TB/h), and Center 7 (6 TB/h).\n- From Data Center 6: Capable of sending to Center 1 (11 TB/h), Center 2 (4 TB/h), Center 3 (19 TB/h), Center 4 (7 TB/h), Center 5 (6 TB/h), and Center 7 (17 TB/h).\n- From Data Center 7 (Destination): Can receive return data flow from Center 1 (5 TB/h), Center 2 (8 TB/h), Center 3 (17 TB/h), Center 4 (2 TB/h), Center 5 (5 TB/h), and Center 6 (4 TB/h).\n\nIn this network, a capacity of \"0\" signifies an absence of direct data transmission capability between any two given data centers.\n\nThe challenge is to determine the maximum amount of data that can be efficiently transmitted from Data Center 0 (the main server hub) to Data Center 7 (the final relay station) per hour, without exceeding the bandwidth capacities of the connections between the centers. What is the optimal value of data flow (in terabytes per hour) that can be achieved from the source to the destination?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "N",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "description": "Data centers"
+    },
+    {
+      "name": "A",
+      "elements": [
+        "0,1",
+        "0,2",
+        "0,3",
+        "0,4",
+        "0,5",
+        "0,6",
+        "0,7",
+        "1,2",
+        "1,3",
+        "1,4",
+        "1,5",
+        "1,6",
+        "1,7",
+        "2,1",
+        "2,3",
+        "2,4",
+        "2,5",
+        "2,6",
+        "2,7",
+        "3,1",
+        "3,2",
+        "3,4",
+        "3,5",
+        "3,7",
+        "4,1",
+        "4,2",
+        "4,3",
+        "4,5",
+        "4,6",
+        "4,7",
+        "5,1",
+        "5,2",
+        "5,3",
+        "5,4",
+        "5,6",
+        "5,7",
+        "6,1",
+        "6,2",
+        "6,3",
+        "6,4",
+        "6,5",
+        "6,7",
+        "7,1",
+        "7,2",
+        "7,3",
+        "7,4",
+        "7,5",
+        "7,6"
+      ],
+      "description": "Arcs between data centers"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "N",
+        "N"
+      ],
+      "values": {
+        "0": {
+          "1": 6.0,
+          "2": 16.0,
+          "3": 5.0,
+          "4": 6.0,
+          "5": 11.0,
+          "6": 6.0,
+          "7": 4.0,
+          "0": 0.0
+        },
+        "1": {
+          "2": 8.0,
+          "3": 10.0,
+          "4": 6.0,
+          "5": 3.0,
+          "6": 6.0,
+          "7": 14.0,
+          "1": 0.0
+        },
+        "2": {
+          "1": 6.0,
+          "3": 20.0,
+          "4": 7.0,
+          "5": 16.0,
+          "6": 13.0,
+          "7": 14.0,
+          "2": 0.0
+        },
+        "3": {
+          "1": 11.0,
+          "2": 19.0,
+          "4": 18.0,
+          "5": 5.0,
+          "7": 8.0,
+          "3": 0.0
+        },
+        "4": {
+          "1": 1.0,
+          "2": 14.0,
+          "3": 18.0,
+          "5": 12.0,
+          "6": 4.0,
+          "7": 7.0,
+          "4": 0.0
+        },
+        "5": {
+          "1": 16.0,
+          "2": 3.0,
+          "3": 20.0,
+          "4": 7.0,
+          "6": 15.0,
+          "7": 6.0,
+          "5": 0.0
+        },
+        "6": {
+          "1": 11.0,
+          "2": 4.0,
+          "3": 19.0,
+          "4": 7.0,
+          "5": 6.0,
+          "7": 17.0,
+          "6": 0.0
+        },
+        "7": {
+          "1": 5.0,
+          "2": 8.0,
+          "3": 17.0,
+          "4": 2.0,
+          "5": 5.0,
+          "6": 4.0,
+          "7": 0.0
+        }
+      },
+      "description": "Bandwidth capacities between data centers"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "N",
+        "N"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Flow of data between data centers"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "quicksum(flow['0'][j] for j in N if ('0', j) in A)",
+    "description": "Maximize flow from source to destination"
+  },
+  "constraints": [
+    {
+      "name": "capacity_0_1",
+      "expr_lhs": "flow['0']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['1']",
+      "description": "Capacity constraint for arc 0 to 1"
+    },
+    {
+      "name": "capacity_0_2",
+      "expr_lhs": "flow['0']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['2']",
+      "description": "Capacity constraint for arc 0 to 2"
+    },
+    {
+      "name": "capacity_0_3",
+      "expr_lhs": "flow['0']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['3']",
+      "description": "Capacity constraint for arc 0 to 3"
+    },
+    {
+      "name": "capacity_0_4",
+      "expr_lhs": "flow['0']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['4']",
+      "description": "Capacity constraint for arc 0 to 4"
+    },
+    {
+      "name": "capacity_0_5",
+      "expr_lhs": "flow['0']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['5']",
+      "description": "Capacity constraint for arc 0 to 5"
+    },
+    {
+      "name": "capacity_0_6",
+      "expr_lhs": "flow['0']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['6']",
+      "description": "Capacity constraint for arc 0 to 6"
+    },
+    {
+      "name": "capacity_0_7",
+      "expr_lhs": "flow['0']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['0']['7']",
+      "description": "Capacity constraint for arc 0 to 7"
+    },
+    {
+      "name": "capacity_1_2",
+      "expr_lhs": "flow['1']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['2']",
+      "description": "Capacity constraint for arc 1 to 2"
+    },
+    {
+      "name": "capacity_1_3",
+      "expr_lhs": "flow['1']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['3']",
+      "description": "Capacity constraint for arc 1 to 3"
+    },
+    {
+      "name": "capacity_1_4",
+      "expr_lhs": "flow['1']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['4']",
+      "description": "Capacity constraint for arc 1 to 4"
+    },
+    {
+      "name": "capacity_1_5",
+      "expr_lhs": "flow['1']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['5']",
+      "description": "Capacity constraint for arc 1 to 5"
+    },
+    {
+      "name": "capacity_1_6",
+      "expr_lhs": "flow['1']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['6']",
+      "description": "Capacity constraint for arc 1 to 6"
+    },
+    {
+      "name": "capacity_1_7",
+      "expr_lhs": "flow['1']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['1']['7']",
+      "description": "Capacity constraint for arc 1 to 7"
+    },
+    {
+      "name": "capacity_2_1",
+      "expr_lhs": "flow['2']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['1']",
+      "description": "Capacity constraint for arc 2 to 1"
+    },
+    {
+      "name": "capacity_2_3",
+      "expr_lhs": "flow['2']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['3']",
+      "description": "Capacity constraint for arc 2 to 3"
+    },
+    {
+      "name": "capacity_2_4",
+      "expr_lhs": "flow['2']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['4']",
+      "description": "Capacity constraint for arc 2 to 4"
+    },
+    {
+      "name": "capacity_2_5",
+      "expr_lhs": "flow['2']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['5']",
+      "description": "Capacity constraint for arc 2 to 5"
+    },
+    {
+      "name": "capacity_2_6",
+      "expr_lhs": "flow['2']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['6']",
+      "description": "Capacity constraint for arc 2 to 6"
+    },
+    {
+      "name": "capacity_2_7",
+      "expr_lhs": "flow['2']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['2']['7']",
+      "description": "Capacity constraint for arc 2 to 7"
+    },
+    {
+      "name": "capacity_3_1",
+      "expr_lhs": "flow['3']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['1']",
+      "description": "Capacity constraint for arc 3 to 1"
+    },
+    {
+      "name": "capacity_3_2",
+      "expr_lhs": "flow['3']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['2']",
+      "description": "Capacity constraint for arc 3 to 2"
+    },
+    {
+      "name": "capacity_3_4",
+      "expr_lhs": "flow['3']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['4']",
+      "description": "Capacity constraint for arc 3 to 4"
+    },
+    {
+      "name": "capacity_3_5",
+      "expr_lhs": "flow['3']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['5']",
+      "description": "Capacity constraint for arc 3 to 5"
+    },
+    {
+      "name": "capacity_3_7",
+      "expr_lhs": "flow['3']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['3']['7']",
+      "description": "Capacity constraint for arc 3 to 7"
+    },
+    {
+      "name": "capacity_4_1",
+      "expr_lhs": "flow['4']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['1']",
+      "description": "Capacity constraint for arc 4 to 1"
+    },
+    {
+      "name": "capacity_4_2",
+      "expr_lhs": "flow['4']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['2']",
+      "description": "Capacity constraint for arc 4 to 2"
+    },
+    {
+      "name": "capacity_4_3",
+      "expr_lhs": "flow['4']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['3']",
+      "description": "Capacity constraint for arc 4 to 3"
+    },
+    {
+      "name": "capacity_4_5",
+      "expr_lhs": "flow['4']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['5']",
+      "description": "Capacity constraint for arc 4 to 5"
+    },
+    {
+      "name": "capacity_4_6",
+      "expr_lhs": "flow['4']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['6']",
+      "description": "Capacity constraint for arc 4 to 6"
+    },
+    {
+      "name": "capacity_4_7",
+      "expr_lhs": "flow['4']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['4']['7']",
+      "description": "Capacity constraint for arc 4 to 7"
+    },
+    {
+      "name": "capacity_5_1",
+      "expr_lhs": "flow['5']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['1']",
+      "description": "Capacity constraint for arc 5 to 1"
+    },
+    {
+      "name": "capacity_5_2",
+      "expr_lhs": "flow['5']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['2']",
+      "description": "Capacity constraint for arc 5 to 2"
+    },
+    {
+      "name": "capacity_5_3",
+      "expr_lhs": "flow['5']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['3']",
+      "description": "Capacity constraint for arc 5 to 3"
+    },
+    {
+      "name": "capacity_5_4",
+      "expr_lhs": "flow['5']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['4']",
+      "description": "Capacity constraint for arc 5 to 4"
+    },
+    {
+      "name": "capacity_5_6",
+      "expr_lhs": "flow['5']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['6']",
+      "description": "Capacity constraint for arc 5 to 6"
+    },
+    {
+      "name": "capacity_5_7",
+      "expr_lhs": "flow['5']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['5']['7']",
+      "description": "Capacity constraint for arc 5 to 7"
+    },
+    {
+      "name": "capacity_6_1",
+      "expr_lhs": "flow['6']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['6']['1']",
+      "description": "Capacity constraint for arc 6 to 1"
+    },
+    {
+      "name": "capacity_6_2",
+      "expr_lhs": "flow['6']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['6']['2']",
+      "description": "Capacity constraint for arc 6 to 2"
+    },
+    {
+      "name": "capacity_6_3",
+      "expr_lhs": "flow['6']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['6']['3']",
+      "description": "Capacity constraint for arc 6 to 3"
+    },
+    {
+      "name": "capacity_6_4",
+      "expr_lhs": "flow['6']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['6']['4']",
+      "description": "Capacity constraint for arc 6 to 4"
+    },
+    {
+      "name": "capacity_6_5",
+      "expr_lhs": "flow['6']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['6']['5']",
+      "description": "Capacity constraint for arc 6 to 5"
+    },
+    {
+      "name": "capacity_6_7",
+      "expr_lhs": "flow['6']['7']",
+      "sense": "<=",
+      "expr_rhs": "capacity['6']['7']",
+      "description": "Capacity constraint for arc 6 to 7"
+    },
+    {
+      "name": "capacity_7_1",
+      "expr_lhs": "flow['7']['1']",
+      "sense": "<=",
+      "expr_rhs": "capacity['7']['1']",
+      "description": "Capacity constraint for arc 7 to 1"
+    },
+    {
+      "name": "capacity_7_2",
+      "expr_lhs": "flow['7']['2']",
+      "sense": "<=",
+      "expr_rhs": "capacity['7']['2']",
+      "description": "Capacity constraint for arc 7 to 2"
+    },
+    {
+      "name": "capacity_7_3",
+      "expr_lhs": "flow['7']['3']",
+      "sense": "<=",
+      "expr_rhs": "capacity['7']['3']",
+      "description": "Capacity constraint for arc 7 to 3"
+    },
+    {
+      "name": "capacity_7_4",
+      "expr_lhs": "flow['7']['4']",
+      "sense": "<=",
+      "expr_rhs": "capacity['7']['4']",
+      "description": "Capacity constraint for arc 7 to 4"
+    },
+    {
+      "name": "capacity_7_5",
+      "expr_lhs": "flow['7']['5']",
+      "sense": "<=",
+      "expr_rhs": "capacity['7']['5']",
+      "description": "Capacity constraint for arc 7 to 5"
+    },
+    {
+      "name": "capacity_7_6",
+      "expr_lhs": "flow['7']['6']",
+      "sense": "<=",
+      "expr_rhs": "capacity['7']['6']",
+      "description": "Capacity constraint for arc 7 to 6"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow[i]['1'] for i in N if (i, '1') in A) - quicksum(flow['1'][j] for j in N if ('1', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow[i]['2'] for i in N if (i, '2') in A) - quicksum(flow['2'][j] for j in N if ('2', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow[i]['3'] for i in N if (i, '3') in A) - quicksum(flow['3'][j] for j in N if ('3', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow[i]['4'] for i in N if (i, '4') in A) - quicksum(flow['4'][j] for j in N if ('4', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow[i]['5'] for i in N if (i, '5') in A) - quicksum(flow['5'][j] for j in N if ('5', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 5"
+    },
+    {
+      "name": "flow_conservation_6",
+      "expr_lhs": "quicksum(flow[i]['6'] for i in N if (i, '6') in A) - quicksum(flow['6'][j] for j in N if ('6', j) in A)",
+      "sense": "==",
+      "expr_rhs": "0.0",
+      "description": "Flow conservation at node 6"
+    }
+  ]
+}

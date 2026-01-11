@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_34",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you're a dietitian, tasked with crafting a healthy and balanced meal plan for a client on a budget. The tricky part is that you must choose from a list of nine food items, each with their own cost and nutritional values for protein, carbohydrates, and calories.\n\nHere's the rundown of what each food item provides and its cost:\n\n- Chicken Breast: Delivers 17 grams of protein, 28 grams of carbohydrates, and 136 calories for $3.\n- Tofu: Yields 15 grams of protein, 11 grams of carbohydrates, and 198 calories for $2.\n- Brown Rice: Offers just 1 gram of protein, 11 grams of carbohydrates, and 93 calories for $2.\n- Salmon: Gives you 11 grams of protein, 3 grams of carbohydrates, and a hefty 269 calories for $6.\n- Greek Yogurt: Provides 15 grams of protein, 27 grams of carbohydrates, and 121 calories for $6.\n- Steak: Comes with 12 grams of protein, 3 grams of carbohydrates, and 80 calories for a steeper price of $10.\n- Avocado: Provides 4 grams of protein, 8 grams of carbohydrates, and a whopping 300 calories for $7.\n- Eggs: Offer 16 grams of protein, 25 grams of carbohydrates, and 99 calories for $5.\n- Quinoa: Comes with 11 grams of protein, 20 grams of carbohydrates, and 87 calories for just $2.\n\nYour goal is to make sure your client gets at least 72 grams of protein, 158 grams of carbohydrates, and 1896 calories from the combination of foods you choose. But you also need to keep costs to a minimum. What is the least amount of money you would need to spend to meet all of these nutritional targets from these nine food options?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Foods",
+      "elements": [
+        "Chicken Breast",
+        "Tofu",
+        "Brown Rice",
+        "Salmon",
+        "Greek Yogurt",
+        "Steak",
+        "Avocado",
+        "Eggs",
+        "Quinoa"
+      ],
+      "description": "List of available food items"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken Breast": 3.0,
+        "Tofu": 2.0,
+        "Brown Rice": 2.0,
+        "Salmon": 6.0,
+        "Greek Yogurt": 6.0,
+        "Steak": 10.0,
+        "Avocado": 7.0,
+        "Eggs": 5.0,
+        "Quinoa": 2.0
+      },
+      "description": "Cost of each food item"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken Breast": 17.0,
+        "Tofu": 15.0,
+        "Brown Rice": 1.0,
+        "Salmon": 11.0,
+        "Greek Yogurt": 15.0,
+        "Steak": 12.0,
+        "Avocado": 4.0,
+        "Eggs": 16.0,
+        "Quinoa": 11.0
+      },
+      "description": "Protein content of each food item"
+    },
+    {
+      "name": "carbohydrates",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken Breast": 28.0,
+        "Tofu": 11.0,
+        "Brown Rice": 11.0,
+        "Salmon": 3.0,
+        "Greek Yogurt": 27.0,
+        "Steak": 3.0,
+        "Avocado": 8.0,
+        "Eggs": 25.0,
+        "Quinoa": 20.0
+      },
+      "description": "Carbohydrates content of each food item"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Chicken Breast": 136.0,
+        "Tofu": 198.0,
+        "Brown Rice": 93.0,
+        "Salmon": 269.0,
+        "Greek Yogurt": 121.0,
+        "Steak": 80.0,
+        "Avocado": 300.0,
+        "Eggs": 99.0,
+        "Quinoa": 87.0
+      },
+      "description": "Calories content of each food item"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Foods"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units of each food item to include in the meal plan"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in Foods)",
+    "description": "Minimize the total cost of the meal plan"
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "72.0",
+      "description": "Ensure at least 72 grams of protein"
+    },
+    {
+      "name": "carbohydrates_requirement",
+      "expr_lhs": "quicksum(carbohydrates[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "158.0",
+      "description": "Ensure at least 158 grams of carbohydrates"
+    },
+    {
+      "name": "calories_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "1896.0",
+      "description": "Ensure at least 1896 calories"
+    }
+  ]
+}

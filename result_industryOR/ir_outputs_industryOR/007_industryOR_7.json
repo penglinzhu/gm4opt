@@ -2,125 +2,124 @@
   "meta": {
     "problem_id": "industryOR_7",
     "source": "IndustryOR",
-    "description": "Minimize total pollution from transporting goods using motorcycles, small trucks, and large trucks.",
+    "description": "A company plans to transport goods between a city and suburb and needs to choose the most environmentally friendly mode of transportation. The company can choose from the following three options: motorcycles, small trucks, and large trucks. Each motorcycle trip produces 40 units of pollution, each small truck trip produces 70 units of pollution, and each large truck trip produces 100 units of pollution. The company's goal is to minimize total pollution.\n\nThe company can only choose two modes of transportation from these three options.\n\nDue to certain road restrictions, the number of motorcycle trips cannot exceed 8.\n\nEach motorcycle trip can transport 10 units of products, each small truck trip can transport 20 units of products, and each large truck trip can transport 50 units of products. The company needs to transport at least 300 units of products.\n\nThe total number of trips must be less than or equal to 20.",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "MODES",
+      "name": "Modes",
       "elements": [
         "motorcycle",
         "small_truck",
         "large_truck"
       ],
-      "description": "Available modes of transportation."
+      "description": "Transportation modes"
     }
   ],
   "params": [
     {
       "name": "pollution",
       "indices": [
-        "MODES"
+        "Modes"
       ],
       "values": {
-        "motorcycle": 40,
-        "small_truck": 70,
-        "large_truck": 100
+        "motorcycle": 40.0,
+        "small_truck": 70.0,
+        "large_truck": 100.0
       },
-      "description": "Pollution units produced per trip for each mode."
+      "description": "Pollution per trip for each mode"
     },
     {
       "name": "capacity",
       "indices": [
-        "MODES"
+        "Modes"
       ],
       "values": {
-        "motorcycle": 10,
-        "small_truck": 20,
-        "large_truck": 50
+        "motorcycle": 10.0,
+        "small_truck": 20.0,
+        "large_truck": 50.0
       },
-      "description": "Product units transported per trip for each mode."
+      "description": "Capacity per trip for each mode"
     }
   ],
   "vars": [
     {
       "name": "trips",
       "indices": [
-        "MODES"
+        "Modes"
       ],
       "vartype": "integer",
       "lb": 0.0,
       "ub": null,
-      "description": "Number of trips for each mode."
+      "description": "Number of trips for each mode"
     },
     {
-      "name": "use_mode",
+      "name": "y",
       "indices": [
-        "MODES"
+        "Modes"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary variable indicating if a mode is used."
+      "description": "Binary variable indicating if a mode is chosen"
     }
   ],
   "objective": {
-    "name": "min_total_pollution",
+    "name": "minimize_pollution",
     "sense": "min",
-    "expr": "sum(pollution[m] * trips[m] for m in ['motorcycle', 'small_truck', 'large_truck'])",
-    "description": "Minimize the total pollution from all trips."
+    "expr": "quicksum(pollution[m] * trips[m] for m in Modes)",
+    "description": "Minimize total pollution"
   },
   "constraints": [
     {
-      "name": "mode_selection_limit",
-      "expr_lhs": "sum(use_mode[m] for m in ['motorcycle', 'small_truck', 'large_truck'])",
-      "sense": "<=",
-      "expr_rhs": "2",
-      "description": "The company can only choose two modes of transportation."
+      "name": "choose_two_modes",
+      "expr_lhs": "quicksum(y[m] for m in Modes)",
+      "sense": "==",
+      "expr_rhs": "2.0",
+      "description": "Choose exactly two modes of transportation"
     },
     {
       "name": "motorcycle_trip_limit",
       "expr_lhs": "trips['motorcycle']",
       "sense": "<=",
-      "expr_rhs": "8",
-      "description": "The number of motorcycle trips cannot exceed 8."
+      "expr_rhs": "8.0",
+      "description": "Motorcycle trips cannot exceed 8"
     },
     {
       "name": "product_transport_requirement",
-      "expr_lhs": "sum(capacity[m] * trips[m] for m in ['motorcycle', 'small_truck', 'large_truck'])",
+      "expr_lhs": "quicksum(capacity[m] * trips[m] for m in Modes)",
       "sense": ">=",
-      "expr_rhs": "300",
-      "description": "The company needs to transport at least 300 units of products."
+      "expr_rhs": "300.0",
+      "description": "Transport at least 300 units of products"
     },
     {
       "name": "total_trip_limit",
-      "expr_lhs": "sum(trips[m] for m in ['motorcycle', 'small_truck', 'large_truck'])",
+      "expr_lhs": "quicksum(trips[m] for m in Modes)",
       "sense": "<=",
-      "expr_rhs": "20",
-      "description": "The total number of trips must be less than or equal to 20."
+      "expr_rhs": "20.0",
+      "description": "Total number of trips must be less than or equal to 20"
     },
     {
-      "name": "mode_usage_link_motorcycle",
+      "name": "mode_activation_motorcycle",
       "expr_lhs": "trips['motorcycle']",
       "sense": "<=",
-      "expr_rhs": "8 * use_mode['motorcycle']",
-      "description": "Linking trips and mode usage for motorcycles."
+      "expr_rhs": "8.0 * y['motorcycle']",
+      "description": "Activate motorcycle mode if trips are made"
     },
     {
-      "name": "mode_usage_link_small_truck",
+      "name": "mode_activation_small_truck",
       "expr_lhs": "trips['small_truck']",
       "sense": "<=",
-      "expr_rhs": "20 * use_mode['small_truck']",
-      "description": "Linking trips and mode usage for small trucks."
+      "expr_rhs": "20.0 * y['small_truck']",
+      "description": "Activate small truck mode if trips are made"
     },
     {
-      "name": "mode_usage_link_large_truck",
+      "name": "mode_activation_large_truck",
       "expr_lhs": "trips['large_truck']",
       "sense": "<=",
-      "expr_rhs": "20 * use_mode['large_truck']",
-      "description": "Linking trips and mode usage for large trucks."
+      "expr_rhs": "20.0 * y['large_truck']",
+      "description": "Activate large truck mode if trips are made"
     }
-  ],
-  "graph": null
+  ]
 }

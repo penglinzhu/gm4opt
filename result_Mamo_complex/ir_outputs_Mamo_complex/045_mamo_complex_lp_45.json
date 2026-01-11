@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_45",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine a scenario where a salesperson is tasked with visiting four distinct cities to explore new market opportunities. These cities are uniquely identified as City 1, City 2, City 3, and City 4. The task for the salesperson is to plan a route that starts from any of these cities, traverses each city exactly once, and concludes by returning to the starting city. The overarching aim is to achieve this while incurring the minimum possible travel cost.\n\nHere’s a detailed breakdown of the travel costs between the cities:\n- The cost to travel from City 1 to City 2 is 17 units, to City 3 is 25 units, and to City 4 is 31 units.\n- From City 2, it costs 17 units to reach City 1, 93 units to get to City 3, and 45 units to City 4.\n- Traveling from City 3, the expenses are 25 units to City 1, 93 units to City 2, and 95 units to City 4.\n- Lastly, from City 4, the journey costs 31 units to City 1, 45 units to City 2, and 95 units to City 3.\n\nWhat is the minimum total travel cost for the salesperson to visit each city exactly once and return to the starting city?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Cities",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "description": "Set of cities to be visited."
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "values": {
+        "1": {
+          "2": 17.0,
+          "3": 25.0,
+          "4": 31.0,
+          "1": 0.0
+        },
+        "2": {
+          "1": 17.0,
+          "3": 93.0,
+          "4": 45.0,
+          "2": 0.0
+        },
+        "3": {
+          "1": 25.0,
+          "2": 93.0,
+          "4": 95.0,
+          "3": 0.0
+        },
+        "4": {
+          "1": 31.0,
+          "2": 45.0,
+          "3": 95.0,
+          "4": 0.0
+        }
+      },
+      "description": "Travel costs between cities."
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "Binary variable indicating if a route is taken between two cities."
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * x[i][j] for i in Cities for j in Cities if i != j)",
+    "description": "Minimize the total travel cost."
+  },
+  "constraints": [
+    {
+      "name": "visit_each_city_once_1",
+      "expr_lhs": "quicksum(x['1'][j] for j in Cities if j != '1')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 1 must be departed from exactly once."
+    },
+    {
+      "name": "visit_each_city_once_2",
+      "expr_lhs": "quicksum(x['2'][j] for j in Cities if j != '2')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 2 must be departed from exactly once."
+    },
+    {
+      "name": "visit_each_city_once_3",
+      "expr_lhs": "quicksum(x['3'][j] for j in Cities if j != '3')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 3 must be departed from exactly once."
+    },
+    {
+      "name": "visit_each_city_once_4",
+      "expr_lhs": "quicksum(x['4'][j] for j in Cities if j != '4')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 4 must be departed from exactly once."
+    },
+    {
+      "name": "arrive_each_city_once_1",
+      "expr_lhs": "quicksum(x[i]['1'] for i in Cities if i != '1')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 1 must be arrived at exactly once."
+    },
+    {
+      "name": "arrive_each_city_once_2",
+      "expr_lhs": "quicksum(x[i]['2'] for i in Cities if i != '2')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 2 must be arrived at exactly once."
+    },
+    {
+      "name": "arrive_each_city_once_3",
+      "expr_lhs": "quicksum(x[i]['3'] for i in Cities if i != '3')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 3 must be arrived at exactly once."
+    },
+    {
+      "name": "arrive_each_city_once_4",
+      "expr_lhs": "quicksum(x[i]['4'] for i in Cities if i != '4')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "City 4 must be arrived at exactly once."
+    }
+  ]
+}

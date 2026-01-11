@@ -1,0 +1,121 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_9",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you're a dietitian, tasked with planning a nutritious and balanced meal for an athlete. The athlete needs to maintain a high protein, moderate carb diet, with enough calories to sustain their intense training regimen. The goal is to meet these dietary requirements at the lowest cost possible. You have five different food items to choose from: Steak, Rice, Chicken, Iceberg Lettuce, and Almonds. Each of these foods contains varying amounts of protein, carbohydrates, and calories, and each comes with a specific cost.\n\nHere's a detailed breakdown of the nutritional value of each food item and its cost:\n\n- Steak: Offers a whopping 20 grams of protein, 12 grams of carbohydrates, and 167 calories for $7.\n- Rice: Provides 6 grams of protein, an impressive 29 grams of carbohydrates, and a hefty 275 calories for $8.\n- Chicken: Packs 17 grams of protein, 26 grams of carbohydrates, and 112 calories for only $2.\n- Iceberg Lettuce: Contains only 1 gram of protein, 8 grams of carbohydrates, and 148 calories for $8.\n- Almonds: Provide 10 grams of protein, 2 grams of carbohydrates, and a high 286 calories for just $2.\n\nThe athlete's daily dietary requirements are as follows: at least 83 grams of protein, 128 grams of carbohydrates, and 1686 calories.\n\nYour challenge is to select a combination of these foods that meets the athletes' nutritional needs, while keeping the costs as low as possible. So, what is the lowest possible cost to meet these dietary requirements? Note: your response should be a single answer question, asking for the optimal value.",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Foods",
+      "elements": [
+        "Steak",
+        "Rice",
+        "Chicken",
+        "Iceberg Lettuce",
+        "Almonds"
+      ],
+      "description": "Different food items available for the meal plan."
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Steak": 7.0,
+        "Rice": 8.0,
+        "Chicken": 2.0,
+        "Iceberg Lettuce": 8.0,
+        "Almonds": 2.0
+      },
+      "description": "Cost of each food item."
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Steak": 20.0,
+        "Rice": 6.0,
+        "Chicken": 17.0,
+        "Iceberg Lettuce": 1.0,
+        "Almonds": 10.0
+      },
+      "description": "Protein content of each food item."
+    },
+    {
+      "name": "carbs",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Steak": 12.0,
+        "Rice": 29.0,
+        "Chicken": 26.0,
+        "Iceberg Lettuce": 8.0,
+        "Almonds": 2.0
+      },
+      "description": "Carbohydrate content of each food item."
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Steak": 167.0,
+        "Rice": 275.0,
+        "Chicken": 112.0,
+        "Iceberg Lettuce": 148.0,
+        "Almonds": 286.0
+      },
+      "description": "Caloric content of each food item."
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Foods"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Amount of each food item to include in the meal plan."
+    }
+  ],
+  "objective": {
+    "name": "minimize_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in Foods)",
+    "description": "Minimize the total cost of the meal plan."
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "83.0",
+      "description": "Ensure at least 83 grams of protein."
+    },
+    {
+      "name": "carbs_requirement",
+      "expr_lhs": "quicksum(carbs[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "128.0",
+      "description": "Ensure at least 128 grams of carbohydrates."
+    },
+    {
+      "name": "calories_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "1686.0",
+      "description": "Ensure at least 1686 calories."
+    }
+  ]
+}

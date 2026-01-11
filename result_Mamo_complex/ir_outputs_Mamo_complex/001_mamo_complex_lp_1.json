@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_1",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you are in charge of planning a week's worth of meals for a small group and need to ensure everyone gets the right amount of nutrients without overspending. You have four different food items to choose from, each with its own nutritional content and cost.\n\nHere's what each food item offers:\n- Food_1: Provides 19 grams of protein, 9 grams of carbohydrates, and 83 calories for $7.\n- Food_2: Offers 4 grams of protein, 16 grams of carbohydrates, and 166 calories for $7.\n- Food_3: Contains 3 grams of protein, 11 grams of carbohydrates, and 71 calories for $10.\n- Food_4: Delivers 8 grams of protein, 7 grams of carbohydrates, and 56 calories for $2.\n\nYour goal is to meet the following nutritional requirements for the group:\n- At least 84 grams of protein,\n- At least 132 grams of carbohydrates,\n- At least 1990 calories.\n\nYour challenge is to determine the most cost-effective way to purchase these food items to meet or exceed the nutritional requirements. What is the minimal cost to meet these dietary needs?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "F",
+      "elements": [
+        "Food_1",
+        "Food_2",
+        "Food_3",
+        "Food_4"
+      ],
+      "description": "Set of food items"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Food_1": 7.0,
+        "Food_2": 7.0,
+        "Food_3": 10.0,
+        "Food_4": 2.0
+      },
+      "description": "Cost of each food item"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Food_1": 19.0,
+        "Food_2": 4.0,
+        "Food_3": 3.0,
+        "Food_4": 8.0
+      },
+      "description": "Protein content of each food item"
+    },
+    {
+      "name": "carbohydrates",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Food_1": 9.0,
+        "Food_2": 16.0,
+        "Food_3": 11.0,
+        "Food_4": 7.0
+      },
+      "description": "Carbohydrate content of each food item"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Food_1": 83.0,
+        "Food_2": 166.0,
+        "Food_3": 71.0,
+        "Food_4": 56.0
+      },
+      "description": "Calorie content of each food item"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "F"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units to purchase of each food item"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in F)",
+    "description": "Minimize the total cost of purchasing food items"
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "84.0",
+      "description": "Ensure at least 84 grams of protein"
+    },
+    {
+      "name": "carbohydrates_requirement",
+      "expr_lhs": "quicksum(carbohydrates[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "132.0",
+      "description": "Ensure at least 132 grams of carbohydrates"
+    },
+    {
+      "name": "calories_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "1990.0",
+      "description": "Ensure at least 1990 calories"
+    }
+  ]
+}

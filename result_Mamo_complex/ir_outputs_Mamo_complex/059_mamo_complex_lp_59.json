@@ -1,0 +1,277 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_59",
+    "source": "Mamo_complex_lp",
+    "description": "Welcome to the virtual challenge of constructing a futuristic energy distribution network spanning across 8 pivotal nodes, designed to optimize the flow of a newly discovered renewable energy source from its origin to a central processing facility. This network, conceptualized within a high-tech cityscape, involves complex routes and capacities that dictate the maximum energy flow possible between nodes, each representing energy substations or relay points.\n\nHere’s a closer look at the energy flow capacities (in megawatts) between these substations:\n\n- From Substation 0 (Source): Energy can be directed to Substation 1 (19 MW), Substation 2 (4 MW), Substation 3 (1 MW), Substation 4 (9 MW), Substation 5 (13 MW), Substation 6 (8 MW), and Substation 7 (20 MW).\n- From Substation 1: Can relay energy to Substation 0 (10 MW), Substation 2 (12 MW), Substation 3 (12 MW), Substation 4 (8 MW), Substation 5 (12 MW), Substation 6 (7 MW), and Substation 7 (7 MW).\n- From Substation 2: Can transfer energy to Substation 0 (13 MW), Substation 1 (11 MW), Substation 3 (8 MW), Substation 4 (4 MW), Substation 5 (1 MW), Substation 6 (2 MW), and Substation 7 (3 MW).\n- From Substation 3: Can distribute energy to Substation 0 (4 MW), Substation 1 (12 MW), Substation 2 (13 MW), Substation 4 (18 MW), Substation 5 (6 MW), Substation 6 (19 MW), and Substation 7 (8 MW).\n- From Substation 4: Can send energy to Substation 0 (9 MW), Substation 1 (16 MW), Substation 2 (2 MW), Substation 5 (14 MW), Substation 6 (18 MW), and Substation 7 (7 MW).\n- From Substation 5: Can dispatch energy to Substation 0 (10 MW), Substation 1 (11 MW), Substation 2 (7 MW), Substation 3 (11 MW), Substation 4 (16 MW), Substation 6 (16 MW), and Substation 7 (5 MW).\n- From Substation 6: Capable of forwarding energy to Substation 0 (14 MW), Substation 1 (11 MW), Substation 2 (9 MW), Substation 3 (11 MW), Substation 4 (3 MW), Substation 5 (17 MW), and Substation 7 (19 MW).\n- From Substation 7 (Destination): Can receive energy and has the potential to send it back to Substation 0 (12 MW), Substation 1 (20 MW), Substation 2 (5 MW), Substation 3 (11 MW), Substation 4 (10 MW), Substation 5 (4 MW), and Substation 6 (6 MW).\n\nIn this setup, a capacity of \"0\" signifies the absence of a direct energy transfer link between the two respective substations.\n\nThe ultimate objective is to compute the maximum energy that can be transmitted from Substation 0 (the source) to Substation 7 (the destination) per time unit, with the condition that the energy flow through each link does not surpass its maximum capacity. What is the optimal value of energy (in megawatts) that can be efficiently relayed from the source to the destination per time unit?",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "N",
+      "elements": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "description": "Substations in the network"
+    },
+    {
+      "name": "A",
+      "elements": [
+        "('0', '1')",
+        "('0', '2')",
+        "('0', '3')",
+        "('0', '4')",
+        "('0', '5')",
+        "('0', '6')",
+        "('0', '7')",
+        "('1', '0')",
+        "('1', '2')",
+        "('1', '3')",
+        "('1', '4')",
+        "('1', '5')",
+        "('1', '6')",
+        "('1', '7')",
+        "('2', '0')",
+        "('2', '1')",
+        "('2', '3')",
+        "('2', '4')",
+        "('2', '5')",
+        "('2', '6')",
+        "('2', '7')",
+        "('3', '0')",
+        "('3', '1')",
+        "('3', '2')",
+        "('3', '4')",
+        "('3', '5')",
+        "('3', '6')",
+        "('3', '7')",
+        "('4', '0')",
+        "('4', '1')",
+        "('4', '2')",
+        "('4', '5')",
+        "('4', '6')",
+        "('4', '7')",
+        "('5', '0')",
+        "('5', '1')",
+        "('5', '2')",
+        "('5', '3')",
+        "('5', '4')",
+        "('5', '6')",
+        "('5', '7')",
+        "('6', '0')",
+        "('6', '1')",
+        "('6', '2')",
+        "('6', '3')",
+        "('6', '4')",
+        "('6', '5')",
+        "('6', '7')",
+        "('7', '0')",
+        "('7', '1')",
+        "('7', '2')",
+        "('7', '3')",
+        "('7', '4')",
+        "('7', '5')",
+        "('7', '6')"
+      ],
+      "description": "Arcs representing possible energy flow between substations"
+    }
+  ],
+  "params": [
+    {
+      "name": "capacity",
+      "indices": [
+        "A"
+      ],
+      "values": {
+        "('0', '1')": 19.0,
+        "('0', '2')": 4.0,
+        "('0', '3')": 1.0,
+        "('0', '4')": 9.0,
+        "('0', '5')": 13.0,
+        "('0', '6')": 8.0,
+        "('0', '7')": 20.0,
+        "('1', '0')": 10.0,
+        "('1', '2')": 12.0,
+        "('1', '3')": 12.0,
+        "('1', '4')": 8.0,
+        "('1', '5')": 12.0,
+        "('1', '6')": 7.0,
+        "('1', '7')": 7.0,
+        "('2', '0')": 13.0,
+        "('2', '1')": 11.0,
+        "('2', '3')": 8.0,
+        "('2', '4')": 4.0,
+        "('2', '5')": 1.0,
+        "('2', '6')": 2.0,
+        "('2', '7')": 3.0,
+        "('3', '0')": 4.0,
+        "('3', '1')": 12.0,
+        "('3', '2')": 13.0,
+        "('3', '4')": 18.0,
+        "('3', '5')": 6.0,
+        "('3', '6')": 19.0,
+        "('3', '7')": 8.0,
+        "('4', '0')": 9.0,
+        "('4', '1')": 16.0,
+        "('4', '2')": 2.0,
+        "('4', '5')": 14.0,
+        "('4', '6')": 18.0,
+        "('4', '7')": 7.0,
+        "('5', '0')": 10.0,
+        "('5', '1')": 11.0,
+        "('5', '2')": 7.0,
+        "('5', '3')": 11.0,
+        "('5', '4')": 16.0,
+        "('5', '6')": 16.0,
+        "('5', '7')": 5.0,
+        "('6', '0')": 14.0,
+        "('6', '1')": 11.0,
+        "('6', '2')": 9.0,
+        "('6', '3')": 11.0,
+        "('6', '4')": 3.0,
+        "('6', '5')": 17.0,
+        "('6', '7')": 19.0,
+        "('7', '0')": 12.0,
+        "('7', '1')": 20.0,
+        "('7', '2')": 5.0,
+        "('7', '3')": 11.0,
+        "('7', '4')": 10.0,
+        "('7', '5')": 4.0,
+        "('7', '6')": 6.0
+      },
+      "description": "Maximum energy flow capacity between substations"
+    }
+  ],
+  "vars": [
+    {
+      "name": "flow",
+      "indices": [
+        "A"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Energy flow between substations"
+    }
+  ],
+  "objective": {
+    "name": "max_flow",
+    "sense": "max",
+    "expr": "quicksum(flow[('0', '7')])",
+    "description": "Maximize energy flow from Substation 0 to Substation 7"
+  },
+  "constraints": [
+    {
+      "name": "capacity_constraint_0_1",
+      "expr_lhs": "flow[('0', '1')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '1')]",
+      "description": "Capacity constraint for arc 0 to 1"
+    },
+    {
+      "name": "capacity_constraint_0_2",
+      "expr_lhs": "flow[('0', '2')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '2')]",
+      "description": "Capacity constraint for arc 0 to 2"
+    },
+    {
+      "name": "capacity_constraint_0_3",
+      "expr_lhs": "flow[('0', '3')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '3')]",
+      "description": "Capacity constraint for arc 0 to 3"
+    },
+    {
+      "name": "capacity_constraint_0_4",
+      "expr_lhs": "flow[('0', '4')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '4')]",
+      "description": "Capacity constraint for arc 0 to 4"
+    },
+    {
+      "name": "capacity_constraint_0_5",
+      "expr_lhs": "flow[('0', '5')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '5')]",
+      "description": "Capacity constraint for arc 0 to 5"
+    },
+    {
+      "name": "capacity_constraint_0_6",
+      "expr_lhs": "flow[('0', '6')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '6')]",
+      "description": "Capacity constraint for arc 0 to 6"
+    },
+    {
+      "name": "capacity_constraint_0_7",
+      "expr_lhs": "flow[('0', '7')]",
+      "sense": "<=",
+      "expr_rhs": "capacity[('0', '7')]",
+      "description": "Capacity constraint for arc 0 to 7"
+    },
+    {
+      "name": "flow_conservation_0",
+      "expr_lhs": "quicksum(flow[('0', j)] for j in N if ('0', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '0')] for j in N if (j, '0') in A)",
+      "description": "Flow conservation at Substation 0"
+    },
+    {
+      "name": "flow_conservation_1",
+      "expr_lhs": "quicksum(flow[('1', j)] for j in N if ('1', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '1')] for j in N if (j, '1') in A)",
+      "description": "Flow conservation at Substation 1"
+    },
+    {
+      "name": "flow_conservation_2",
+      "expr_lhs": "quicksum(flow[('2', j)] for j in N if ('2', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '2')] for j in N if (j, '2') in A)",
+      "description": "Flow conservation at Substation 2"
+    },
+    {
+      "name": "flow_conservation_3",
+      "expr_lhs": "quicksum(flow[('3', j)] for j in N if ('3', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '3')] for j in N if (j, '3') in A)",
+      "description": "Flow conservation at Substation 3"
+    },
+    {
+      "name": "flow_conservation_4",
+      "expr_lhs": "quicksum(flow[('4', j)] for j in N if ('4', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '4')] for j in N if (j, '4') in A)",
+      "description": "Flow conservation at Substation 4"
+    },
+    {
+      "name": "flow_conservation_5",
+      "expr_lhs": "quicksum(flow[('5', j)] for j in N if ('5', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '5')] for j in N if (j, '5') in A)",
+      "description": "Flow conservation at Substation 5"
+    },
+    {
+      "name": "flow_conservation_6",
+      "expr_lhs": "quicksum(flow[('6', j)] for j in N if ('6', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '6')] for j in N if (j, '6') in A)",
+      "description": "Flow conservation at Substation 6"
+    },
+    {
+      "name": "flow_conservation_7",
+      "expr_lhs": "quicksum(flow[('7', j)] for j in N if ('7', j) in A)",
+      "sense": "==",
+      "expr_rhs": "quicksum(flow[(j, '7')] for j in N if (j, '7') in A)",
+      "description": "Flow conservation at Substation 7"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_15",
+    "source": "Mamo_complex_lp",
+    "description": "You're in charge of planning your meals for the week with the aim of balancing your nutritional needs while keeping your expenses within a budget. You have four main food items to choose from: Chicken, Broccoli, Beef, and Rice. Each food provides specific amounts of protein, carbohydrates, and calories, and they each have their own cost.\n\nHere's the nutritional value and cost of each food item:\n\n- Chicken: This food provides you with 10 grams of protein, 17 grams of carbohydrates, and 159 calories at a cost of $5.\n- Broccoli: You will receive 4 grams of protein, 3 grams of carbohydrates, and 126 calories for $5.\n- Beef: This high-protein food provides 13 grams of protein, 8 grams of carbohydrates, and 230 calories for $8.\n- Rice: This carb-rich food offers 15 grams of protein, a substantial 25 grams of carbohydrates, and 112 calories for just $3.\n\nYour nutritional target for the week is to consume at least 66 grams of protein, 101 grams of carbohydrates, and 1701 calories from your combination of these food items. The challenge is to figure out the most cost-effective way to meet these nutritional goals with these four food options. What is the minimal cost required to meet your nutritional requirements? Remember, the answer should be a single optimal value.",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "F",
+      "elements": [
+        "Chicken",
+        "Broccoli",
+        "Beef",
+        "Rice"
+      ],
+      "description": "Set of food items"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Chicken": 5.0,
+        "Broccoli": 5.0,
+        "Beef": 8.0,
+        "Rice": 3.0
+      },
+      "description": "Cost of each food item"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Chicken": 10.0,
+        "Broccoli": 4.0,
+        "Beef": 13.0,
+        "Rice": 15.0
+      },
+      "description": "Protein content of each food item"
+    },
+    {
+      "name": "carbohydrates",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Chicken": 17.0,
+        "Broccoli": 3.0,
+        "Beef": 8.0,
+        "Rice": 25.0
+      },
+      "description": "Carbohydrate content of each food item"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "F"
+      ],
+      "values": {
+        "Chicken": 159.0,
+        "Broccoli": 126.0,
+        "Beef": 230.0,
+        "Rice": 112.0
+      },
+      "description": "Calorie content of each food item"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "F"
+      ],
+      "vartype": "integer",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Number of units of each food item"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in F)",
+    "description": "Minimize the total cost of food items"
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "66.0",
+      "description": "Meet the minimum protein requirement"
+    },
+    {
+      "name": "carbohydrate_requirement",
+      "expr_lhs": "quicksum(carbohydrates[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "101.0",
+      "description": "Meet the minimum carbohydrate requirement"
+    },
+    {
+      "name": "calorie_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in F)",
+      "sense": ">=",
+      "expr_rhs": "1701.0",
+      "description": "Meet the minimum calorie requirement"
+    }
+  ]
+}

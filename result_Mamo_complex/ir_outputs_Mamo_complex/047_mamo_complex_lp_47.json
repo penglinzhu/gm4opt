@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_47",
+    "source": "Mamo_complex_lp",
+    "description": "Consider a scenario where a delivery company needs to deliver packages to four different cities: Alpha, Bravo, Charlie, and Delta. The company can start the delivery from any city, but they must ensure that each city is visited exactly once and then return to the city they started from. The objective is to minimize the total delivery cost, which could include gas expenses, labour hours, and vehicle maintenance costs.\nHere is an overview of the delivery costs between the cities:\nThe cost to deliver from Alpha to Bravo is 41 units, to Charlie is 55 units, and to Delta is 22 units.\nFrom Bravo, it costs 41 units to reach Alpha, 47 units to get to Charlie, and 47 units to Delta.\nIf the company starts from Charlie, the costs are 55 units to Alpha, 47 units to Bravo, and 35 units to Delta.\nAnd if they start at Delta, it costs 22 units to reach Alpha, 47 units to Bravo, and 35 units to Charlie.\nBased on these costs, what is the minimum total delivery cost for the company to deliver packages to each city exactly once and return to the starting point?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Cities",
+      "elements": [
+        "Alpha",
+        "Bravo",
+        "Charlie",
+        "Delta"
+      ],
+      "description": "Set of cities to be visited."
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "values": {
+        "Alpha": {
+          "Bravo": 41.0,
+          "Charlie": 55.0,
+          "Delta": 22.0,
+          "Alpha": 0.0
+        },
+        "Bravo": {
+          "Alpha": 41.0,
+          "Charlie": 47.0,
+          "Delta": 47.0,
+          "Bravo": 0.0
+        },
+        "Charlie": {
+          "Alpha": 55.0,
+          "Bravo": 47.0,
+          "Delta": 35.0,
+          "Charlie": 0.0
+        },
+        "Delta": {
+          "Alpha": 22.0,
+          "Bravo": 47.0,
+          "Charlie": 35.0,
+          "Delta": 0.0
+        }
+      },
+      "description": "Cost of traveling between cities."
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Cities",
+        "Cities"
+      ],
+      "vartype": "binary",
+      "lb": 0.0,
+      "ub": 1.0,
+      "description": "Binary variable indicating if a route between two cities is used."
+    }
+  ],
+  "objective": {
+    "name": "total_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[i][j] * x[i][j] for i in Cities for j in Cities)",
+    "description": "Minimize the total delivery cost."
+  },
+  "constraints": [
+    {
+      "name": "visit_each_city_once_Alpha",
+      "expr_lhs": "quicksum(x['Alpha'][j] for j in Cities if j != 'Alpha')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure Alpha is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_Bravo",
+      "expr_lhs": "quicksum(x['Bravo'][j] for j in Cities if j != 'Bravo')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure Bravo is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_Charlie",
+      "expr_lhs": "quicksum(x['Charlie'][j] for j in Cities if j != 'Charlie')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure Charlie is visited exactly once."
+    },
+    {
+      "name": "visit_each_city_once_Delta",
+      "expr_lhs": "quicksum(x['Delta'][j] for j in Cities if j != 'Delta')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure Delta is visited exactly once."
+    },
+    {
+      "name": "return_to_start_Alpha",
+      "expr_lhs": "quicksum(x[i]['Alpha'] for i in Cities if i != 'Alpha')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure return to Alpha."
+    },
+    {
+      "name": "return_to_start_Bravo",
+      "expr_lhs": "quicksum(x[i]['Bravo'] for i in Cities if i != 'Bravo')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure return to Bravo."
+    },
+    {
+      "name": "return_to_start_Charlie",
+      "expr_lhs": "quicksum(x[i]['Charlie'] for i in Cities if i != 'Charlie')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure return to Charlie."
+    },
+    {
+      "name": "return_to_start_Delta",
+      "expr_lhs": "quicksum(x[i]['Delta'] for i in Cities if i != 'Delta')",
+      "sense": "==",
+      "expr_rhs": "1.0",
+      "description": "Ensure return to Delta."
+    }
+  ]
+}

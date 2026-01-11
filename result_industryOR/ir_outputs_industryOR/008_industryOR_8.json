@@ -2,106 +2,105 @@
   "meta": {
     "problem_id": "industryOR_8",
     "source": "IndustryOR",
-    "description": "Determine the optimal number of tables, chairs, and bookshelves to produce in order to maximize profit, considering manufacturing costs, selling prices, warehouse space, and market demand.",
+    "description": "A furniture factory needs to determine how many tables, chairs, and bookshelves to produce in order to maximize profit. The factory can sell tables for $200 each, chairs for $50 each, and bookshelves for $150 each. The manufacturing costs for each table, chair, and bookshelf are $120, $20, and $90, respectively. Profit is the difference between the selling price and the manufacturing cost. Tables, chairs, and bookshelves each occupy 5, 2, and 3 square meters of warehouse space, respectively. Due to limited warehouse space, the total space cannot exceed 500 square meters. Additionally, due to market demand, the factory needs to produce at least 10 tables and 20 bookshelves. Finally, the total number of items produced by the furniture factory cannot exceed 200.",
     "sense": "max",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "PRODUCTS",
+      "name": "Products",
       "elements": [
         "tables",
         "chairs",
         "bookshelves"
       ],
-      "description": "Types of furniture products produced by the factory."
+      "description": null
     }
   ],
   "params": [
     {
       "name": "selling_price",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "values": {
-        "tables": 200,
-        "chairs": 50,
-        "bookshelves": 150
+        "tables": 200.0,
+        "chairs": 50.0,
+        "bookshelves": 150.0
       },
-      "description": "Selling price for each product."
+      "description": null
     },
     {
       "name": "manufacturing_cost",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "values": {
-        "tables": 120,
-        "chairs": 20,
-        "bookshelves": 90
+        "tables": 120.0,
+        "chairs": 20.0,
+        "bookshelves": 90.0
       },
-      "description": "Manufacturing cost for each product."
+      "description": null
     },
     {
-      "name": "space_required",
+      "name": "space",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "values": {
-        "tables": 5,
-        "chairs": 2,
-        "bookshelves": 3
+        "tables": 5.0,
+        "chairs": 2.0,
+        "bookshelves": 3.0
       },
-      "description": "Warehouse space required for each product."
+      "description": null
     }
   ],
   "vars": [
     {
-      "name": "x",
+      "name": "production",
       "indices": [
-        "PRODUCTS"
+        "Products"
       ],
       "vartype": "integer",
       "lb": 0.0,
       "ub": null,
-      "description": "Number of each product to produce."
+      "description": null
     }
   ],
   "objective": {
-    "name": "max_total_profit",
+    "name": "profit",
     "sense": "max",
-    "expr": "sum((selling_price[p] - manufacturing_cost[p]) * x[p] for p in PRODUCTS)",
-    "description": "Maximize total profit from selling the products."
+    "expr": "quicksum((selling_price[p] - manufacturing_cost[p]) * production[p] for p in Products)",
+    "description": null
   },
   "constraints": [
     {
-      "name": "warehouse_space_limit",
-      "expr_lhs": "sum(space_required[p] * x[p] for p in PRODUCTS)",
+      "name": "warehouse_space",
+      "expr_lhs": "quicksum(space[p] * production[p] for p in Products)",
       "sense": "<=",
-      "expr_rhs": "500",
-      "description": "Total warehouse space used cannot exceed 500 square meters."
+      "expr_rhs": "500.0",
+      "description": null
     },
     {
       "name": "min_tables",
-      "expr_lhs": "x['tables']",
+      "expr_lhs": "production['tables']",
       "sense": ">=",
-      "expr_rhs": "10",
-      "description": "At least 10 tables must be produced."
+      "expr_rhs": "10.0",
+      "description": null
     },
     {
       "name": "min_bookshelves",
-      "expr_lhs": "x['bookshelves']",
+      "expr_lhs": "production['bookshelves']",
       "sense": ">=",
-      "expr_rhs": "20",
-      "description": "At least 20 bookshelves must be produced."
+      "expr_rhs": "20.0",
+      "description": null
     },
     {
       "name": "max_total_items",
-      "expr_lhs": "sum(x[p] for p in PRODUCTS)",
+      "expr_lhs": "quicksum(production[p] for p in Products)",
       "sense": "<=",
-      "expr_rhs": "200",
-      "description": "Total number of items produced cannot exceed 200."
+      "expr_rhs": "200.0",
+      "description": null
     }
-  ],
-  "graph": null
+  ]
 }

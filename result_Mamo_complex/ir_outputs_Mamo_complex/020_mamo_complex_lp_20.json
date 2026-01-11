@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "problem_id": "mamo_complex_lp_20",
+    "source": "Mamo_complex_lp",
+    "description": "Imagine you're a dietitian crafting a meal plan for someone with specific nutritional goals. The challenge is not just to meet these nutritional needs but to do so in the most cost-effective way possible. The individual requires a precise amount of protein, carbohydrates, and calories each day, but the budget is tight, making it crucial to minimize the cost of the meal plan.\n\nYou have a list of eight food items to choose from, each with distinct nutritional content and associated cost:\n\n- Food_1: A modest source of protein and carbs with 1 gram of protein, 4 grams of carbohydrates, and 93 calories at a cost of $6.\n- Food_2: Rich in protein with 18 grams of protein, 2 grams of carbohydrates, and 219 calories, priced at $4.\n- Food_3: A balanced choice providing 19 grams of protein, 26 grams of carbs, and 155 calories for $4.\n- Food_4: High in protein with 19 grams of protein, 10 grams of carbs, and 105 calories, costing $3.\n- Food_5: Carb-heavy with 3 grams of protein, 24 grams of carbohydrates, and 255 calories at just $2.\n- Food_6: A good mix with 8 grams of protein, 26 grams of carbs, and 182 calories for $7.\n- Food_7: Impressive protein and carb content with 15 grams of protein, 27 grams of carbohydrates, and 173 calories, all for $3.\n- Food_8: Carb-rich with 3 grams of protein, 30 grams of carbohydrates, and 191 calories, also at $3.\n\nThe daily dietary requirements for the individual are:\n\n- Protein: At least 98 grams\n- Carbohydrates: At least 113 grams\n- Calories: At least 1768\n\nWith these food options and nutritional needs in mind, what is the minimum cost required to meet the daily protein, carbohydrate, and calorie requirements?",
+    "sense": "min",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "Foods",
+      "elements": [
+        "Food_1",
+        "Food_2",
+        "Food_3",
+        "Food_4",
+        "Food_5",
+        "Food_6",
+        "Food_7",
+        "Food_8"
+      ],
+      "description": "Available food items"
+    }
+  ],
+  "params": [
+    {
+      "name": "cost",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Food_1": 6.0,
+        "Food_2": 4.0,
+        "Food_3": 4.0,
+        "Food_4": 3.0,
+        "Food_5": 2.0,
+        "Food_6": 7.0,
+        "Food_7": 3.0,
+        "Food_8": 3.0
+      },
+      "description": "Cost of each food item"
+    },
+    {
+      "name": "protein",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Food_1": 1.0,
+        "Food_2": 18.0,
+        "Food_3": 19.0,
+        "Food_4": 19.0,
+        "Food_5": 3.0,
+        "Food_6": 8.0,
+        "Food_7": 15.0,
+        "Food_8": 3.0
+      },
+      "description": "Protein content of each food item"
+    },
+    {
+      "name": "carbs",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Food_1": 4.0,
+        "Food_2": 2.0,
+        "Food_3": 26.0,
+        "Food_4": 10.0,
+        "Food_5": 24.0,
+        "Food_6": 26.0,
+        "Food_7": 27.0,
+        "Food_8": 30.0
+      },
+      "description": "Carbohydrate content of each food item"
+    },
+    {
+      "name": "calories",
+      "indices": [
+        "Foods"
+      ],
+      "values": {
+        "Food_1": 93.0,
+        "Food_2": 219.0,
+        "Food_3": 155.0,
+        "Food_4": 105.0,
+        "Food_5": 255.0,
+        "Food_6": 182.0,
+        "Food_7": 173.0,
+        "Food_8": 191.0
+      },
+      "description": "Calorie content of each food item"
+    }
+  ],
+  "vars": [
+    {
+      "name": "x",
+      "indices": [
+        "Foods"
+      ],
+      "vartype": "continuous",
+      "lb": 0.0,
+      "ub": null,
+      "description": "Amount of each food item to include in the meal plan"
+    }
+  ],
+  "objective": {
+    "name": "min_cost",
+    "sense": "min",
+    "expr": "quicksum(cost[f] * x[f] for f in Foods)",
+    "description": "Minimize the total cost of the meal plan"
+  },
+  "constraints": [
+    {
+      "name": "protein_requirement",
+      "expr_lhs": "quicksum(protein[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "98.0",
+      "description": "Ensure at least 98 grams of protein"
+    },
+    {
+      "name": "carbs_requirement",
+      "expr_lhs": "quicksum(carbs[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "113.0",
+      "description": "Ensure at least 113 grams of carbohydrates"
+    },
+    {
+      "name": "calories_requirement",
+      "expr_lhs": "quicksum(calories[f] * x[f] for f in Foods)",
+      "sense": ">=",
+      "expr_rhs": "1768.0",
+      "description": "Ensure at least 1768 calories"
+    }
+  ]
+}

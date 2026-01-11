@@ -2,25 +2,13 @@
   "meta": {
     "problem_id": "industryOR_11",
     "source": "IndustryOR",
-    "description": "Determine the minimum number of salespersons needed to meet the staffing requirements of a 24-hour convenience store.",
+    "description": "A certain 24-hour convenience store requires a certain number of salespersons during each time period as follows: 2:00-6:00 - 10 people, 6:00-10:00 - 15 people, 10:00-14:00 - 25 people, 14:00-18:00 - 20 people, 18:00-22:00 - 18 people, 22:00-2:00 - 12 people. Salespersons work at 2:00, 6:00, 10:00, 14:00, 18:00, and 22:00, and work continuously for 8 hours. Determine the minimum number of salespersons needed to meet the requirements.",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "TIME_PERIODS",
-      "elements": [
-        "2:00-6:00",
-        "6:00-10:00",
-        "10:00-14:00",
-        "14:00-18:00",
-        "18:00-22:00",
-        "22:00-2:00"
-      ],
-      "description": "Time periods during which staffing requirements are specified."
-    },
-    {
-      "name": "START_TIMES",
+      "name": "T",
       "elements": [
         "2:00",
         "6:00",
@@ -29,87 +17,86 @@
         "18:00",
         "22:00"
       ],
-      "description": "Start times for shifts, each lasting 8 hours."
+      "description": "Time periods when salespersons start their shifts"
     }
   ],
   "params": [
     {
-      "name": "requirements",
+      "name": "demand",
       "indices": [
-        "TIME_PERIODS"
+        "T"
       ],
       "values": {
-        "2:00-6:00": 10,
-        "6:00-10:00": 15,
-        "10:00-14:00": 25,
-        "14:00-18:00": 20,
-        "18:00-22:00": 18,
-        "22:00-2:00": 12
+        "2:00": 10.0,
+        "6:00": 15.0,
+        "10:00": 25.0,
+        "14:00": 20.0,
+        "18:00": 18.0,
+        "22:00": 12.0
       },
-      "description": "Number of salespersons required during each time period."
+      "description": "Number of salespersons required during each time period"
     }
   ],
   "vars": [
     {
       "name": "x",
       "indices": [
-        "START_TIMES"
+        "T"
       ],
       "vartype": "integer",
       "lb": 0.0,
       "ub": null,
-      "description": "Number of salespersons starting their shift at each start time."
+      "description": "Number of salespersons starting their shift at each time period"
     }
   ],
   "objective": {
-    "name": "min_total_salespersons",
+    "name": "min_salespersons",
     "sense": "min",
-    "expr": "sum(x[start] for start in ['2:00', '6:00', '10:00', '14:00', '18:00', '22:00'])",
-    "description": "Minimize the total number of salespersons."
+    "expr": "quicksum(x[t] for t in T)",
+    "description": "Minimize the total number of salespersons"
   },
   "constraints": [
     {
-      "name": "requirement_2:00-6:00",
+      "name": "demand_2:00",
       "expr_lhs": "x['2:00'] + x['22:00']",
       "sense": ">=",
-      "expr_rhs": "requirements['2:00-6:00']",
-      "description": "Ensure enough salespersons are working during 2:00-6:00."
+      "expr_rhs": "demand['2:00']",
+      "description": "Meet demand for 2:00-6:00"
     },
     {
-      "name": "requirement_6:00-10:00",
+      "name": "demand_6:00",
       "expr_lhs": "x['6:00'] + x['2:00']",
       "sense": ">=",
-      "expr_rhs": "requirements['6:00-10:00']",
-      "description": "Ensure enough salespersons are working during 6:00-10:00."
+      "expr_rhs": "demand['6:00']",
+      "description": "Meet demand for 6:00-10:00"
     },
     {
-      "name": "requirement_10:00-14:00",
+      "name": "demand_10:00",
       "expr_lhs": "x['10:00'] + x['6:00']",
       "sense": ">=",
-      "expr_rhs": "requirements['10:00-14:00']",
-      "description": "Ensure enough salespersons are working during 10:00-14:00."
+      "expr_rhs": "demand['10:00']",
+      "description": "Meet demand for 10:00-14:00"
     },
     {
-      "name": "requirement_14:00-18:00",
+      "name": "demand_14:00",
       "expr_lhs": "x['14:00'] + x['10:00']",
       "sense": ">=",
-      "expr_rhs": "requirements['14:00-18:00']",
-      "description": "Ensure enough salespersons are working during 14:00-18:00."
+      "expr_rhs": "demand['14:00']",
+      "description": "Meet demand for 14:00-18:00"
     },
     {
-      "name": "requirement_18:00-22:00",
+      "name": "demand_18:00",
       "expr_lhs": "x['18:00'] + x['14:00']",
       "sense": ">=",
-      "expr_rhs": "requirements['18:00-22:00']",
-      "description": "Ensure enough salespersons are working during 18:00-22:00."
+      "expr_rhs": "demand['18:00']",
+      "description": "Meet demand for 18:00-22:00"
     },
     {
-      "name": "requirement_22:00-2:00",
+      "name": "demand_22:00",
       "expr_lhs": "x['22:00'] + x['18:00']",
       "sense": ">=",
-      "expr_rhs": "requirements['22:00-2:00']",
-      "description": "Ensure enough salespersons are working during 22:00-2:00."
+      "expr_rhs": "demand['22:00']",
+      "description": "Meet demand for 22:00-2:00"
     }
-  ],
-  "graph": null
+  ]
 }

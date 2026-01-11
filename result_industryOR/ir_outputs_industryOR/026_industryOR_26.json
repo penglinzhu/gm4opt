@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_26",
     "source": "IndustryOR",
-    "description": "Optimize the selection of feed types to meet nutritional requirements at minimum cost.",
+    "description": "Suppose an animal needs at least $700 \\mathrm{~g}$ of protein, $30 \\mathrm{~g}$ of minerals, and $100 \\mathrm{mg}$ of vitamins per day. There are 5 types of feed to choose from, and the contents of each nutrient per gram and the unit price of each feed are shown in Table 1-5. Try to establish a linear programming model that not only meets the animal's growth needs but also minimizes the cost of selecting feed.\n\nTable 1-6\n\\begin{tabular}{|c|c|c|c|c||c|c|c|c|c|}\n\\hline Feed & \\begin{tabular}{c} \nProtein \\\\\n$/ \\mathrm{g}$\n\\end{tabular} & \\begin{tabular}{c} \nMinerals \\\\\n$/ \\mathrm{g}$\n\\end{tabular} & \\begin{tabular}{c} \nVitamins \\\\\n$/ \\mathrm{mg}$\n\\end{tabular} & \\begin{tabular}{c} \nPrice \\\\\n$/$ (yuan $/ \\mathrm{kg})$\n\\end{tabular} & Feed & \\begin{tabular}{c} \nProtein \\\\\n$/ \\mathrm{g}$\n\\end{tabular} & \\begin{tabular}{c} \nMinerals \\\\\n$/ \\mathrm{g}$\n\\end{tabular} & \\begin{tabular}{c} \nVitamins \\\\\n$/ \\mathrm{mg}$\n\\end{tabular} & \\begin{tabular}{c} \nPrice \\\\\n$/($ yuan $/ \\mathrm{kg})$\n\\end{tabular} \\\\\n\\hline 1 & 3 & 1 & 0.5 & 0.2 & 4 & 6 & 2 & 2 & 0.3 \\\\\n\\hline 2 & 2 & 0.5 & 1 & 0.7 & 5 & 18 & 0.5 & 0.8 & 0.8 \\\\\n\\hline 3 & 1 & 0.2 & 0.2 & 0.4 & & & & & \\\\\n\\hline\n\\end{tabular}",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "FEEDS",
+      "name": "F",
       "elements": [
         "1",
         "2",
@@ -16,56 +16,56 @@
         "4",
         "5"
       ],
-      "description": "Types of feed available."
+      "description": "Types of feed"
     }
   ],
   "params": [
     {
-      "name": "protein_content",
+      "name": "protein",
       "indices": [
-        "FEEDS"
+        "F"
       ],
       "values": {
-        "1": 3,
-        "2": 2,
-        "3": 1,
-        "4": 6,
-        "5": 18
+        "1": 3.0,
+        "2": 2.0,
+        "3": 1.0,
+        "4": 6.0,
+        "5": 18.0
       },
-      "description": "Protein content per gram of each feed."
+      "description": "Protein content per gram of feed"
     },
     {
-      "name": "mineral_content",
+      "name": "minerals",
       "indices": [
-        "FEEDS"
+        "F"
       ],
       "values": {
-        "1": 1,
+        "1": 1.0,
         "2": 0.5,
         "3": 0.2,
-        "4": 2,
+        "4": 2.0,
         "5": 0.5
       },
-      "description": "Mineral content per gram of each feed."
+      "description": "Minerals content per gram of feed"
     },
     {
-      "name": "vitamin_content",
+      "name": "vitamins",
       "indices": [
-        "FEEDS"
+        "F"
       ],
       "values": {
         "1": 0.5,
-        "2": 1,
+        "2": 1.0,
         "3": 0.2,
-        "4": 2,
+        "4": 2.0,
         "5": 0.8
       },
-      "description": "Vitamin content per milligram of each feed."
+      "description": "Vitamins content per mg of feed"
     },
     {
       "name": "price",
       "indices": [
-        "FEEDS"
+        "F"
       ],
       "values": {
         "1": 0.2,
@@ -74,49 +74,48 @@
         "4": 0.3,
         "5": 0.8
       },
-      "description": "Price per kilogram of each feed."
+      "description": "Price per kg of feed"
     }
   ],
   "vars": [
     {
-      "name": "amount",
+      "name": "x",
       "indices": [
-        "FEEDS"
+        "F"
       ],
       "vartype": "continuous",
       "lb": 0.0,
       "ub": null,
-      "description": "Amount of each feed type to use in grams."
+      "description": "Amount of feed in kg"
     }
   ],
   "objective": {
-    "name": "min_total_cost",
+    "name": "min_cost",
     "sense": "min",
-    "expr": "sum(amount[f] * price[f] / 1000 for f in FEEDS)",
-    "description": "Minimize the total cost of feed selection."
+    "expr": "quicksum(price[f] * x[f] for f in F)",
+    "description": "Minimize the total cost of feed"
   },
   "constraints": [
     {
       "name": "protein_requirement",
-      "expr_lhs": "sum(amount[f] * protein_content[f] for f in FEEDS)",
+      "expr_lhs": "quicksum(protein[f] * x[f] * 1000 for f in F)",
       "sense": ">=",
-      "expr_rhs": "700",
-      "description": "Ensure at least 700g of protein is provided."
+      "expr_rhs": "700.0",
+      "description": "Protein requirement in grams"
     },
     {
-      "name": "mineral_requirement",
-      "expr_lhs": "sum(amount[f] * mineral_content[f] for f in FEEDS)",
+      "name": "minerals_requirement",
+      "expr_lhs": "quicksum(minerals[f] * x[f] * 1000 for f in F)",
       "sense": ">=",
-      "expr_rhs": "30",
-      "description": "Ensure at least 30g of minerals is provided."
+      "expr_rhs": "30.0",
+      "description": "Minerals requirement in grams"
     },
     {
-      "name": "vitamin_requirement",
-      "expr_lhs": "sum(amount[f] * vitamin_content[f] for f in FEEDS)",
+      "name": "vitamins_requirement",
+      "expr_lhs": "quicksum(vitamins[f] * x[f] * 1000 for f in F)",
       "sense": ">=",
-      "expr_rhs": "100",
-      "description": "Ensure at least 100mg of vitamins is provided."
+      "expr_rhs": "100.0",
+      "description": "Vitamins requirement in mg"
     }
-  ],
-  "graph": null
+  ]
 }

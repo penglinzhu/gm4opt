@@ -2,13 +2,13 @@
   "meta": {
     "problem_id": "industryOR_21",
     "source": "IndustryOR",
-    "description": "Minimize the total length of the street occupied by cars parked on both sides, with a constraint on the maximum length on one side.",
+    "description": "On Danzig Street, vehicles can park on both sides of the street. Mr. Edmunds, who lives at number 1, is organizing a party with about 30 attendees who will arrive in 15 cars. The length of the i-th car, denoted as $\\lambda_i$, is given in meters as follows:\ni 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\n$\\lambda_i$ 4 4.5 5 4.1 2.4 5.2 3.7 3.5 3.2 4.5 2.3 3.3 3.8 4.6 3\n\nTo avoid disturbing the neighbors, Mr. Edmunds wants to arrange the parking on both sides of the street in such a way that the total length of the street occupied by his friends' cars is minimized. Please provide a mathematical programming formulation and solve this problem using AMPL.\nIf the vehicles on one side of the street cannot occupy more than 15 meters exactly, how would the program change?",
     "sense": "min",
-    "version": 1
+    "version": "v1"
   },
   "sets": [
     {
-      "name": "CARS",
+      "name": "Cars",
       "elements": [
         "1",
         "2",
@@ -26,14 +26,22 @@
         "14",
         "15"
       ],
-      "description": "Set of cars to be parked."
+      "description": "Set of cars"
+    },
+    {
+      "name": "Sides",
+      "elements": [
+        "left",
+        "right"
+      ],
+      "description": "Sides of the street"
     }
   ],
   "params": [
     {
-      "name": "lambda",
+      "name": "length",
       "indices": [
-        "CARS"
+        "Cars"
       ],
       "values": {
         "1": 4.0,
@@ -52,150 +60,140 @@
         "14": 4.6,
         "15": 3.0
       },
-      "description": "Length of each car in meters."
+      "description": "Length of each car in meters"
     }
   ],
   "vars": [
     {
       "name": "x",
       "indices": [
-        "CARS"
+        "Cars",
+        "Sides"
       ],
       "vartype": "binary",
       "lb": 0.0,
       "ub": 1.0,
-      "description": "Binary variable indicating if car i is parked on one side of the street."
-    },
-    {
-      "name": "y",
-      "indices": [
-        "CARS"
-      ],
-      "vartype": "binary",
-      "lb": 0.0,
-      "ub": 1.0,
-      "description": "Binary variable indicating if car i is parked on the other side of the street."
+      "description": "Binary variable indicating if car i is parked on side j"
     }
   ],
   "objective": {
-    "name": "min_total_length",
+    "name": "minimize_total_length",
     "sense": "min",
-    "expr": "sum(lambda[i] * (x[i] + y[i]) for i in CARS)",
-    "description": "Minimize the total length of the street occupied by cars."
+    "expr": "quicksum(length[i] * (x[i]['left'] + x[i]['right']) for i in Cars)",
+    "description": "Minimize the total length of the street occupied by cars"
   },
   "constraints": [
     {
-      "name": "one_side_length_limit",
-      "expr_lhs": "sum(lambda[i] * x[i] for i in CARS)",
+      "name": "one_side_constraint",
+      "expr_lhs": "quicksum(length[i] * x[i]['left'] for i in Cars)",
       "sense": "<=",
       "expr_rhs": "15.0",
-      "description": "The total length of cars parked on one side cannot exceed 15 meters."
+      "description": "The total length of cars on the left side cannot exceed 15 meters"
     },
     {
-      "name": "car_parked_once_1",
-      "expr_lhs": "x['1'] + y['1']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['1']['left'] + x['1']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 1 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 1 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_2",
-      "expr_lhs": "x['2'] + y['2']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['2']['left'] + x['2']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 2 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 2 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_3",
-      "expr_lhs": "x['3'] + y['3']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['3']['left'] + x['3']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 3 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 3 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_4",
-      "expr_lhs": "x['4'] + y['4']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['4']['left'] + x['4']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 4 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 4 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_5",
-      "expr_lhs": "x['5'] + y['5']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['5']['left'] + x['5']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 5 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 5 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_6",
-      "expr_lhs": "x['6'] + y['6']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['6']['left'] + x['6']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 6 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 6 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_7",
-      "expr_lhs": "x['7'] + y['7']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['7']['left'] + x['7']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 7 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 7 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_8",
-      "expr_lhs": "x['8'] + y['8']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['8']['left'] + x['8']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 8 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 8 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_9",
-      "expr_lhs": "x['9'] + y['9']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['9']['left'] + x['9']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 9 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 9 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_10",
-      "expr_lhs": "x['10'] + y['10']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['10']['left'] + x['10']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 10 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 10 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_11",
-      "expr_lhs": "x['11'] + y['11']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['11']['left'] + x['11']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 11 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 11 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_12",
-      "expr_lhs": "x['12'] + y['12']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['12']['left'] + x['12']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 12 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 12 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_13",
-      "expr_lhs": "x['13'] + y['13']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['13']['left'] + x['13']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 13 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 13 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_14",
-      "expr_lhs": "x['14'] + y['14']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['14']['left'] + x['14']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 14 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 14 must be parked on exactly one side"
     },
     {
-      "name": "car_parked_once_15",
-      "expr_lhs": "x['15'] + y['15']",
+      "name": "one_car_one_side",
+      "expr_lhs": "x['15']['left'] + x['15']['right']",
       "sense": "==",
-      "expr_rhs": "1",
-      "description": "Car 15 must be parked on exactly one side."
+      "expr_rhs": "1.0",
+      "description": "Car 15 must be parked on exactly one side"
     }
-  ],
-  "graph": null
+  ]
 }
