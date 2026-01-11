@@ -1,0 +1,11 @@
+# --- Core runtime ---
+openai>=1.0.0
+gurobipy>=10.0.0
+
+# --- Data / logs / benchmark runners ---
+numpy>=1.21
+pandas>=1.5
+tqdm>=4.64
+
+# --- Optional: robust env loading (safe to keep; if unused, no harm) ---
+python-dotenv>=1.0.0
