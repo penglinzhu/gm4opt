@@ -1,64 +1,74 @@
-# GM4OPT — NL→IR→Solver Pipeline for Optimization Modeling
+# IR2Solve — Intermediate-Representation-first Autoformulation for Optimization
 
-GM4OPT（graph modeling for optimization） is a research-oriented framework that bridges **natural-language optimization problems** and **executable mathematical programming models**. It provides a unified pipeline that (i) translates problem text into a structured intermediate representation (IR) and (ii) deterministically compiles the IR into a solver-ready model (Gurobi), with optional graph-based analysis modules.
-
+**IR2Solve** is a research-oriented framework that bridges **natural-language optimization problems** and **executable mathematical programming models** under a **strict LLM budget**. It implements an **IR-first** pipeline:
+- The LLM outputs a **schema-constrained intermediate representation (IR)** as JSON.
+- A deterministic **IR→Solver compiler** converts the IR into a **Gurobi** model through a controlled evaluation environment.
+- A **layered verifier (L1/L2/L3)** performs failure-mode-driven, mostly deterministic repairs—improving success rate without requiring multi-round agent reflection.
 ---
 
 ## End-to-End Pipeline
 
-GM4OPT implements a unified pipeline:
+IR2Solve implements a unified pipeline:
 
-**NL → (dynamic system prompt templating) → IR (JSON) → ModelIR → (GraphIR → Difficulty) → Gurobi**
+**NL → (IR-first system prompting) → IR (JSON) → ModelIR → (Layered Verifier L1/L2/L3) → IR→Gurobi Compilation → Solve & Log**
 
-- **NL**: raw natural-language problem statement.
-- **Dynamic system prompt templating**: a heuristic prompt-construction mechanism that augments a fixed base prompt with problem-type-specific guidance.
-- **IR (JSON)**: a strictly structured intermediate representation emitted by the LLM.
-- **ModelIR**: typed, validated in-memory representation parsed from the JSON IR (schema-driven).
-- **GraphIR (optional)**: a graph representation derived from IR/ModelIR to support structural checks and analysis.
-- **Difficulty (optional)**: heuristic difficulty estimation derived from structural signals (e.g., number of sets/variables/constraints, graph statistics).
-- **Gurobi**: deterministic model compilation and optimization.
+- **NL**: raw natural-language optimization problem statement.
+- **IR-first system prompting**: a schema-driven prompting strategy that constrains the LLM to emit a compile-ready IR (JSON) rather than free-form code/LaTeX.
+- **IR (JSON)**: a strictly structured intermediate representation emitted by the LLM, consisting of `sets/params/vars/objective/constraints`.
+- **ModelIR**: a typed, schema-aligned in-memory dataclass representation parsed from the JSON IR, enabling static checks and deterministic transformations.
+- **Layered Verifier (L1/L2/L3)**: failure-mode-driven repair operators applied to the IR/ModelIR:
+  - **L1 (Compile-Safety & Index Hygiene)**: deterministic normalization/repairs to prevent build-time errors (e.g., canonicalizing keys, fixing missing diagonals for square 2D parameters, unrolling free-index constraints into scalar constraints).
+  - **L2 (Light Semantics)**: conservative generic semantic sanity checks (e.g., integrality sanity, constraint-direction sanity, token/normalization fixes).
+  - **L3 (Conditional Structure Rescue, optional)**: type-guided IR rebuild triggered only under high confidence, guarded by acceptance tests (the rebuilt IR must pass compilation and basic solve checks to be adopted).
+- **IR→Gurobi Compilation**: deterministic compilation of ModelIR into a Gurobi model; objective/constraints are compiled from executable expression strings under a restricted evaluation environment.
+- **Solve & Log**: optimize the compiled model and write structured logs, including `failure_stage`, solver status/objective, and verifier `issues/repairs` traces for error analysis.
 
 ---
 
 ## Core Contributions
 
-### 1) Structured IR and a Deterministic NL→IR→Solver Bridge
-GM4OPT designs a **structured, schema-constrained IR** for linear / integer optimization problems and provides a complete bridge:
-- **NL → IR**: LLM produces a JSON object following a strict schema.
-- **IR → Solver**: GM4OPT compiles the IR into a solver-executable optimization model through a fixed, deterministic procedure.
+IR2Solve’s contributions target robust autoformulation under a strict LLM budget:
 
-This decomposition separates the inherently uncertain part (NL → model extraction) from the deterministic part (model execution), improving debuggability and enabling systematic evaluation.
+### A) IR-first Autoformulation with Executable Semantics
 
-### 2) Dynamic System Prompt Templating for NL→IR
-Instead of using a fully static prompt, GM4OPT adopts **dynamic system prompt templating**:
-- A **fixed base prompt** enforces schema rules and modeling constraints (e.g., fully unrolled scalar constraints, no implicit quantifiers).
-- A **dynamic guidance block** is generated heuristically by extracting keywords from the problem text and classifying the problem type (e.g., assignment, transport/flow, routing, production mix).
-- The final system prompt is **base + type-specific heuristics**, aiming to reduce common NL→IR errors (e.g., wrong variable types, wrong constraint senses, missing structural constraints).
+IR2Solve constrains the LLM output into a compile-ready intermediate representation (IR):
 
-This component is intentionally lightweight and heuristic: it does not rely on retrieval or learned prompt selection, but on rule-based feature extraction and problem-type templates.
+- The LLM emits **ModelIR JSON** with explicit `sets/params/vars/objective/constraints`.
+- Objective/constraints are represented as **executable expression strings** and compiled by a deterministic **IR→Gurobi** compiler in a controlled environment.
+- This reduces hallucinated APIs and glue-code errors common in code-first pipelines.
 
-### 3) Graph-Based IR Instrumentation for Self-Check and Difficulty Estimation (Experimental)
-GM4OPT enriches the IR processing stage with a **graph-structured representation**:
-- The pipeline can construct a **GraphIR** that connects entities such as sets, parameters, variables, constraints, and objectives.
-- This graph supports:
-  - **Structural self-checks** (e.g., connectivity, orphan variables, unused parameters, index consistency signals).
-  - **Difficulty estimation** based on structural and graph statistics.
+### B) Layered Verifier as Deterministic Repair Operators
 
-Both **graph-based self-check** and **difficulty estimation** are currently **experimental modules**. A key ongoing direction is to integrate them more tightly into the overall architecture—specifically, to make graph/difficulty feedback *actionable*, so that it can guide and refine IR generation (e.g., prompting revisions, identifying missing constraint families, correcting modeling patterns).
+IR2Solve uses a layered verifier that applies repairs only when needed:
+
+- **L1** fixes compile-safety and index hygiene issues (build-time failures).
+- **L2** performs conservative generic semantic sanity checks.
+- **L3** optionally triggers a type-guided rebuild, but only under high confidence and only accepted after passing compilation/solve acceptance tests.
+
+This design emphasizes **rule-based, measurable repairs** rather than unconditional multi-round reflection.
+
+### C) Accuracy-per-Cost Optimization Under a Strict LLM Budget
+
+IR2Solve is optimized for settings where LLM calls are expensive:
+
+- Most improvements come from **deterministic verification and repairs** rather than extra LLM sampling.
+- Optional **L3** uses a **high-confidence trigger + acceptance gate**, enabling rare second-call recovery without turning the pipeline into a high-cost exploration method.
 
 ---
 
 ## Project Structure
 
 ```text
-gm4opt/
-├── gm4opt_ir.py           # ModelIR schema definitions (Meta/Sets/Params/Vars/Objective/Constraints)
-├── gm4opt_nl2ir.py        # NL → IR: prompt construction (dynamic templating) + JSON extraction/parsing
-├── gm4opt_pipeline.py     # Unified pipeline orchestration (LLM → IR → ModelIR → optional Graph/Difficulty → Gurobi)
-├── gm4opt_graph.py        # GraphIR construction + structural checks (experimental)
-├── gm4opt_difficulty.py   # Difficulty scoring based on IR/Graph features (experimental)
-├── run_nl2ir_demo.py      # Minimal demo: run pipeline on a single NL instance
-├── run_*_benchmark.py     # Benchmark runners: batch evaluation + CSV logging + IR dumps
+IR2Solve/
+├── ir2solve_ir.py                 # ModelIR schema + deterministic IR→Gurobi compiler (executable semantics)
+├── ir2solve_nl2ir.py              # NL → IR: schema-driven prompting + robust JSON extraction/parsing
+├── ir2solve_pipeline.py           # Pipeline orchestration (LLM → IR → verifier → compile → solve → logs)
+├── ir2solve_verifier_core.py      # Verifier framework + orchestration + reporting
+├── ir2solve_verifier_layer1.py    # L1 rules: compile-safety & index hygiene
+├── ir2solve_verifier_layer2.py    # L2 rules: light semantic sanity checks
+├── ir2solve_verifier_layer3.py    # L3 rules: optional type-guided rescue + acceptance testing
+├── run_industryor_benchmark.py    # Benchmark runner (kept name) — evaluation + CSV/trace logging
+├── run_complexlp_benchmark.py     # Benchmark runner (kept name) — evaluation + CSV/trace logging
 └── README.md
 ```
 ---
