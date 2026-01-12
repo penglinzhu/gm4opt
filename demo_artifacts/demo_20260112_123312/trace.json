@@ -1,0 +1,157 @@
+{
+  "meta": {
+    "problem_id": "demo_20260112_123312",
+    "model_name": "gpt-4o",
+    "timelimit_sec": 60.0,
+    "layer1_on": true,
+    "layer2_on": true,
+    "layer3_on": true,
+    "repairs_on": true
+  },
+  "failure_stage": "",
+  "error": "",
+  "verifier": {
+    "ok": true,
+    "issues": [
+      "constraint_direction_sanity",
+      "type_template_rescue"
+    ],
+    "repairs": [
+      "constraint_direction_sanity"
+    ]
+  },
+  "solver": {
+    "status_name": "OPTIMAL",
+    "obj_value": 13.0
+  },
+  "ir_dict": {
+    "meta": {
+      "problem_id": "demo_20260112_123312",
+      "source": "demo",
+      "description": "Now we need to determine 4 out of 5 workers to each complete one of the four tasks. Since each worker has different skill sets, the amount of time required for each worker to complete each task is also different. The time required for each worker to complete each task is shown in Table 5-2.\nTable 5-2\n\\begin{tabular}{|c|c|c|c|c|}\n\\hline Task Time Required & $A$ & $B$ & $C$ & $D$ \\\\\n\\hline Worker & & & & \\\\\n\\hline I & 9 & 4 & 3 & 7 \\\\\n\\hline II & 4 & 6 & 5 & 6 \\\\\n\\hline III & 5 & 4 & 7 & 5 \\\\\n\\hline IV & 7 & 5 & 2 & 3 \\\\\n\\hline V & 10 & 6 & 7 & 4 \\\\\n\\hline\n\\end{tabular}\n\nTry to find a work assignment plan that minimizes the total working hours.",
+      "sense": "min",
+      "version": "v1"
+    },
+    "sets": [
+      {
+        "name": "Workers",
+        "elements": [
+          "I",
+          "II",
+          "III",
+          "IV",
+          "V"
+        ],
+        "description": "Set of workers"
+      },
+      {
+        "name": "Tasks",
+        "elements": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "description": "Set of tasks"
+      }
+    ],
+    "params": [
+      {
+        "name": "time",
+        "indices": [
+          "Workers",
+          "Tasks"
+        ],
+        "values": {
+          "I": {
+            "A": 9,
+            "B": 4,
+            "C": 3,
+            "D": 7
+          },
+          "II": {
+            "A": 4,
+            "B": 6,
+            "C": 5,
+            "D": 6
+          },
+          "III": {
+            "A": 5,
+            "B": 4,
+            "C": 7,
+            "D": 5
+          },
+          "IV": {
+            "A": 7,
+            "B": 5,
+            "C": 2,
+            "D": 3
+          },
+          "V": {
+            "A": 10,
+            "B": 6,
+            "C": 7,
+            "D": 4
+          }
+        },
+        "description": "Time required for each worker to complete each task"
+      }
+    ],
+    "vars": [
+      {
+        "name": "assign",
+        "indices": [
+          "Workers",
+          "Tasks"
+        ],
+        "vartype": "binary",
+        "lb": 0,
+        "ub": 1,
+        "description": "1 if worker is assigned to task, 0 otherwise"
+      }
+    ],
+    "objective": {
+      "name": "minimize_total_time",
+      "sense": "min",
+      "expr": "quicksum(time[w][t] * assign[w][t] for w in Workers for t in Tasks)",
+      "description": "Minimize total working hours"
+    },
+    "constraints": [
+      {
+        "name": "task_assignment_A",
+        "expr_lhs": "quicksum(assign[w]['A'] for w in Workers)",
+        "sense": "==",
+        "expr_rhs": "1",
+        "description": "Exactly one worker is assigned to task A"
+      },
+      {
+        "name": "task_assignment_B",
+        "expr_lhs": "quicksum(assign[w]['B'] for w in Workers)",
+        "sense": "==",
+        "expr_rhs": "1",
+        "description": "Exactly one worker is assigned to task B"
+      },
+      {
+        "name": "task_assignment_C",
+        "expr_lhs": "quicksum(assign[w]['C'] for w in Workers)",
+        "sense": "==",
+        "expr_rhs": "1",
+        "description": "Exactly one worker is assigned to task C"
+      },
+      {
+        "name": "task_assignment_D",
+        "expr_lhs": "quicksum(assign[w]['D'] for w in Workers)",
+        "sense": "==",
+        "expr_rhs": "1",
+        "description": "Exactly one worker is assigned to task D"
+      },
+      {
+        "name": "worker_limit",
+        "expr_lhs": "quicksum(quicksum(assign[w][t] for t in Tasks) for w in Workers)",
+        "sense": "==",
+        "expr_rhs": "4",
+        "description": "Only 4 workers are assigned in total"
+      }
+    ]
+  }
+}

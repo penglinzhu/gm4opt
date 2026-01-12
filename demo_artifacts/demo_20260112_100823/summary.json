@@ -1,0 +1,5 @@
+{
+  "problem_id": "demo_20260112_100823",
+  "failure_stage": "pipeline_exception",
+  "error": "AttributeError: 'PipelineConfig' object has no attribute 'enable_estimate'"
+}

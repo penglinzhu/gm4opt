@@ -1,0 +1,9 @@
+{
+  "issues": [
+    "unroll_free_index_constraints",
+    "type_template_rescue"
+  ],
+  "repairs": [
+    "unroll_free_index_constraints"
+  ]
+}

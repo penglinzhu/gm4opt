@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from openai import OpenAI
-from ir2solve_pipeline import PipelineConfig, run_ir2solve_pipeline
+from ir2solve_pipeline import PipelineConfig, run_ir2solve_pipeline, create_client
 
 SAVE_ARTIFACTS = True
 ARTIFACT_DIR = "demo_artifacts"
@@ -112,6 +112,7 @@ Now we need to determine 4 out of 5 workers to each complete one of the four tas
         repairs_on=True,
     )
 
+
     out_dir = os.path.join(ARTIFACT_DIR, f"demo_{run_id}")
     if SAVE_ARTIFACTS:
         ensure_dir(out_dir)
@@ -123,7 +124,7 @@ Now we need to determine 4 out of 5 workers to each complete one of the four tas
     print("\nQuestion(first 400 chars):")
     print(QUESTION_TEXT[:400] + ("..." if len(QUESTION_TEXT) > 400 else ""))
 
-    client = OpenAI()
+    client = create_client(cfg, type="macider")
 
     try:
         res = run_ir2solve_pipeline(

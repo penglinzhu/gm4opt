@@ -1,0 +1,9 @@
+{
+  "model_name": "gpt-4o",
+  "temperature": 0.0,
+  "timelimit_sec": 60.0,
+  "layer1_on": true,
+  "layer2_on": true,
+  "layer3_on": true,
+  "repairs_on": true
+}
