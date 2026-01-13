@@ -1,0 +1,16 @@
+{
+  "problem_id": "demo_20260112_222837",
+  "failure_stage": "",
+  "error": "",
+  "modelir_counts": {
+    "sets": 1,
+    "params": 2,
+    "vars": 4,
+    "constraints": 7
+  },
+  "verifier_issues": [],
+  "verifier_repairs": [],
+  "solver_status_name": "OPTIMAL",
+  "obj_value": 940.0,
+  "artifacts_dir": "demo_artifacts\\demo_20260112_222837"
+}

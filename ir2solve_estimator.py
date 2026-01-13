@@ -20,8 +20,8 @@ BASE_SYSTEM_PROMPT = """
 You are an expert in mathematical modeling and optimization.
 Your task is to:
 1. Read a natural language description of a linear/integer optimization problem
-2. Read a JSON-formatted mathematical model built for this problem
-3. [Optional]Read difficulty features of this model in JSON format
+2. Read a Intermediate Representation (IR) of the problem
+3. Read a JSON-formatted mathematical model built for this problem
 
 Based on these inputs, you must:
 - Provide a confidence score between 0 and 10 for the model's correctness, bigger is more confident
@@ -40,6 +40,64 @@ To determine the confidence_score, evaluate the model based on the following cri
 2. Verification of Parameter Correctness: Assess whether each coefficient in the objective function and constraints has a direct or implicit source.
 3. Verification of Objective Function Correctness: Determine whether the objective function in the model reflects the optimization goal stated in the problem.
 """
+
+SCHEMA_FOR_IR = r"""
+SCHEMA FOR THE INTERMEDIATE REPRESENTATION (IR):
+The IR is a structured representation of the problem, typically in JSON format.
+It is not always correct. It includes the following components:
+
+1) sets
+A list of sets. Each set is:
+{
+  "name": "string",
+  "elements": ["string", ...],   // IMPORTANT: every element MUST be a STRING (even if it looks like a number)
+  "description": "string or null"
+}
+
+2) params
+A list of parameters. Each param is:
+{
+  "name": "string",
+  "indices": [] | ["SetName"] | ["SetName1","SetName2"],  // 0D/1D/2D only
+  "values": number | {key:number,...} | {i:{j:number,...},...},   // recommended canonical forms below
+  "description": "string or null"
+}
+
+Canonical forms for values:
+- Scalar (0D): a number (or a single-entry dict is tolerated by the compiler)
+- 1D over set I: {"i1": 1.0, "i2": 2.0, ...}
+- 2D over sets I,J (RECOMMENDED): {"i1": {"j1": 1.0, "j2": 3.0}, "i2": {...}, ...}
+
+3) vars
+A list of decision variables. Each var is:
+{
+  "name": "string",
+  "indices": [] | ["SetName"] | ["SetName1","SetName2"],  // 0D/1D/2D only
+  "vartype": "continuous" | "integer" | "binary",
+  "lb": number,
+  "ub": number or null,
+  "description": "string or null"
+}
+
+4) objective
+{
+  "name": "string",
+  "sense": "min" or "max",
+  "expr": "Python expression string",
+  "description": "string or null"
+}
+
+5) constraints
+A list of constraints. Each constraint is:
+{
+  "name": "string",
+  "expr_lhs": "Python expression string",
+  "sense": "<=" | ">=" | "==",
+  "expr_rhs": "Python expression string",
+  "description": "string or null"
+}
+"""
+
 
 SCHEMA_FOR_MODEL = r"""
 SCHEMA FOR THE MATHEMATICAL MODEL:
@@ -64,12 +122,13 @@ If you need to correct the model (confidence_score < 5), you MUST produce valid 
     {
       "name": "string",
       "sense": ">=", "<=", or "=",
-      "rhs": <float>,
+      "rhs": <float>,   // IMPORTANT: rhs MUST be a number not an expression
       "expression": "string such as '3x1-4x2+5x3'"
     }
   ]
 }
 """
+
 SCHEMA_FOR_FEATURES = r"""
 IF DIFFICULTY FEATURES ARE GIVEN, DIFFICULTY FEATURES SCHEMA:
 The difficulty features are provided in this format:
@@ -95,7 +154,7 @@ The difficulty features are provided in this format:
 @dataclass
 class DifficultyEstimate:
     """
-    对单个 ModelIR 的难度估计结果。
+    对单个 ModelIR 的难度估计结果。已弃用
 
     - score: 一个连续的难度分数（越大越难）
     - level: "easy" / "medium" / "hard" 等粗粒度标签
@@ -106,7 +165,7 @@ class DifficultyEstimate:
     features: Dict[str, Any]
 
 
-def build_check_message(question_txt: str, features: Dict[str, Any] = None, gurobi_model: gp.model = None) -> List[Dict[str, str]]:
+def build_check_message(question_txt: str, ir: ModelIR, gurobi_model: gp.model = None) -> List[Dict[str, str]]:
     """
     生成评估与自检的LLM message
     """
@@ -132,19 +191,30 @@ def build_check_message(question_txt: str, features: Dict[str, Any] = None, guro
     
     model_info_str = json.dumps(model_info, ensure_ascii=False, indent=2) if model_info is not None else "null"
     # print("Model Info for Difficulty Check:", model_info_str)
-    features_str = json.dumps(features, ensure_ascii=False, indent=2) if features is not None else "{}"
+
+    ir_str = "null"
+    if ir is not None:
+        # 取ir中的sets/params/vars/obj/constrs部分上传
+        ir_dict = {
+            "sets": [s.__dict__ for s in ir.sets],
+            "params": [p.__dict__ for p in ir.params],
+            "vars": [v.__dict__ for v in ir.vars],
+            "objective": ir.objective.__dict__ if ir.objective is not None else None,
+            "constraints": [c.__dict__ for c in ir.constraints],
+        }
+        ir_str = json.dumps(ir_dict, ensure_ascii=False, indent=2)
     
-    user_prompt = f"""{SCHEMA_FOR_MODEL}{SCHEMA_FOR_FEATURES}
+    user_prompt = f"""{SCHEMA_FOR_IR}{SCHEMA_FOR_MODEL}
 
     TASK EXECUTION:
     1. PROBLEM DESCRIPTION:
     {question_txt}
 
-    2. PROVIDED MATHEMATICAL MODEL:
-    {model_info_str}
+    2. PROVIDED INTERMEDIATE REPRESENTATION (IR):
+    {ir_str}
 
-    3. DIFFICULTY FEATURES:
-    {features_str}
+    3. PROVIDED MATHEMATICAL MODEL:
+    {model_info_str}
 
     YOUR OUTPUT MUST BE A VALID JSON OBJECT with 'confidence_score' and 'corrected_model' keys.
     """
@@ -158,7 +228,7 @@ def build_check_message(question_txt: str, features: Dict[str, Any] = None, guro
 
 def estimate_difficulty(ir: ModelIR) -> DifficultyEstimate:
     """
-    根据 ModelIR（尤其是 GraphIR）、gurobi求解结果共同估计一个难度分数/建模置信度。
+    根据 ModelIR（尤其是 GraphIR）、gurobi求解结果共同估计一个难度分数/建模置信度。已弃用
     """
 
     #1. IR基础计数
@@ -321,12 +391,34 @@ def extract_model_info(model: gp.Model) -> tuple:
             if lb == -float('inf') or lb <= -1e30:
                 lb_str = "-inf"
             else:
-                lb_str = float(lb)
+                # 先转换为浮点数
+                lb_float = float(lb)
+                
+                # 处理-0.0问题
+                if abs(lb_float) < 1e-10 and lb_float < 0:
+                    lb_str = "0.0"
+                else:
+                    # 将浮点数转换为字符串
+                    if lb_float.is_integer():
+                        lb_str = str(int(lb_float))
+                    else:
+                        lb_str = str(lb_float)
             
             if ub == float('inf') or ub >= 1e30:
                 ub_str = "inf"
             else:
-                ub_str = float(ub)
+                # 先转换为浮点数
+                ub_float = float(ub)
+                
+                # 处理-0.0问题
+                if abs(ub_float) < 1e-10 and ub_float < 0:
+                    ub_str = "0.0"
+                else:
+                    # 将浮点数转换为字符串
+                    if ub_float.is_integer():
+                        ub_str = str(int(ub_float))
+                    else:
+                        ub_str = str(ub_float)
             
             variables.append({
                 "name": var.VarName,
@@ -392,7 +484,7 @@ def extract_model_info(model: gp.Model) -> tuple:
                 constraints.append({
                     "name": constr.ConstrName if constr.ConstrName else f"constr_{constr.index}",
                     "sense": sense,
-                    "expression": f"{left_expr} {sense} {rhs}",
+                    "expression": left_expr,
                     "rhs": rhs
                 })
                 
@@ -619,7 +711,9 @@ def load_model_from_dict_str(dict_str: str) -> gp.Model:
         gurobipy.Model: 重建的模型
     """
     try:
-        # 尝试解析为JSON
+        if isinstance(dict_str, dict):
+            return dict_rebuild_model(dict_str)
+        # 尝试解析为dict
         import ast
         model_dict = ast.literal_eval(dict_str)
         return dict_rebuild_model(model_dict)

@@ -1,0 +1,8 @@
+{
+  "issues": [
+    "integrality_sanity"
+  ],
+  "repairs": [
+    "integrality_sanity"
+  ]
+}

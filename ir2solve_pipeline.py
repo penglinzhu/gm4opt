@@ -20,6 +20,8 @@ from ir2solve_verifier_core import run_verifier, VerifierConfig
 
 from ir2solve_estimator import build_check_message, load_model_from_dict_str
 
+from llm2code import build_generate_message, llm_to_gurobi
+
 
 # -----------------------------------------------------------------------------
 # Config / Result
@@ -36,7 +38,8 @@ class PipelineConfig:
     layer2_on: bool = True
     layer3_on: bool = True
     repairs_on: bool = True
-    enable_estimate: bool = True
+    determine_on: bool = True
+    estimate_on: bool = True
 
 
 @dataclass
@@ -212,14 +215,29 @@ def run_ir2solve_pipeline(
 
     # --- 7) Gurobi build + optimize ---
     if not failure_stage and ir is not None:
-        try:
-            model = ir_to_gurobi(ir)
-            # 存储中间模型以便调试
-            model.write("debug_intermediate_model.lp")
-        except Exception as e:
-            failure_stage = "solver_build"
-            error = f"{type(e).__name__}: {e}"
-            model = None
+        if config.determine_on:
+            # 确定性构造Gurobi模型
+            try:
+                model = ir_to_gurobi(ir)
+            except Exception as e:
+                failure_stage = "solver_build"
+                error = f"{type(e).__name__}: {e}"
+                model = None
+        else:
+            try:
+                generate_messages = build_generate_message(question_text, ir)
+                # call LLM to build Gurobi model
+                generate_completion = client.chat.completions.create(
+                    model=config.model_name,
+                    messages=generate_messages,
+                    temperature=config.temperature,
+                )
+                model_generate_code: str = generate_completion.choices[0].message.content or ""
+                model = llm_to_gurobi(model_generate_code)
+            except Exception as e:
+                failure_stage = "solver_build"
+                error = f"{type(e).__name__}: {e}"
+                model = None
 
         if not failure_stage and model is not None:
             try:
@@ -240,22 +258,17 @@ def run_ir2solve_pipeline(
 
     # --- 8) self-check + rebuild ---
     if not failure_stage and ir is not None:
-        if config.enable_estimate:
+        if config.estimate_on:
             try:
-                check_messages = build_check_message(question_text, features=None, gurobi_model=model)
-
                 # call LLM for confidence check
+                check_messages = build_check_message(question_text, ir, gurobi_model=model)
                 check_completion = client.chat.completions.create(
                     model=config.model_name,
                     messages=check_messages,
                     temperature=config.temperature,
                 )
                 raw_check_text: str = check_completion.choices[0].message.content or ""
-
-                try:
-                    check_data = extract_json_from_text(raw_check_text)
-                except ValueError as e:
-                    raise ValueError(f"Failed to extract JSON from difficulty check output: {e}")
+                check_data = extract_json_from_text(raw_check_text)
             except Exception as e:
                 failure_stage = "estimator_llm"
                 error = f"{type(e).__name__}: {e}"
@@ -267,8 +280,8 @@ def run_ir2solve_pipeline(
 
             if not failure_stage and corrected_model_dict_str:
                 try:
-                    print("corrected_model:", corrected_model_dict_str)
-                    print("reasoning:", check_data.get("reasoning", ""))
+                    # print("corrected_model:", corrected_model_dict_str)
+                    # print("reasoning:", check_data.get("reasoning", ""))
                     try:
                         # rebuild corrected model from LLM output
                         corrected_model = load_model_from_dict_str(corrected_model_dict_str)
@@ -282,7 +295,6 @@ def run_ir2solve_pipeline(
                         corrected_model.optimize()
                         if corrected_model.Status == GRB.OPTIMAL:
                             gurobi_obj_value = float(corrected_model.ObjVal)
-                            print("Corrected model optimal objective value:", gurobi_obj_value)
                 except Exception as e:
                     failure_stage = "estimator_rebuild"
                     error = f"{type(e).__name__}: {e}"

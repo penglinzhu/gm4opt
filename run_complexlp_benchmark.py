@@ -34,6 +34,7 @@ LAYER1_ON = True
 LAYER2_ON = True
 LAYER3_ON = True
 REPAIRS_ON = True
+ESITMATE_ON = True
 
 
 # -------------------------
@@ -119,6 +120,7 @@ def solve_one_instance(
             layer2_on=bool(LAYER2_ON),
             layer3_on=bool(LAYER3_ON),
             repairs_on=bool(REPAIRS_ON),
+            estimate_on=bool(ESITMATE_ON),
         )
 
         res = run_ir2solve_pipeline(

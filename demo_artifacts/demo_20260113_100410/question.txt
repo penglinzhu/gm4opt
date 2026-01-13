@@ -1,0 +1,6 @@
+On Danzig Street, vehicles can park on both sides of the street. Mr. Edmunds, who lives at number 1, is organizing a party with about 30 attendees who will arrive in 15 cars. The length of the i-th car, denoted as $\lambda_i$, is given in meters as follows:
+i 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+$\lambda_i$ 4 4.5 5 4.1 2.4 5.2 3.7 3.5 3.2 4.5 2.3 3.3 3.8 4.6 3
+
+To avoid disturbing the neighbors, Mr. Edmunds wants to arrange the parking on both sides of the street in such a way that the total length of the street occupied by his friends' cars is minimized. Please provide a mathematical programming formulation and solve this problem using AMPL.
+If the vehicles on one side of the street cannot occupy more than 15 meters exactly, how would the program change?

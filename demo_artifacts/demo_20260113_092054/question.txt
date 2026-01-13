@@ -1,0 +1,14 @@
+A certain restaurant operates 24 hours a day and requires a minimum number of waitstaff as shown in Table 1.1.
+
+Table 1.1
+
+| Time | Minimum Number of Waitstaff |
+| :---: | :---: |
+| 2am-6am | 4 |
+| 6am-10am | 8 |
+| 10am-2pm | 10 |
+| 2pm-6pm | 4 |
+| 6pm-10pm | 8 |
+| 10pm-2am | 4 |
+
+Each waitstaff works continuously for 8 hours a day. The goal is to find the minimum number of waitstaff that satisfies the above conditions and represent this problem as a linear programming model.

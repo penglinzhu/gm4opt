@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "problem_id": "demo_20260113_135343",
+    "model_name": "gpt-4o",
+    "timelimit_sec": 60.0,
+    "layer1_on": true,
+    "layer2_on": true,
+    "layer3_on": true,
+    "repairs_on": true
+  },
+  "failure_stage": "",
+  "error": "",
+  "verifier": {
+    "ok": true,
+    "issues": [],
+    "repairs": []
+  },
+  "solver": {
+    "status_name": "OPTIMAL",
+    "obj_value": 70.0
+  },
+  "ir_dict": {
+    "meta": {
+      "problem_id": "demo_20260113_135343",
+      "source": "demo",
+      "description": "There are two products, A and B, which both require two chemical reaction processes: one before and one after. Each unit of product A requires 2 hours for the front process and 3 hours for the back process. Each unit of product B requires 3 hours for the front process and 4 hours for the back process. There are 16 hours available for the front process and 24 hours available for the back process.\n\nFor each unit of product B produced, two units of byproduct C are generated, which do not require any additional cost. Up to 5 units of byproduct C can be sold, while the remaining units must be disposed of, with a disposal cost of $2 per unit.\n\nSelling one unit of product A yields a profit of $4, selling one unit of product B yields a profit of $10, and selling one unit of byproduct C yields a profit of $3.\n\nTo maximize the total profit obtained, establish the linear programming model for this problem.",
+      "sense": "max",
+      "version": "v1"
+    },
+    "sets": [
+      {
+        "name": "Products",
+        "elements": [
+          "A",
+          "B"
+        ],
+        "description": "Set of products"
+      },
+      {
+        "name": "Processes",
+        "elements": [
+          "front",
+          "back"
+        ],
+        "description": "Set of processes"
+      }
+    ],
+    "params": [
+      {
+        "name": "time_required",
+        "indices": [
+          "Products",
+          "Processes"
+        ],
+        "values": {
+          "A": {
+            "front": 2.0,
+            "back": 3.0
+          },
+          "B": {
+            "front": 3.0,
+            "back": 4.0
+          }
+        },
+        "description": "Time required for each product in each process"
+      },
+      {
+        "name": "time_available",
+        "indices": [
+          "Processes"
+        ],
+        "values": {
+          "front": 16.0,
+          "back": 24.0
+        },
+        "description": "Available time for each process"
+      },
+      {
+        "name": "profit",
+        "indices": [
+          "Products"
+        ],
+        "values": {
+          "A": 4.0,
+          "B": 10.0
+        },
+        "description": "Profit per unit of product"
+      },
+      {
+        "name": "byproduct_profit",
+        "indices": [],
+        "values": 3.0,
+        "description": "Profit per unit of byproduct C sold"
+      },
+      {
+        "name": "disposal_cost",
+        "indices": [],
+        "values": 2.0,
+        "description": "Cost per unit of byproduct C disposed"
+      },
+      {
+        "name": "max_byproduct_sold",
+        "indices": [],
+        "values": 5.0,
+        "description": "Maximum units of byproduct C that can be sold"
+      }
+    ],
+    "vars": [
+      {
+        "name": "x",
+        "indices": [
+          "Products"
+        ],
+        "vartype": "integer",
+        "lb": 0.0,
+        "ub": null,
+        "description": "Units of each product to produce"
+      },
+      {
+        "name": "y",
+        "indices": [],
+        "vartype": "integer",
+        "lb": 0.0,
+        "ub": 5.0,
+        "description": "Units of byproduct C to sell"
+      }
+    ],
+    "objective": {
+      "name": "total_profit",
+      "sense": "max",
+      "expr": "quicksum(profit[p] * x[p] for p in Products) + byproduct_profit * y - disposal_cost * (2 * x['B'] - y)",
+      "description": "Maximize total profit"
+    },
+    "constraints": [
+      {
+        "name": "front_process_time",
+        "expr_lhs": "quicksum(time_required[p]['front'] * x[p] for p in Products)",
+        "sense": "<=",
+        "expr_rhs": "time_available['front']",
+        "description": "Front process time constraint"
+      },
+      {
+        "name": "back_process_time",
+        "expr_lhs": "quicksum(time_required[p]['back'] * x[p] for p in Products)",
+        "sense": "<=",
+        "expr_rhs": "time_available['back']",
+        "description": "Back process time constraint"
+      },
+      {
+        "name": "byproduct_balance",
+        "expr_lhs": "y",
+        "sense": "<=",
+        "expr_rhs": "2 * x['B']",
+        "description": "Byproduct C balance constraint"
+      }
+    ]
+  }
+}

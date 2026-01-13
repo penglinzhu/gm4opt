@@ -1,0 +1,40 @@
+from ir2solve_estimator import load_model_from_dict_str, extract_model_info
+from ir2solve_nl2ir import extract_json_from_text
+import gurobipy as gp
+import json
+
+corrected_model_dict_str = "{'objective': {'direction': 'maximize', 'expression': '-5.0 * (extra_units[1] + extra_units[2] + extra_units[3] + extra_units[4] + extra_units[5] + extra_units[6]) - 500.0 * (hired_workers[1] + hired_workers[2] + hired_workers[3] + hired_workers[4] + hired_workers[5] + hired_workers[6]) - 700.0 * (laid_off_workers[1] + laid_off_workers[2] + laid_off_workers[3] + laid_off_workers[4] + laid_off_workers[5] + laid_off_workers[6]) - 10.0 * (stored_units[1] + stored_units[2] + stored_units[3] + stored_units[4] + stored_units[5] + stored_units[6])', 'constant': 0}, 'variables': [{'name': 'extra_units[1]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'extra_units[2]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'extra_units[3]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'extra_units[4]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'extra_units[5]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'extra_units[6]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'stored_units[1]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'stored_units[2]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'stored_units[3]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'stored_units[4]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'stored_units[5]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'stored_units[6]', 'type': 'C', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'hired_workers[1]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'hired_workers[2]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'hired_workers[3]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'hired_workers[4]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'hired_workers[5]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'hired_workers[6]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'laid_off_workers[1]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'laid_off_workers[2]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'laid_off_workers[3]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'laid_off_workers[4]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'laid_off_workers[5]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'laid_off_workers[6]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'workers[1]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'workers[2]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'workers[3]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'workers[4]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'workers[5]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}, {'name': 'workers[6]', 'type': 'I', 'lower_bound': 0, 'upper_bound': 'inf'}], 'constraints': [{'name': 'initial_workers', 'sense': '=', 'expression': 'workers[1]', 'rhs': 40.0}, {'name': 'worker_balance_1', 'sense': '=', 'expression': 'workers[1] + hired_workers[1] - laid_off_workers[1]', 'rhs': 40.0}, {'name': 'worker_balance_2', 'sense': '=', 'expression': 'workers[2] + hired_workers[2] - laid_off_workers[2]', 'rhs': 'workers[1]'}, {'name': 'worker_balance_3', 'sense': '=', 'expression': 'workers[3] + hired_workers[3] - laid_off_workers[3]', 'rhs': 'workers[2]'}, {'name': 'worker_balance_4', 'sense': '=', 'expression': 'workers[4] + hired_workers[4] - laid_off_workers[4]', 'rhs': 'workers[3]'}, {'name': 'worker_balance_5', 'sense': '=', 'expression': 'workers[5] + hired_workers[5] - laid_off_workers[5]', 'rhs': 'workers[4]'}, {'name': 'worker_balance_6', 'sense': '=', 'expression': 'workers[6] + hired_workers[6] - laid_off_workers[6]', 'rhs': 'workers[5]'}, {'name': 'max_worker_change_1', 'sense': '<=', 'expression': 'hired_workers[1] + laid_off_workers[1]', 'rhs': 5.0}, {'name': 'max_worker_change_2', 'sense': '<=', 'expression': 'hired_workers[2] + laid_off_workers[2]', 'rhs': 5.0}, {'name': 'max_worker_change_3', 'sense': '<=', 'expression': 'hired_workers[3] + laid_off_workers[3]', 'rhs': 5.0}, {'name': 'max_worker_change_4', 'sense': '<=', 'expression': 'hired_workers[4] + laid_off_workers[4]', 'rhs': 5.0}, {'name': 'max_worker_change_5', 'sense': '<=', 'expression': 'hired_workers[5] + laid_off_workers[5]', 'rhs': 5.0}, {'name': 'max_worker_change_6', 'sense': '<=', 'expression': 'hired_workers[6] + laid_off_workers[6]', 'rhs': 5.0}, {'name': 'production_capacity_1', 'sense': '<=', 'expression': 'extra_units[1]', 'rhs': '6.0 * workers[1]'}, {'name': 'production_capacity_2', 'sense': '<=', 'expression': 'extra_units[2]', 'rhs': '6.0 * workers[2]'}, {'name': 'production_capacity_3', 'sense': '<=', 'expression': 'extra_units[3]', 'rhs': '6.0 * workers[3]'}, {'name': 'production_capacity_4', 'sense': '<=', 'expression': 'extra_units[4]', 'rhs': '6.0 * workers[4]'}, {'name': 'production_capacity_5', 'sense': '<=', 'expression': 'extra_units[5]', 'rhs': '6.0 * workers[5]'}, {'name': 'production_capacity_6', 'sense': '<=', 'expression': 'extra_units[6]', 'rhs': '6.0 * workers[6]'}, {'name': 'demand_satisfaction_1', 'sense': '>=', 'expression': '20.0 * workers[1] + extra_units[1] + stored_units[1]', 'rhs': 700.0}, {'name': 'demand_satisfaction_2', 'sense': '>=', 'expression': '20.0 * workers[2] + extra_units[2] + stored_units[2]', 'rhs': 600.0}, {'name': 'demand_satisfaction_3', 'sense': '>=', 'expression': '20.0 * workers[3] + extra_units[3] + stored_units[3]', 'rhs': 500.0}, {'name': 'demand_satisfaction_4', 'sense': '>=', 'expression': '20.0 * workers[4] + extra_units[4] + stored_units[4]', 'rhs': 800.0}, {'name': 'demand_satisfaction_5', 'sense': '>=', 'expression': '20.0 * workers[5] + extra_units[5] + stored_units[5]', 'rhs': 900.0}, {'name': 'demand_satisfaction_6', 'sense': '>=', 'expression': '20.0 * workers[6] + extra_units[6] + stored_units[6]', 'rhs': 800.0}, {'name': 'storage_balance_1', 'sense': '=', 'expression': 'stored_units[1]', 'rhs': '20.0 * workers[1] + extra_units[1] - 700.0'}, {'name': 'storage_balance_2', 'sense': '=', 'expression': 'stored_units[2]', 'rhs': 'stored_units[1] + 20.0 * workers[2] + extra_units[2] - 600.0'}, {'name': 'storage_balance_3', 'sense': '=', 'expression': 'stored_units[3]', 'rhs': 'stored_units[2] + 20.0 * workers[3] + extra_units[3] - 500.0'}, {'name': 'storage_balance_4', 'sense': '=', 'expression': 'stored_units[4]', 'rhs': 'stored_units[3] + 20.0 * workers[4] + extra_units[4] - 800.0'}, {'name': 'storage_balance_5', 'sense': '=', 'expression': 'stored_units[5]', 'rhs': 'stored_units[4] + 20.0 * workers[5] + extra_units[5] - 900.0'}, {'name': 'storage_balance_6', 'sense': '=', 'expression': 'stored_units[6]', 'rhs': 'stored_units[5] + 20.0 * workers[6] + extra_units[6] - 800.0'}, {'name': 'final_storage', 'sense': '=', 'expression': 'stored_units[6]', 'rhs': 0.0}]}"
+
+
+
+    
+    # 测试重建模型
+try:
+    model = load_model_from_dict_str(corrected_model_dict_str)
+    print(f"✅ 模型重建成功!")
+    print(f"   变量数量: {model.numVars}")
+    print(f"   约束数量: {model.numConstrs}")
+    
+    # 测试提取模型信息
+    objective, variables, constraints, error = extract_model_info(model)
+    if error is not None:
+        print(f"❌ 提取模型信息失败: {error}")
+    else:
+        print(f"✅ 提取模型信息成功!")
+        print(f"   目标函数: {objective['direction']} {objective['expression']}")
+        print(f"   变量数量: {len(variables)}")
+        print(f"   约束数量: {len(constraints)}")
+    
+    # 优化模型
+    model.optimize()
+    if model.status == gp.GRB.OPTIMAL:
+        print(f"✅ 模型优化成功!")
+        print(f"   最优目标值: {model.objVal}")
+        for var in model.getVars():
+            print(f"   {var.VarName}: {var.X}")
+    else:
+        print(f"❌ 模型优化失败，状态码: {model.status}")
+        
+except Exception as e:
+    print(f"❌ 测试失败: {e}")
+

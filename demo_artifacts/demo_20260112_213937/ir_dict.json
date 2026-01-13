@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "problem_id": "demo_20260112_213937",
+    "source": "demo",
+    "description": "For manufacturing companies, it is important to develop appropriate production plans and human resource management strategies to reduce operating costs, inventory costs, stockout costs, and labor costs. In particular, for products with high demand fluctuations, companies need to accurately forecast demand and develop corresponding production plans. A company produces a folding table, with a raw material cost of 90 yuan per unit and 5 labor hours. The unit price of the product is 300 yuan. At the beginning of January, the company has 1000 workers and holds 15,000 units of inventory. The normal wage for workers is 30 yuan per hour, and the normal working hours per worker per day is 8 hours. Overtime hours are paid at an hourly rate of 40 yuan. The number of working days per month is calculated as 20 days. Assuming the company has sufficient available production machines and its production capacity is not limited by machine hours. The overtime hours per worker per month do not exceed 20 hours. Holding inventory incurs corresponding inventory costs. If there is a stockout due to insufficient capacity, there will be certain stockout costs. In addition, the company can make up for the shortage through outsourcing. The outsourcing cost per unit, monthly inventory cost, and monthly stockout cost are 200 yuan, 15 yuan, and 35 yuan, respectively. The company's employees are all temporary workers, and the company can flexibly decide the number of employees to hire and dismiss each month. The cost of hiring and dismissing a single employee is 5000 yuan and 8000 yuan, respectively. Assuming the company has used existing forecasting models to predict the demand from month 1 to month 6, as shown in Table 4.1.\n\nTable 4.1: Demand Forecast\n\n| Month | 1 | 2 | 3 | 4 | 5 | 6 |\n| :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n| Demand Forecast | 20000 | 40000 | 42000 | 35000 | 19000 | 18500 |\n\nPlease develop a production plan, worker schedule, and plan for hiring and dismissing employees for the company to maximize its total net profit over 6 months, while ensuring that the company holds at least 10,000 units of product by the end of June.",
+    "sense": "max",
+    "version": "v1"
+  },
+  "sets": [
+    {
+      "name": "T",
+      "elements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "description": "Months"
+    }
+  ],
+  "params": [
+    {
+      "name": "demand",
+      "indices": [
+        "T"
+      ],
+      "values": {
+        "1": 20000,
+        "2": 40000,
+        "3": 42000,
+        "4": 35000,
+        "5": 19000,
+        "6": 18500
+      },
+      "description": "Demand forecast for each month"
+    },
+    {
+      "name": "raw_material_cost",
+      "indices": [],
+      "values": 90,
+      "description": "Raw material cost per unit"
+    },
+    {
+      "name": "labor_hours_per_unit",
+      "indices": [],
+      "values": 5,
+      "description": "Labor hours required per unit"
+    },
+    {
+      "name": "unit_price",
+      "indices": [],
+      "values": 300,
+      "description": "Selling price per unit"
+    },
+    {
+      "name": "normal_wage",
+      "indices": [],
+      "values": 30,
+      "description": "Normal wage per hour"
+    },
+    {
+      "name": "overtime_wage",
+      "indices": [],
+      "values": 40,
+      "description": "Overtime wage per hour"
+    },
+    {
+      "name": "normal_hours_per_day",
+      "indices": [],
+      "values": 8,
+      "description": "Normal working hours per day"
+    },
+    {
+      "name": "working_days_per_month",
+      "indices": [],
+      "values": 20,
+      "description": "Working days per month"
+    },
+    {
+      "name": "overtime_hours_limit",
+      "indices": [],
+      "values": 20,
+      "description": "Maximum overtime hours per worker per month"
+    },
+    {
+      "name": "inventory_cost",
+      "indices": [],
+      "values": 15,
+      "description": "Monthly inventory holding cost per unit"
+    },
+    {
+      "name": "stockout_cost",
+      "indices": [],
+      "values": 35,
+      "description": "Monthly stockout cost per unit"
+    },
+    {
+      "name": "outsourcing_cost",
+      "indices": [],
+      "values": 200,
+      "description": "Outsourcing cost per unit"
+    },
+    {
+      "name": "hiring_cost",
+      "indices": [],
+      "values": 5000,
+      "description": "Cost of hiring a single employee"
+    },
+    {
+      "name": "dismissal_cost",
+      "indices": [],
+      "values": 8000,
+      "description": "Cost of dismissing a single employee"
+    },
+    {
+      "name": "initial_workers",
+      "indices": [],
+      "values": 1000,
+      "description": "Initial number of workers"
+    },
+    {
+      "name": "initial_inventory",
+      "indices": [],
+      "values": 15000,
+      "description": "Initial inventory units"
+    }
+  ],
+  "vars": [
+    {
+      "name": "production",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Units produced each month"
+    },
+    {
+      "name": "inventory",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Inventory at the end of each month"
+    },
+    {
+      "name": "stockout",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Stockout units each month"
+    },
+    {
+      "name": "outsourcing",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Units outsourced each month"
+    },
+    {
+      "name": "workers",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Number of workers each month"
+    },
+    {
+      "name": "hired",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Number of workers hired each month"
+    },
+    {
+      "name": "dismissed",
+      "indices": [
+        "T"
+      ],
+      "vartype": "integer",
+      "lb": 0,
+      "ub": null,
+      "description": "Number of workers dismissed each month"
+    },
+    {
+      "name": "overtime_hours",
+      "indices": [
+        "T"
+      ],
+      "vartype": "continuous",
+      "lb": 0,
+      "ub": 20,
+      "description": "Overtime hours per worker each month"
+    }
+  ],
+  "objective": {
+    "name": "net_profit",
+    "sense": "max",
+    "expr": "quicksum((unit_price * (production[t] + outsourcing[t]) - raw_material_cost * production[t] - normal_wage * normal_hours_per_day * working_days_per_month * workers[t] - overtime_wage * overtime_hours[t] * workers[t] - inventory_cost * inventory[t] - stockout_cost * stockout[t] - outsourcing_cost * outsourcing[t] - hiring_cost * hired[t] - dismissal_cost * dismissed[t]) for t in T)",
+    "description": "Maximize total net profit over 6 months"
+  },
+  "constraints": [
+    {
+      "name": "inventory_balance_1",
+      "expr_lhs": "inventory['1']",
+      "sense": "==",
+      "expr_rhs": "initial_inventory + production['1'] + outsourcing['1'] - demand['1'] + stockout['1']",
+      "description": "Inventory balance for month 1"
+    },
+    {
+      "name": "inventory_balance_2",
+      "expr_lhs": "inventory['2']",
+      "sense": "==",
+      "expr_rhs": "inventory['1'] + production['2'] + outsourcing['2'] - demand['2'] + stockout['2']",
+      "description": "Inventory balance for month 2"
+    },
+    {
+      "name": "inventory_balance_3",
+      "expr_lhs": "inventory['3']",
+      "sense": "==",
+      "expr_rhs": "inventory['2'] + production['3'] + outsourcing['3'] - demand['3'] + stockout['3']",
+      "description": "Inventory balance for month 3"
+    },
+    {
+      "name": "inventory_balance_4",
+      "expr_lhs": "inventory['4']",
+      "sense": "==",
+      "expr_rhs": "inventory['3'] + production['4'] + outsourcing['4'] - demand['4'] + stockout['4']",
+      "description": "Inventory balance for month 4"
+    },
+    {
+      "name": "inventory_balance_5",
+      "expr_lhs": "inventory['5']",
+      "sense": "==",
+      "expr_rhs": "inventory['4'] + production['5'] + outsourcing['5'] - demand['5'] + stockout['5']",
+      "description": "Inventory balance for month 5"
+    },
+    {
+      "name": "inventory_balance_6",
+      "expr_lhs": "inventory['6']",
+      "sense": "==",
+      "expr_rhs": "inventory['5'] + production['6'] + outsourcing['6'] - demand['6'] + stockout['6']",
+      "description": "Inventory balance for month 6"
+    },
+    {
+      "name": "end_inventory_requirement",
+      "expr_lhs": "inventory['6']",
+      "sense": ">=",
+      "expr_rhs": "10000",
+      "description": "Ensure at least 10,000 units of inventory by end of June"
+    },
+    {
+      "name": "worker_balance_1",
+      "expr_lhs": "workers['1']",
+      "sense": "==",
+      "expr_rhs": "initial_workers + hired['1'] - dismissed['1']",
+      "description": "Worker balance for month 1"
+    },
+    {
+      "name": "worker_balance_2",
+      "expr_lhs": "workers['2']",
+      "sense": "==",
+      "expr_rhs": "workers['1'] + hired['2'] - dismissed['2']",
+      "description": "Worker balance for month 2"
+    },
+    {
+      "name": "worker_balance_3",
+      "expr_lhs": "workers['3']",
+      "sense": "==",
+      "expr_rhs": "workers['2'] + hired['3'] - dismissed['3']",
+      "description": "Worker balance for month 3"
+    },
+    {
+      "name": "worker_balance_4",
+      "expr_lhs": "workers['4']",
+      "sense": "==",
+      "expr_rhs": "workers['3'] + hired['4'] - dismissed['4']",
+      "description": "Worker balance for month 4"
+    },
+    {
+      "name": "worker_balance_5",
+      "expr_lhs": "workers['5']",
+      "sense": "==",
+      "expr_rhs": "workers['4'] + hired['5'] - dismissed['5']",
+      "description": "Worker balance for month 5"
+    },
+    {
+      "name": "worker_balance_6",
+      "expr_lhs": "workers['6']",
+      "sense": "==",
+      "expr_rhs": "workers['5'] + hired['6'] - dismissed['6']",
+      "description": "Worker balance for month 6"
+    },
+    {
+      "name": "production_capacity_1",
+      "expr_lhs": "production['1']",
+      "sense": "<=",
+      "expr_rhs": "workers['1'] * (normal_hours_per_day * working_days_per_month + overtime_hours['1']) / labor_hours_per_unit",
+      "description": "Production capacity for month 1"
+    },
+    {
+      "name": "production_capacity_2",
+      "expr_lhs": "production['2']",
+      "sense": "<=",
+      "expr_rhs": "workers['2'] * (normal_hours_per_day * working_days_per_month + overtime_hours['2']) / labor_hours_per_unit",
+      "description": "Production capacity for month 2"
+    },
+    {
+      "name": "production_capacity_3",
+      "expr_lhs": "production['3']",
+      "sense": "<=",
+      "expr_rhs": "workers['3'] * (normal_hours_per_day * working_days_per_month + overtime_hours['3']) / labor_hours_per_unit",
+      "description": "Production capacity for month 3"
+    },
+    {
+      "name": "production_capacity_4",
+      "expr_lhs": "production['4']",
+      "sense": "<=",
+      "expr_rhs": "workers['4'] * (normal_hours_per_day * working_days_per_month + overtime_hours['4']) / labor_hours_per_unit",
+      "description": "Production capacity for month 4"
+    },
+    {
+      "name": "production_capacity_5",
+      "expr_lhs": "production['5']",
+      "sense": "<=",
+      "expr_rhs": "workers['5'] * (normal_hours_per_day * working_days_per_month + overtime_hours['5']) / labor_hours_per_unit",
+      "description": "Production capacity for month 5"
+    },
+    {
+      "name": "production_capacity_6",
+      "expr_lhs": "production['6']",
+      "sense": "<=",
+      "expr_rhs": "workers['6'] * (normal_hours_per_day * working_days_per_month + overtime_hours['6']) / labor_hours_per_unit",
+      "description": "Production capacity for month 6"
+    }
+  ]
+}

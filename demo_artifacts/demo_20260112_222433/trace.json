@@ -1,0 +1,142 @@
+{
+  "meta": {
+    "problem_id": "demo_20260112_222433",
+    "model_name": "gpt-4o",
+    "timelimit_sec": 60.0,
+    "layer1_on": true,
+    "layer2_on": true,
+    "layer3_on": true,
+    "repairs_on": true
+  },
+  "failure_stage": "",
+  "error": "",
+  "verifier": {
+    "ok": true,
+    "issues": [],
+    "repairs": []
+  },
+  "solver": {
+    "status_name": "OPTIMAL",
+    "obj_value": 103749500.0
+  },
+  "ir_dict": {
+    "meta": {
+      "problem_id": "demo_20260112_222433",
+      "source": "demo",
+      "description": "The independent country of Carelland primarily exports four commodities: steel, engines, electronic components, and plastics. The Finance Minister of Carelland (i.e., the Minister of Economy) wants to maximize exports and minimize imports. The unit prices of steel, engines, electronics, and plastics on the world market, expressed in the local currency (Klunz), are: 500, 1500, 300, and 1200, respectively. Producing 1 unit of steel requires 0.02 units of engines, 0.01 units of plastics, 250 Klunz of other imported goods, and 6 person-months of work. Producing 1 unit of engines requires 0.8 units of steel, 0.15 units of electronic components, 0.11 units of plastics, 300 Klunz of imported goods, and 1 person-year. Producing 1 unit of electronics requires 0.01 units of steel, 0.01 units of engines, 0.05 units of plastics, 50 Klunz of imported goods, and 6 person-months. Producing 1 unit of plastics requires 0.03 units of engines, 0.2 units of steel, 0.05 units of electronic components, 300 Klunz of imported goods, and 2 person-years. The production limit for engines is 650,000 units, and the production limit for plastics is 60,000 units. The total available labor force per year is 830,000. Write a mathematical program to maximize the gross domestic product and solve the problem using AMPL.",
+      "sense": "max",
+      "version": "v1"
+    },
+    "sets": [
+      {
+        "name": "Commodities",
+        "elements": [
+          "steel",
+          "engines",
+          "electronics",
+          "plastics"
+        ],
+        "description": "Types of commodities exported by Carelland."
+      }
+    ],
+    "params": [
+      {
+        "name": "price",
+        "indices": [
+          "Commodities"
+        ],
+        "values": {
+          "steel": 500.0,
+          "engines": 1500.0,
+          "electronics": 300.0,
+          "plastics": 1200.0
+        },
+        "description": "Unit prices of commodities in Klunz."
+      },
+      {
+        "name": "import_cost",
+        "indices": [
+          "Commodities"
+        ],
+        "values": {
+          "steel": 250.0,
+          "engines": 300.0,
+          "electronics": 50.0,
+          "plastics": 300.0
+        },
+        "description": "Import cost per unit of commodity in Klunz."
+      },
+      {
+        "name": "labor",
+        "indices": [
+          "Commodities"
+        ],
+        "values": {
+          "steel": 6.0,
+          "engines": 12.0,
+          "electronics": 6.0,
+          "plastics": 24.0
+        },
+        "description": "Labor required per unit of commodity in person-months."
+      },
+      {
+        "name": "production_limit",
+        "indices": [
+          "Commodities"
+        ],
+        "values": {
+          "engines": 650000.0,
+          "plastics": 60000.0
+        },
+        "description": "Production limits for certain commodities."
+      },
+      {
+        "name": "total_labor",
+        "indices": [],
+        "values": 830000.0,
+        "description": "Total available labor force per year in person-months."
+      }
+    ],
+    "vars": [
+      {
+        "name": "production",
+        "indices": [
+          "Commodities"
+        ],
+        "vartype": "integer",
+        "lb": 0.0,
+        "ub": null,
+        "description": "Production levels of each commodity."
+      }
+    ],
+    "objective": {
+      "name": "maximize_gdp",
+      "sense": "max",
+      "expr": "quicksum((price[c] - import_cost[c]) * production[c] for c in Commodities)",
+      "description": "Maximize the gross domestic product by maximizing net exports."
+    },
+    "constraints": [
+      {
+        "name": "labor_constraint",
+        "expr_lhs": "quicksum(labor[c] * production[c] for c in Commodities)",
+        "sense": "<=",
+        "expr_rhs": "total_labor",
+        "description": "Total labor used should not exceed available labor."
+      },
+      {
+        "name": "engines_production_limit",
+        "expr_lhs": "production['engines']",
+        "sense": "<=",
+        "expr_rhs": "production_limit['engines']",
+        "description": "Production limit for engines."
+      },
+      {
+        "name": "plastics_production_limit",
+        "expr_lhs": "production['plastics']",
+        "sense": "<=",
+        "expr_rhs": "production_limit['plastics']",
+        "description": "Production limit for plastics."
+      }
+    ]
+  }
+}
