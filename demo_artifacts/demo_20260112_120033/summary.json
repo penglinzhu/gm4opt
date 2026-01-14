@@ -1,5 +1,0 @@
-{
-  "problem_id": "demo_20260112_120033",
-  "failure_stage": "pipeline_exception",
-  "error": "AttributeError: 'ModelIR' object has no attribute 'graph'"
-}

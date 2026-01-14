@@ -1,9 +1,0 @@
-Tom and Jerry have just bought a farm in Sunshine Valley and are considering using it to grow corn, wheat, soybeans, and sorghum. The profit from planting one acre of corn is $1500, one acre of wheat is $1200, one acre of soybeans is $1800, and one acre of sorghum is $1600. To maximize profit, how many acres of land should Tom and Jerry use to plant each crop?
-
-The total area of Tom and Jerry's farm is 100 acres.
-
-The area of land used for planting corn should be at least twice the area of land used for planting wheat.
-
-The area of land used for planting soybeans should be at least half the area of land used for planting sorghum.
-
-The area of land used for planting wheat must be three times the area of land used for planting sorghum.

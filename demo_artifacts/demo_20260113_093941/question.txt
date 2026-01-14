@@ -1,9 +1,0 @@
-A company that produces only one product has 40 workers. Each worker produces 20 units per month. The demand for the semester changes according to the following table:
-
-| Month | 1 | 2 | 3 | 4 | 5 | 6 |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Demand (units) | 700 | 600 | 500 | 800 | 900 | 800 |
-
-To adjust production based on demand, the company can offer some (paid) additional working hours (each worker can produce a maximum of 6 extra units per month, with a unit cost of 5 euros), use warehouse space (10 euros per unit per month), and hire or lay off employees (the number of employees can vary by a maximum of $\\pm 5$ per month, with a hiring cost of 500 euros per person and a layoff cost of 700 euros per person).
-
-Initially, the warehouse space is empty, and we require it to be empty at the end of the semester as well. Develop a mathematical program to maximize revenue and solve it using COPTPY. How does the objective function change when all variables are relaxed to continuous?

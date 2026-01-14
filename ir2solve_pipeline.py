@@ -18,8 +18,6 @@ from ir2solve_nl2ir import (
 )
 from ir2solve_verifier_core import run_verifier, VerifierConfig
 
-from ir2solve_estimator import build_check_message, load_model_from_dict_str
-
 from llm2code import build_generate_message, llm_to_gurobi
 
 
@@ -128,10 +126,10 @@ def run_ir2solve_pipeline(
     problem_id: Optional[str] = None,
     meta_override: Optional[Dict[str, Any]] = None,
 ) -> PipelineResult:
+    if client is None:
+        client = OpenAI()
     if config is None:
         config = PipelineConfig()
-    if client is None:
-        client = create_client(config, test_flag=True)
 
     failure_stage = ""
     error = ""
@@ -256,49 +254,6 @@ def run_ir2solve_pipeline(
     pid = (data.get("meta") or {}).get("problem_id", problem_id or "ir2solve_instance")
     issues_kinds, repairs_kinds = _extract_kinds(verifier_report)
 
-    # --- 8) self-check + rebuild ---
-    if not failure_stage and ir is not None:
-        if config.estimate_on:
-            try:
-                # call LLM for confidence check
-                check_messages = build_check_message(question_text, ir, gurobi_model=model)
-                check_completion = client.chat.completions.create(
-                    model=config.model_name,
-                    messages=check_messages,
-                    temperature=config.temperature,
-                )
-                raw_check_text: str = check_completion.choices[0].message.content or ""
-                check_data = extract_json_from_text(raw_check_text)
-            except Exception as e:
-                failure_stage = "estimator_llm"
-                error = f"{type(e).__name__}: {e}"
-                check_data = {}
-            
-            confidence_score = check_data.get("confidence_score", 0)
-            corrected_model_dict_str = check_data.get("corrected_model")
-            print("confidence_score:", confidence_score)
-
-            if not failure_stage and corrected_model_dict_str:
-                try:
-                    # print("corrected_model:", corrected_model_dict_str)
-                    # print("reasoning:", check_data.get("reasoning", ""))
-                    try:
-                        # rebuild corrected model from LLM output
-                        corrected_model = load_model_from_dict_str(corrected_model_dict_str)
-                    except Exception as e:
-                        print("Failed to rebuild corrected model:", str(e))
-                        corrected_model = None
-                    
-                    if corrected_model:
-                        print("Re-optimizing corrected model...")
-                        corrected_model.setParam("TimeLimit", float(config.timelimit_sec))
-                        corrected_model.optimize()
-                        if corrected_model.Status == GRB.OPTIMAL:
-                            gurobi_obj_value = float(corrected_model.ObjVal)
-                except Exception as e:
-                    failure_stage = "estimator_rebuild"
-                    error = f"{type(e).__name__}: {e}"
-
     trace: Dict[str, Any] = {
         "meta": {
             "problem_id": pid,
@@ -335,44 +290,3 @@ def run_ir2solve_pipeline(
         verifier_report=verifier_report,
         trace=trace,
     )
-
-
-
-def create_client(cfg: PipelineConfig, test_flag: bool = False, type: str = "default") -> OpenAI:
-    """
-    创建OpenAI客户端，用于兼容本地的网络环境设置，type只有default和其他两种选择。
-    """
-    print("Creating OpenAI client with model:", cfg.model_name)
-
-    if type != "default":
-        import httpx
-        transport = httpx.HTTPTransport(
-        proxy="http://127.0.0.1:7890",
-            verify=False  # 关闭SSL验证
-        )
-
-        http_client = httpx.Client(
-            transport=transport,
-            timeout=60
-        )
-
-        # LLM连通性测试
-        client_test = OpenAI(http_client=http_client)
-    else:
-        client_test = OpenAI()
-
-    # 发送Hello并接受并打印响应
-    if test_flag:
-        try:
-            response = client_test.chat.completions.create(
-                model=cfg.model_name,
-                messages=[{"role": "user", "content": "Hello"}],
-                temperature=cfg.temperature,
-                max_tokens=5,
-            )
-            print("LLM连通性测试响应:", response.choices[0].message.content)
-        except Exception as e:
-            print("LLM连通性测试失败:", str(e))
-            raise e
-
-    return client_test

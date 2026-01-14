@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from openai import OpenAI
-from ir2solve_pipeline import PipelineConfig, run_ir2solve_pipeline, create_client
+from ir2solve_pipeline import PipelineConfig, run_ir2solve_pipeline
 
 SAVE_ARTIFACTS = True
 ARTIFACT_DIR = "demo_artifacts"
@@ -94,7 +94,9 @@ def _extract_kinds(report: Any, key: str) -> List[str]:
 # main
 # -------------------------
 def main() -> None:
-    QUESTION_TEXT = """A company has three types of products, I, II, and III. The contract orders for each quarter of the next year are shown in Table 1-23. At the beginning of the first quarter, there is no inventory, and it is required to have 150 units of each product in inventory at the end of the fourth quarter. It is known that the company has 15,000 hours of production time per quarter, and it takes 2 hours, 4 hours, and 3 hours to produce one unit of products I, II, and III, respectively. Due to the replacement of production equipment, product I cannot be produced in the second quarter. It is specified that if the products cannot be delivered on time, a compensation of $20 per unit per quarter is required for products I and II, and $10 for product III. If the produced products are not delivered in the same quarter, a storage fee of $5 per unit per quarter is incurred. How should the company arrange production to minimize the total compensation and storage fee?\n\nTable 1-23\n\\begin{tabular}{c|c|c|c|c}\n\\hline \\multirow{2}{*}{Product} & \\multicolumn{4}{|c}{Contract Orders for Each Quarter} \\\\\n\\cline { 2 - 5 } & 1 & 2 & 3 & 4 \\\\\n\\hline I & 1500 & 1000 & 2000 & 1200 \\\\\nII & 1500 & 1500 & 1200 & 1500 \\\\\nIII & 1000 & 2000 & 1500 & 2500 \\\\\n\\hline\n\\end{tabular}""".strip()
+    QUESTION_TEXT = """
+Now we need to determine 4 out of 5 workers to each complete one of the four tasks. Since each worker has different skill sets, the amount of time required for each worker to complete each task is also different. The time required for each worker to complete each task is shown in Table 5-2.\nTable 5-2\n\\begin{tabular}{|c|c|c|c|c|}\n\\hline Task Time Required & $A$ & $B$ & $C$ & $D$ \\\\\n\\hline Worker & & & & \\\\\n\\hline I & 9 & 4 & 3 & 7 \\\\\n\\hline II & 4 & 6 & 5 & 6 \\\\\n\\hline III & 5 & 4 & 7 & 5 \\\\\n\\hline IV & 7 & 5 & 2 & 3 \\\\\n\\hline V & 10 & 6 & 7 & 4 \\\\\n\\hline\n\\end{tabular}\n\nTry to find a work assignment plan that minimizes the total working hours.
+""".strip()
 
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     problem_id = f"demo_{run_id}"
@@ -108,9 +110,8 @@ def main() -> None:
         layer2_on=True,
         layer3_on=True,
         repairs_on=True,
-        determine_on=False,
+        determine_on=True,
     )
-
 
     out_dir = os.path.join(ARTIFACT_DIR, f"demo_{run_id}")
     if SAVE_ARTIFACTS:
@@ -123,7 +124,7 @@ def main() -> None:
     print("\nQuestion(first 400 chars):")
     print(QUESTION_TEXT[:400] + ("..." if len(QUESTION_TEXT) > 400 else ""))
 
-    client = create_client(cfg, type="macider")
+    client = OpenAI()
 
     try:
         res = run_ir2solve_pipeline(

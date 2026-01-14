@@ -1,7 +1,0 @@
-There are two products, A and B, which both require two chemical reaction processes: one before and one after. Each unit of product A requires 2 hours for the front process and 3 hours for the back process. Each unit of product B requires 3 hours for the front process and 4 hours for the back process. There are 16 hours available for the front process and 24 hours available for the back process.
-
-For each unit of product B produced, two units of byproduct C are generated, which do not require any additional cost. Up to 5 units of byproduct C can be sold, while the remaining units must be disposed of, with a disposal cost of $2 per unit.
-
-Selling one unit of product A yields a profit of $4, selling one unit of product B yields a profit of $10, and selling one unit of byproduct C yields a profit of $3.
-
-To maximize the total profit obtained, establish the linear programming model for this problem.

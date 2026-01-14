@@ -1,8 +1,0 @@
-{
-  "issues": [
-    "unroll_free_index_constraints"
-  ],
-  "repairs": [
-    "unroll_free_index_constraints"
-  ]
-}

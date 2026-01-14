@@ -1,9 +1,0 @@
-A product can be processed on any one of the four devices A, B, C, or D. The setup completion cost for each device when it is activated, the unit cost of production for the product, and the maximum processing capacity for each device are known as shown in Table 5-7. How can the total cost be minimized to produce 2000 units of the product? Try to establish a mathematical model.
-Table 5-7
-\begin{tabular}{c|c|c|c}
-\hline Device & Setup Completion Cost (in yuan) & Production Cost (in yuan per unit) & Maximum Processing Capacity (units) \\\hline A & 1000 & 20 & 900 \
-B & 920 & 24 & 1000 \
-C & 800 & 16 & 1200 \
-D & 700 & 28 & 1600 \
-\hline
-\end{tabular}

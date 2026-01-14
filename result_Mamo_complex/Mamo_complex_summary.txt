@@ -1,6 +1,0 @@
-====== SUMMARY ======
-Total instances: 111
-Solved (got ObjVal): 104
-Correct (ObjVal ≈ GT): 94
-Accuracy: 94/111 = 0.847
-Solved ratio: 104/111 = 0.937
