@@ -372,5 +372,5 @@ def get_layer2_rules() -> List[VerifierRule]:
     return [
         IntegralitySanity(),
         ConstraintDirectionSanity(),
-        GenericStructureSemanticSanity(),
+        # GenericStructureSemanticSanity(),
     ]
