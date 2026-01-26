@@ -45,7 +45,7 @@ Linux/Mac:
 export OPENAI_API_KEY="YOUR_KEY"
 ```
 Windows PowerShell:
-```powerShell
+```powershell
 setx OPENAI_API_KEY "YOUR_KEY"
 ```
 
