@@ -36,11 +36,20 @@ IR2Solve/
 ### Install dependencies
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# .venv\Scripts\activate   # Windows PowerShell
-
 pip install -r requirements.txt
 ```
+
+### Configure OpenAI API key
+Linux/Mac:
+```bash
+export OPENAI_API_KEY="YOUR_KEY"
+```
+Windows PowerShell:
+```powerShell
+setx OPENAI_API_KEY "YOUR_KEY"
+```
+
+### Configure Gurobi
+Make sure your Gurobi installation and license are available
 
 
