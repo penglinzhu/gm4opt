@@ -1,9 +1,9 @@
-# IR2Solve — Intermediate-Representation-first Autoformulation for Optimization
+# IR2Solve — Intermediate-Representation-first Autoformulation for Optimization with Cost-Efficient LLM Usage
 
-**IR2Solve** is a research-oriented framework that bridges **natural-language optimization problems** and **executable mathematical programming models** under a **strict LLM budget**. It implements an **IR-first** pipeline:
+**IR2Solve** is a research-oriented framework that bridges **natural-language optimization problems** and **executable mathematical programming models** with **cost-efficient LLM usage**. It implements an **IR-first** pipeline:
 - The LLM outputs a **schema-constrained intermediate representation (IR)** as JSON.
-- A deterministic **IR→Solver compiler** converts the IR into a **Gurobi** model through a controlled evaluation environment.
 - A **layered verifier (L1/L2/L3)** performs failure-mode-driven, mostly deterministic repairs—improving success rate without requiring multi-round agent reflection.
+- A deterministic **IR→Solver compiler** converts the IR into a **Gurobi** model through a controlled evaluation environment.
 
 ---
 
@@ -78,6 +78,13 @@ Across benchmarks, the main outputs are:
 - **`*_trace.jsonl`**: structured per-instance trace (one JSON object per line)
 - **`*_summary.txt`**: aggregate statistics (accuracy, token/call usage, failure breakdown)
 - **`ir_outputs_*/`**: saved final IR JSONs (one file per instance)
+
+## Data
+
+All datasets required for reproduction are **included in this repository** under `./data/` (no external download needed).
+
+- `run_nl4opt_benchmark.py` reads NL4Opt instances from `data/NL4Opt/`
+- `run_complexlp_benchmark.py` reads ComplexLP from `data/Mamo/Mamo_complex_lp_clean.jsonl`
 
 ## Citation
 Please cite the accompanying paper (submitted under double-blind review) if you use this code.
