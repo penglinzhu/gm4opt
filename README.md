@@ -52,4 +52,32 @@ setx OPENAI_API_KEY "YOUR_KEY"
 ### Configure Gurobi
 Make sure your Gurobi installation and license are available
 
+## Quickstart
+### Run a single-instance demo
+```bash
+python run_nl2ir_demo.py
+```
+This runs a built-in example and prints the pipeline outcome.
+To test your own problem statement, edit the QUESTION_TEXT string in run_nl2ir_demo.py.
 
+### Run NL4Opt (directory dataset)
+```bash
+python run_nl4opt_benchmark.py
+```
+
+### Run ComplexLP (jsonl dataset)
+```bash
+python run_complexlp_benchmark.py
+```
+
+### Outputs and evaluation
+
+Across benchmarks, the main outputs are:
+
+- **`*_results.csv`**: per-instance results (one row per problem)
+- **`*_trace.jsonl`**: structured per-instance trace (one JSON object per line)
+- **`*_summary.txt`**: aggregate statistics (accuracy, token/call usage, failure breakdown)
+- **`ir_outputs_*/`**: saved final IR JSONs (one file per instance)
+
+## Citation
+Please cite the accompanying paper (submitted under double-blind review) if you use this code.
